@@ -77,13 +77,12 @@ pub fn add_enum(base_path: &str, module_source_path: &str, filename: &str) -> Re
     .vis("pub")
     .to_owned();
 
-    let from_u8_impl = format!("impl From<u8> for {enum_name} {{
+    let mut from_u8_impl = format!("impl From<u8> for {enum_name} {{
     fn from(input: u8) -> Self {{
-        match input {{");
+        match input {{\n");
 
     let enum_object = file_object.as_object().unwrap().get("enum").unwrap();
 
-    // enum_object.iter().for_each(|(_key, enum_value)| {
     enum_object.as_object().unwrap().iter().for_each(|(k, v)| {
         eprintln!("{k:?} => {v:?}");
         if !v.as_object().unwrap().contains_key("caption") {
@@ -100,14 +99,15 @@ pub fn add_enum(base_path: &str, module_source_path: &str, filename: &str) -> Re
             .annotation(format!("/// {k} - {variant_name}"))
             .to_owned();
         scoped_enum.push_variant(this_variant);
-        // });
-
+        from_u8_impl += &format!("            {} => {}::{},\n",
+        k,
+        enum_name,
+        collapsed_title_case(variant_name));
     });
 
     scope.push_enum(scoped_enum);
-    // println!("{}", scope.to_string());
-    let from_u8_impl = format!("{from_u8_impl}
-            _ => panic!(\"Invalid value!\"),
+
+    let from_u8_impl = format!("{from_u8_impl}            _ => panic!(\"Invalid value!\"),
         }}
     }}
 }}
