@@ -3,7 +3,10 @@ SCHEMA_VERSION ?= "v1.0.0-rc.2"
 
 .PHONY: codegen
 codegen:
-	cd ocsf-codegen && cargo run --bin ocsf-codegen
+	cargo run -p ocsf-codegen -- -d ./
+	cargo build -p ocsf
+	cargo fmt -p ocsf --check
+	cargo doc -p ocsf --open
 
 .PHONY: schema
 schema:

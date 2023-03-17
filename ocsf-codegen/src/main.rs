@@ -2,13 +2,11 @@ use ocsf_codegen::generate_scope;
 
 use clap::Parser;
 
-
 #[derive(Parser)]
 struct Cli {
-    #[arg(short,long)]
+    #[arg(short, long)]
     dirpath: Option<String>,
 }
-
 
 pub fn main() {
     let cli = Cli::parse();
@@ -18,7 +16,9 @@ pub fn main() {
         None => String::from("../"),
     };
 
-    generate_scope(&base_path).map_err(|err| {
-        eprintln!("Failed to do the thing! {err:?}");
-    }).unwrap();
+    generate_scope(&base_path)
+        .map_err(|err| {
+            eprintln!("Failed to do the thing! {err:?}");
+        })
+        .unwrap();
 }

@@ -30,8 +30,10 @@ pub enum ClassPath {
     Enums { class_path: String },
     Unknown,
 }
-pub fn filename_to_classpath(filename: &str) -> ClassPath {
-    let mut fname = filename.to_owned().replace("ocsf-schema/", "");
+pub fn filename_to_classpath(schema_base_path: &str, filename: &str) -> ClassPath {
+    eprintln!("Filename: {filename}");
+    eprintln!("schema_base_path: {schema_base_path}");
+    let mut fname = filename.to_owned().replace(schema_base_path, "");
     println!("This isn't the classpath, yet: {fname}");
     if fname.starts_with("enums/") {
         fname =  fname
@@ -65,14 +67,17 @@ pub fn add_enum(base_path: &str, module_source_path: &str, filename: &str) -> Re
         eprintln!("{:?}", file_object);
         panic!();
     }
-    println!("Adding enum from {filename} to {base_path}");
+    println!("Adding enum from {} to {}", filename, base_path);
     let enum_name = collapsed_title_case(&base_path);
 
     let mut scope = Scope::new();
     // scope.new_enum(base_path);
-    let mut scoped_enum = codegen::Enum::new(&enum_name).derive("Debug").to_owned();
+    let mut scoped_enum = codegen::Enum::new(&enum_name)
+    .derive("Debug")
+    .vis("pub")
+    .to_owned();
 
-    let from_u8_impl = format!("impl TryFrom<u8> for {enum_name} {{
+    let from_u8_impl = format!("impl From<u8> for {enum_name} {{
     fn from(input: u8) -> Self {{
         match input {{");
 
@@ -92,31 +97,31 @@ pub fn add_enum(base_path: &str, module_source_path: &str, filename: &str) -> Re
             .as_str()
             .unwrap();
         let this_variant = Variant::new(collapsed_title_case(variant_name))
-            .annotation(format!("// {k} - {variant_name}"))
+            .annotation(format!("/// {k} - {variant_name}"))
             .to_owned();
         scoped_enum.push_variant(this_variant);
         // });
 
     });
 
-
-
     scope.push_enum(scoped_enum);
     // println!("{}", scope.to_string());
     let from_u8_impl = format!("{from_u8_impl}
-        _ => panic!(\"Invalid value!\")
+            _ => panic!(\"Invalid value!\"),
+        }}
     }}
-}}");
+}}
+");
 
     let results = format!("{}\n{}", scope.to_string(), from_u8_impl);
-    write_source_file(&format!("{module_source_path}enums/{base_path}.rs"), &results)?;
+    write_source_file(&format!("{module_source_path}src/enums/{base_path}.rs"), &results)?;
     Ok(())
 }
 
 pub fn write_source_file(filename: &str, contents: &str) -> Result<(), Box<dyn Error>>{
     // let mut path = PathBuf::from("");
     // path.set_file_name(filename);
-    // eprintln!("trying to write to {path:?}");
+    eprintln!("trying to write to {:?}", filename);
     // TODO maybe we will need to be appending to this at some point...
     let file = File::create(format!("{filename}"))?;
     let mut writer = BufWriter::new(file);
@@ -135,19 +140,28 @@ pub fn read_file_to_value(filename: &str) -> Result<Value, Box<dyn Error>> {
 }
 
 
-pub fn generate_file(enums_mod: &mut BufWriter<File>, base_path: &str, filename: &str) -> Result<(), Box<dyn Error>> {
+pub fn generate_file(
+    schema_base_path: &str,
+    enums_mod: &mut BufWriter<File>,
+    base_path: &str,
+    filename: &str,
+) -> Result<(), Box<dyn Error>> {
     println!("#########################################");
     println!("Processing {filename:?}");
 
-    let classpath = filename_to_classpath(&filename);
+    let classpath = filename_to_classpath(schema_base_path, &filename);
     println!("{classpath:?}");
 
     match classpath {
         ClassPath::Enums { class_path } => {
-            if let Err(err) = add_enum(&base_path, &class_path, filename) {
+            if let Err(err) = add_enum(
+                &class_path,
+                &base_path,
+                filename
+            ) {
                 panic!("Failed to write data from {filename}: {err:?}");
             };
-            enums_mod.write_fmt(format_args!("pub mod {base_path};\n"))?;
+            enums_mod.write_fmt(format_args!("pub mod {class_path};\n"))?;
         }
         ClassPath::Unknown => {
             eprintln!("Nothing to do yet with {filename:?}!");
@@ -166,7 +180,7 @@ pub fn generate_scope(base_path: &str) -> Result<(), Box<dyn Error>> {
         panic!();
     }
 
-    let enums_dir = format!("{base_path}src/enums/");
+    let enums_dir = format!("{ocsf_dir}src/enums/");
 
     if !PathBuf::from(&enums_dir).exists() {
         println!("{enums_dir} is missing, creating it...");
@@ -176,7 +190,10 @@ pub fn generate_scope(base_path: &str) -> Result<(), Box<dyn Error>> {
     let enums_mod_file = File::create(PathBuf::from(format!("{enums_dir}mod.rs")))?;
     let mut enums_mod = BufWriter::new(enums_mod_file);
 
-    for file in find_files(&base_path).into_iter() {
+    let mut files = find_files(base_path);
+    files.sort();
+
+    for file in files.into_iter() {
         if !file.ends_with(".json") {
             continue;
         }
@@ -184,7 +201,12 @@ pub fn generate_scope(base_path: &str) -> Result<(), Box<dyn Error>> {
             // eprintln!("Skipping {file}");
             continue;
         }
-        match generate_file(&mut enums_mod, &base_path, &file) {
+        match generate_file(
+            &format!("{base_path}ocsf-schema/"),
+            &mut enums_mod,
+            &ocsf_dir,
+            &file,
+        ) {
             Err(err) => println!("Failed to handle {file}: {err:?}"),
             Ok(_) => println!("[OK] {file}"),
         }
