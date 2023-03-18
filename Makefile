@@ -6,7 +6,7 @@ codegen:
 	# cargo test -p ocsf-codegen
 	cargo run -p ocsf-codegen -- -d ./
 	cargo build -p ocsf
-
+	cargo fmt -p ocsf
 
 .PHONY: build
 build: codegen

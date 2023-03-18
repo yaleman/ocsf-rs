@@ -3,7 +3,7 @@ use serde::{Serialize, Deserialize};
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct DictAttribute {
+pub struct DictAttribute {
     caption: Option<String>,
     default: Option<i32>,
     description: Option<String>,
@@ -16,7 +16,7 @@ struct DictAttribute {
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct DictType {
+pub struct DictType {
     caption: Option<String>,
     description: Option<String>,
     max_len: Option<String>,
@@ -78,7 +78,13 @@ struct DictType {
         let attribute: DictAttribute = serde_json::from_value(attribute_value.to_owned()).unwrap();
         debug!("{attribute:#?}");
         output.push_str("\n");
-        output.push_str(&format!("const {attribute_name}: DictAttribute = {attribute:#?};\n"));
+        let thing_to_push = format!(
+            "lazy_static! {{ static ref {}: DictAttribute = {:#?};\n}}\n",
+            attribute_name.to_uppercase(),
+            attribute
+        )
+            .replace("\",\n", "\".to_string(),\n");
+        output.push_str(&thing_to_push);
         // attribute
     });
 
