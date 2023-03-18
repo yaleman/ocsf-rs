@@ -3,13 +3,70 @@ use std::error::Error;
 use serde_json::{json, Map};
 
 use crate::*;
+use glob::glob;
 
+#[derive(Clone, Debug, Default)]
 pub struct EventDef {
     pub uid: Option<u32>,
+    pub class_name: String,
     pub name: String,
+    pub description: String,
     pub category: String,
-    pub attribute_keys: Vec<String>,
+    pub attributes: Vec<EventAttribute>,
+    pub associations: Map<String, Value>,
+    pub profiles: Vec<String>,
 }
+
+/// this finds an event schema file based on its name and returns the contents - or panics if not
+fn find_event_schema_file(base_path: &str, name: &str) -> String {
+
+    let search_string = format!("{base_path}events/**/*.json");
+    debug!("Looking for object called {name} in {search_string}");
+    for filename in glob(&search_string).unwrap().flatten() {
+        let filename_str = filename.to_str().unwrap();
+
+        let file_contents = match read_file_to_value(filename_str) {
+            Ok(val) => val,
+            Err(err) => {
+                error!("Failed to parse {filename_str}: {err:?}");
+                panic!();
+            }
+        };
+        let object_name = file_contents.get("name").unwrap().as_str().unwrap();
+        if object_name == name {
+            info!("Success! {:?}", filename_str);
+            return filename_str.to_string();
+        } else {
+            debug!(
+                "Name from {} didn't match: {} != {}",
+                filename_str, object_name, name
+            );
+            // panic!();
+        }
+    }
+    // This is a panic-level event because we've got schema files relying on others that don't exist
+    panic!("Didn't find {} in {}", name, search_string);
+    // None
+}
+
+// trait EventDataTrait {
+//     fn handle_event_extends(&mut self, schema_path: &str, modules: &mut HashMap<&str, Vec<String>>)  -> Self;
+// }
+
+// impl EventDataTrait for Map<String, Value> {
+//     fn handle_event_extends(&mut self, schema_path: &str, modules: &mut HashMap<&str, Vec<String>>)  -> Self {
+//         let extend_val = self.get("extends").unwrap().as_str().unwrap();
+//         warn!("Extends issued for {}: {}", self.get("name").unwrap().to_string(), extend_val);
+//         if modules["events"].contains(&extend_val.to_string()) {
+//             info!("Already loaded this one, woo!");
+//         } else {
+//             info!("Haven't Already loaded {}", extend_val);
+//             find_event_schema_file(schema_path, extend_val);
+//         }
+//         // TODO: we need to basically load the event and return that... but we probably haven't parsed *that* event yet!
+//         self.to_owned()
+//     }
+// }
 
 fn handle_attribute_includes(
     _base_path: &str,
@@ -95,6 +152,7 @@ fn test_from_str_invalid_requirement() {
 #[allow(dead_code)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct EventAttribute {
+    name: String,
     profile: Option<String>,
     description: String,
     caption: Option<String>,
@@ -102,19 +160,35 @@ pub struct EventAttribute {
     group: Option<Group>,
 }
 
+impl EventAttribute{
+    pub fn new(name: String) -> Self {
+        EventAttribute{
+            name,
+            ..Self::default()
+        }
+    }
+}
+
 impl Default for EventAttribute {
     fn default() -> Self {
         Self {
-            profile: Default::default(),
-            description: "No description provided".to_string(),
+            name: "".to_string(),
             caption: Default::default(),
-            requirement: Default::default(),
+            description: "No description provided".to_string(),
             group: Default::default(),
+            profile: Default::default(),
+            requirement: Default::default(),
         }
     }
 }
 
 impl EventAttribute {
+    pub fn name(self, name: String) -> Self {
+        Self {
+            name,
+            ..self
+        }
+    }
     pub fn profile(self, profile: Option<&str>) -> Self {
         Self {
             profile: profile.map(|val| val.to_string()),
@@ -147,13 +221,14 @@ impl EventAttribute {
     }
 }
 
+/// returns an [EventAttribute] and  list of attribute names, so I can track down what I need to support :D
 fn handle_attribute(
     _base_path: &str,
     _module_source_path: &str,
     filename: &str,
     attribute_name: &str,
     attribute: Map<String, Value>,
-) -> Vec<String> {
+) -> EventAttribute {
     let attrkeys: Vec<String> = attribute.keys().map(|k| k.to_string()).collect();
     info!(
         "Handling attribute {} (keys: {:#?})",
@@ -161,14 +236,14 @@ fn handle_attribute(
         attrkeys.join(",")
     );
 
-    let mut result = EventAttribute::default();
+    let mut result = EventAttribute::new(attribute_name.to_string());
 
     attribute.iter().for_each(|(key, value)| {
         info!("attr: {} val: {:?}", key, value);
         result = match key.to_owned().as_str() {
             "$include" => {
                 // TODO: handle includes inside attributes!
-                debug!(
+                warn!(
                     "Attribute {} in {} needs include: {}",
                     attribute_name,
                     filename,
@@ -176,9 +251,10 @@ fn handle_attribute(
                 );
                 result.clone()
             }
+            "caption" => result.clone().caption(value.as_str().unwrap().into()),
             "description" => result.clone().description(value.as_str().unwrap().into()),
             "enum" => {
-                debug!(
+                warn!(
                     "Attribute {} in {} needs enum: {:?}",
                     attribute_name,
                     filename,
@@ -199,12 +275,16 @@ fn handle_attribute(
         };
     });
     debug!("{result:#?}");
-    attrkeys
+    result
 }
 
 pub fn add_event(
-    base_path: &str,
+    // modules: &mut HashMap<&str, Vec<String>>,
+    classes: &mut ClassesHashMap,
+    // TODO: rename this to be sensible
+    base_path: &str, // this is the base path of the event file, it's terrible
     module_source_path: &str,
+    schema_base_path: &str,
     filename: &str,
 ) -> Result<EventDef, Box<dyn Error>> {
     debug!("Module source path: {}", module_source_path);
@@ -227,29 +307,57 @@ pub fn add_event(
         warn!("Uh, event names can't have / in them!");
     }
 
-    let file_object = read_file_to_value(filename).unwrap();
-    if !file_object.is_object() {
-        error!("Not sure what this is!");
-        error!("{:?}", file_object);
-        panic!();
-    }
 
     let file_object = file_object.as_object().unwrap().to_owned();
     debug!("{:#?}", file_object);
 
-    let description = file_object
+    let mut result: EventDef = match file_object.get("extends") {
+        Some(extend_val) => {
+            let extend_schema_name = extend_val.as_str().unwrap();
+
+            let mut start_point: EventDef = EventDef::default();
+            if let Some(val) = classes.get("events").unwrap().get(extend_schema_name) {
+                // panic!("found it!");
+                if let ClassType::Event { value } = val {
+                    start_point = value.clone();
+                }
+            } else {
+                let extend_schema_filename =
+                find_event_schema_file(schema_base_path, extend_schema_name);
+                start_point = add_event(
+                    classes,
+                    &base_path,
+                    module_source_path,
+                    schema_base_path,
+                    &extend_schema_filename,
+                )?;
+                debug!("Extending from base of:\n:{start_point:#?}");
+                classes.get_mut("events")
+                    .unwrap()
+                    .insert(extend_schema_name.to_string(),
+                    ClassType::Event { value: start_point.clone()});
+                }
+
+                start_point
+
+        }
+        None => EventDef::default(),
+    };
+
+    result.description = file_object
         .get("description")
         .unwrap_or(&json!("No description was included in the schema."))
         .as_str()
         .unwrap()
         .to_string();
-    let name = file_object
+    result.name = file_object
         .get("name")
         .expect("No 'name' field was in the schema definition!")
         .as_str()
         .unwrap()
         .to_string();
-    let category: String = match file_object.get("category") {
+
+    result.category = match file_object.get("category") {
         Some(val) => val.as_str().unwrap().to_string(),
         None => match file_object.get("extends") {
             None => panic!("No category or extends in this file!"),
@@ -257,9 +365,8 @@ pub fn add_event(
         },
     };
 
-    // .expect("No 'catgory' field was in the schema definition!").as_str().unwrap().to_string();
-
-    let profiles: Vec<String> = file_object
+    // TODO: work out if the profiles are additive when you extend from them
+    result.profiles = file_object
         .get("profiles")
         .unwrap_or(&json!(Vec::<Value>::new()))
         .as_array()
@@ -286,35 +393,39 @@ pub fn add_event(
         handle_attribute_includes(&base_path, module_source_path, filename, includes_list)
     }
 
-    let attribute_keys: Vec<Vec<String>> = attributes
-        .iter()
-        .map(|(attribute_name, attribute)| {
-            if attribute_name == "$include" {
-                return vec![];
-            }
-            let attribute = attribute.as_object().unwrap().to_owned();
-            handle_attribute(
-                &base_path,
-                module_source_path,
-                filename,
-                attribute_name,
-                attribute,
-            )
-        })
-        .collect();
+    result.associations = match attributes.get("associations") {
+        Some(val) => val.as_object().unwrap().to_owned(),
+        None => Map::new(),
+    };
 
-    let mut seen_attribute_keys = vec![];
-    for attrlist in attribute_keys {
-        for key in attrlist {
-            if !seen_attribute_keys.contains(&key) {
-                seen_attribute_keys.push(key);
-            }
+    // let mut attribute_keys: Vec<String> = vec![];
+    let mut event_attributes = vec![];
+
+    attributes.iter().for_each(|(attribute_name, attribute)| {
+        if attribute_name == "$include" {
+            return;
         }
-    }
+        let attribute = attribute.as_object().unwrap().to_owned();
+        let event_attribute = handle_attribute(
+            &base_path,
+            module_source_path,
+            filename,
+            attribute_name,
+            attribute,
+        );
+        // for key in attrkeys {
+        //     if !attribute_keys.contains(&key) {
+        //         attribute_keys.push(key);
+        //     }
+        // }
+        event_attributes.push(event_attribute);
+    });
+
+    result.class_name = collapsed_title_case(file_object.get("name").unwrap().as_str().unwrap());
+    result.attributes.extend(event_attributes);
+
     // info!("Seen attribute keys:");
-    seen_attribute_keys
-        .iter()
-        .for_each(|k| info!("attrkey {k}"));
+    // attribute_keys.iter().for_each(|k| info!("attrkey {k}"));
 
     // check that the schema's all done
     let handled_fields: Vec<String> = [
@@ -324,25 +435,26 @@ pub fn add_event(
         "category",
         "caption", // TODO: do we care about the caption?
         "attributes",
+        "associations",
+        "uid",
+        "extends",
     ]
     .into_iter()
     .map(|f| f.to_string())
     .collect();
 
-    file_object.keys().for_each(|k| {
+    file_object.iter().for_each(|(k, v)| {
         if !handled_fields.contains(k) {
             warn!("Unhandled field in event schema: {k}");
+            warn!("Unhandled field in event schema: {k} => {v}");
         }
     });
 
-    debug!("Description: {}", description);
-    debug!("Profiles: {}", profiles.join(","));
+    result.uid = file_object
+        .get("uid")
+        .map(|val| val.as_u64().unwrap() as u32);
 
-    Ok(EventDef {
-        uid: None, // TODO: uid?
-        name,
+    debug!("{result:#?}");
 
-        category,
-        attribute_keys: seen_attribute_keys,
-    })
+    Ok(result)
 }

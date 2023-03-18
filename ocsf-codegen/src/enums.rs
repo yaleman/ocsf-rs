@@ -1,6 +1,12 @@
 use crate::*;
 use codegen::Variant;
 
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct EnumDef {
+    class_name: String,
+}
+
 pub fn add_enum(
     base_path: &str,
     module_source_path: &str,

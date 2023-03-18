@@ -10,8 +10,10 @@ use log::*;
 use serde_json::{self, Value};
 use walkdir::{DirEntry, WalkDir};
 
+pub mod dictionary;
 pub mod enums;
 pub mod events;
+use dictionary::*;
 use enums::*;
 use events::*;
 
@@ -22,6 +24,7 @@ pub fn find_files(base_path: &str) -> Vec<String> {
         .into_iter()
         .filter_map(|p| p.ok())
         .collect();
+    info!("Found {} files to process.", files.len());
     files
         .iter()
         .filter_map(|p| match p.path().is_file() {
@@ -29,6 +32,14 @@ pub fn find_files(base_path: &str) -> Vec<String> {
             false => None,
         })
         .collect()
+}
+
+type ClassesHashMap = HashMap<&'static str, HashMap<String, ClassType>>;
+
+#[derive(Debug)]
+pub enum ClassType {
+    Event { value: EventDef },
+    Enum { value: EnumDef },
 }
 
 #[derive(Debug)]
@@ -72,6 +83,7 @@ pub fn write_source_file(filename: &str, contents: &str) -> Result<(), Box<dyn E
 }
 
 pub fn read_file_to_value(filename: &str) -> Result<Value, Box<dyn Error>> {
+    debug!("reading {filename}");
     let file = File::open(filename)?;
     let reader = BufReader::new(file);
 
@@ -80,9 +92,10 @@ pub fn read_file_to_value(filename: &str) -> Result<Value, Box<dyn Error>> {
     Ok(res)
 }
 
-pub fn generate_file(
+pub fn process_file(
     schema_base_path: &str,
     modules: &mut HashMap<&str, Vec<String>>,
+    classes: &mut ClassesHashMap,
     base_path: &str,
     filename: &str,
 ) -> Result<(), Box<dyn Error>> {
@@ -98,7 +111,18 @@ pub fn generate_file(
             modules.get_mut("enums").unwrap().push(class_path);
         }
         ClassPath::Event { class_path } => {
-            add_event(&class_path, base_path, filename)?;
+            let event = add_event(
+                // modules,
+                classes,
+                &class_path,
+                base_path,
+                schema_base_path,
+                filename,
+            )?;
+            classes.get_mut("events").unwrap().insert(
+                event.class_name.to_owned(),
+                ClassType::Event { value: event },
+            );
         }
         ClassPath::Unknown => {
             warn!("Nothing to do yet with {filename:?}!");
@@ -108,6 +132,7 @@ pub fn generate_file(
     Ok(())
 }
 
+#[allow(dead_code)]
 fn write_modules(
     ocsf_dir: &str,
     modules: HashMap<&str, Vec<String>>,
@@ -128,7 +153,7 @@ fn write_modules(
 
     let mut enums = modules.get("enums").unwrap().to_vec();
     enums.sort();
-    enums_mod.write("\n".as_bytes())?;
+    let _ = enums_mod.write("\n".as_bytes())?;
     enums.iter().for_each(|e| {
         enums_mod.write_fmt(format_args!("pub mod {e};\n")).unwrap();
     });
@@ -144,7 +169,7 @@ fn write_modules(
 
     let mut events = modules.get("events").unwrap().to_vec();
     events.sort();
-    events_mod.write("\n".as_bytes())?;
+    let _ = events_mod.write("\n".as_bytes())?;
 
     events.iter().for_each(|e| {
         events_mod
@@ -162,47 +187,73 @@ fn write_modules(
 }
 
 pub fn generate_scope(base_path: &str) -> Result<(), Box<dyn Error>> {
-    let ocsf_dir = format!("{base_path}ocsf/");
 
-    if !PathBuf::from(&ocsf_dir).exists() {
-        error!("Dir {ocsf_dir} is missing!");
+
+    let paths = DirPaths::new(base_path);
+
+    if !PathBuf::from(&paths.destination_path).exists() {
+        error!("Dir {} is missing!", paths.destination_path);
         panic!();
     }
 
+
     // building a list of modules to write out to the parent files later
-    let mut modules: HashMap<&str, Vec<String>> = HashMap::new();
+    // let mut modules: HashMap<&str, Vec<String>> = HashMap::new();
+    // let mut classes: ClassesHashMap = HashMap::new();
 
-    modules.insert("enums", vec![]);
-    modules.insert("events", vec![]);
+    // modules.insert("enums", vec![]);
+    // modules.insert("events", vec![]);
 
-    // find all the schema files
-    let mut files = find_files(base_path);
-    files.sort();
+    // classes.insert("enums", HashMap::new());
+    // classes.insert("events", HashMap::new());
 
-    for file in files.into_iter() {
-        if !file.ends_with(".json") {
-            continue;
-        }
-        if
-        // !file.contains("enum") &&
-        !file.contains("events") || file.contains("/extensions/")
-        // || !file.contains("base_event.json")
-        {
-            // debug!("Skipping {file}");
-            continue;
-        }
-        match generate_file(
-            &format!("{base_path}ocsf-schema/"),
-            &mut modules,
-            &ocsf_dir,
-            &file,
-        ) {
-            Err(err) => error!("Failed to handle {file}: {err:?}"),
-            Ok(_) => info!("[OK] {file}"),
+    // // find all the schema files
+    // let mut files = find_files(base_path);
+    // files.sort();
+
+    // for file in files.into_iter() {
+    //     if !file.ends_with(".json") {
+    //         continue;
+    //     }
+    //     if
+    //     // !file.contains("enum") &&
+    //     !file.contains("events") || file.contains("/extensions/")
+    //     // || !file.contains("base_event.json")
+    //     {
+    //         // debug!("Skipping {file}");
+    //         continue;
+    //     }
+    //     match process_file(
+    //         &format!("{base_path}ocsf-schema/"),
+    //         &mut modules,
+    //         &mut classes,
+    //         &ocsf_dir,
+    //         &file,
+    //     ) {
+    //         Err(err) => error!("Failed to handle {file}: {err:?}"),
+    //         Ok(_) => info!("[OK] {file}"),
+    //     }
+    // }
+
+    // write_modules(&ocsf_dir, modules)?;
+
+    write_source_file(
+        &format!("{}src/dictionary.rs", paths.destination_path),
+        &parse_dictionary_file(&paths)?,
+    )?;
+    Ok(())
+}
+
+pub struct DirPaths {
+    pub destination_path: String,
+    pub schema_path: String,
+}
+
+impl DirPaths {
+    fn new(base_path: &str) -> Self {
+        Self {
+            destination_path: format!("{base_path}ocsf/"),
+            schema_path: format!("{base_path}ocsf-schema/"),
         }
     }
-
-    write_modules(&ocsf_dir, modules)?;
-
-    Ok(())
 }
