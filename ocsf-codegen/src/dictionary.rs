@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use super::*;
 // use regex::Regex;
-use serde::{Serialize, Deserialize,Deserializer};
+use serde::{Deserialize, Deserializer, Serialize};
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -14,7 +14,7 @@ pub struct DictAttribute {
     attr_enum: Option<String>,
     is_array: Option<bool>,
     sibling: Option<String>,
-    #[serde(alias="type")]
+    #[serde(alias = "type")]
     attr_type: TypeNames,
 }
 
@@ -33,7 +33,6 @@ pub struct DictType {
 }
 
 pub fn parse_dictionary_file(paths: &DirPaths) -> Result<String, Box<dyn Error>> {
-
     let dict_filepath = format!("{}/dictionary.json", paths.schema_path);
 
     let dict_file = read_file_to_value(&dict_filepath)?;
@@ -43,7 +42,8 @@ pub fn parse_dictionary_file(paths: &DirPaths) -> Result<String, Box<dyn Error>>
     let mut output = String::new();
 
     output.push_str(&format!("//* {}", dict_file.get("description").unwrap()));
-    output.push_str("
+    output.push_str(
+        "
 use serde::{Serialize};
 
 
@@ -80,35 +80,36 @@ pub enum TypeNames {
     Timestamp,
     NotSupported{ name: &'static str },
 }
-");
+",
+    );
 
     // let make_it_pub_re = Regex::new(r#"(?m)^(?P<thespace>\s+)(?P<theitem>\S+: (Some|None))"#).unwrap();
 
-    dict_file.get("attributes").unwrap()
+    dict_file
+        .get("attributes")
+        .unwrap()
         .as_object()
         .unwrap()
         .into_iter()
-        .for_each(|(attribute_name, attribute_value)|
-    {
-        debug!("attribute_value: {attribute_value:#?}");
-        let attribute: DictAttribute = serde_json::from_value(attribute_value.to_owned()).unwrap();
-        debug!("{attribute:#?}");
-        output.push_str("\n");
-        let thing_to_push = format!(
+        .for_each(|(attribute_name, attribute_value)| {
+            debug!("attribute_value: {attribute_value:#?}");
+            let attribute: DictAttribute =
+                serde_json::from_value(attribute_value.to_owned()).unwrap();
+            debug!("{attribute:#?}");
+            output.push_str("\n");
+            let thing_to_push = format!(
             "pub const {}: DictAttribute = {:#?};\n",
             attribute_name.to_uppercase(),
             attribute
         )
             // .replace("\",\n", "\".to_string(),\n")
             ;
-        // debug!("{}", thing_to_push);
-        // let thing_to_push = make_it_pub_re.replace_all(&thing_to_push, "$thespace pub $theitem").into_owned();
-        // debug!("{}", thing_to_push);
-        output.push_str(&thing_to_push);
-        // attribute
-    });
-
-
+            // debug!("{}", thing_to_push);
+            // let thing_to_push = make_it_pub_re.replace_all(&thing_to_push, "$thespace pub $theitem").into_owned();
+            // debug!("{}", thing_to_push);
+            output.push_str(&thing_to_push);
+            // attribute
+        });
 
     Ok(output)
 }
@@ -119,7 +120,7 @@ enum TypeNames {
     Json,
     String,
     Timestamp,
-    NotSupported{ name: String },
+    NotSupported { name: String },
 }
 
 impl Debug for TypeNames {
@@ -131,8 +132,8 @@ impl Debug for TypeNames {
             Self::Timestamp => write!(f, "TypeNames::Timestamp"),
             Self::NotSupported { name } => {
                 write!(f, "TypeNames::NotSupported{{ name: \"{name}\" }}")
-                    // .field("name", name)
-                    // .finish(),
+                // .field("name", name)
+                // .finish(),
             }
         }
     }
@@ -145,7 +146,9 @@ impl From<&str> for TypeNames {
             "integer_t" => Self::Integer,
             "json_t" => Self::Json,
             "timestamp_t" => Self::Timestamp,
-            _ => Self::NotSupported{ name: value.to_string() },
+            _ => Self::NotSupported {
+                name: value.to_string(),
+            },
         }
     }
 }

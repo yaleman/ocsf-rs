@@ -19,7 +19,6 @@ pub struct EventDef {
 
 /// this finds an event schema file based on its name and returns the contents - or panics if not
 fn find_event_schema_file(base_path: &str, name: &str) -> String {
-
     let search_string = format!("{base_path}events/**/*.json");
     debug!("Looking for object called {name} in {search_string}");
     for filename in glob(&search_string).unwrap().flatten() {
@@ -160,9 +159,9 @@ pub struct EventAttribute {
     group: Option<Group>,
 }
 
-impl EventAttribute{
+impl EventAttribute {
     pub fn new(name: String) -> Self {
-        EventAttribute{
+        EventAttribute {
             name,
             ..Self::default()
         }
@@ -184,10 +183,7 @@ impl Default for EventAttribute {
 
 impl EventAttribute {
     pub fn name(self, name: String) -> Self {
-        Self {
-            name,
-            ..self
-        }
+        Self { name, ..self }
     }
     pub fn profile(self, profile: Option<&str>) -> Self {
         Self {
@@ -307,7 +303,6 @@ pub fn add_event(
         warn!("Uh, event names can't have / in them!");
     }
 
-
     let file_object = file_object.as_object().unwrap().to_owned();
     debug!("{:#?}", file_object);
 
@@ -323,7 +318,7 @@ pub fn add_event(
                 }
             } else {
                 let extend_schema_filename =
-                find_event_schema_file(schema_base_path, extend_schema_name);
+                    find_event_schema_file(schema_base_path, extend_schema_name);
                 start_point = add_event(
                     classes,
                     &base_path,
@@ -332,14 +327,15 @@ pub fn add_event(
                     &extend_schema_filename,
                 )?;
                 debug!("Extending from base of:\n:{start_point:#?}");
-                classes.get_mut("events")
-                    .unwrap()
-                    .insert(extend_schema_name.to_string(),
-                    ClassType::Event { value: start_point.clone()});
-                }
+                classes.get_mut("events").unwrap().insert(
+                    extend_schema_name.to_string(),
+                    ClassType::Event {
+                        value: start_point.clone(),
+                    },
+                );
+            }
 
-                start_point
-
+            start_point
         }
         None => EventDef::default(),
     };

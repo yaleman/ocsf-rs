@@ -187,15 +187,12 @@ fn write_modules(
 }
 
 pub fn generate_scope(base_path: &str) -> Result<(), Box<dyn Error>> {
-
-
     let paths = DirPaths::new(base_path);
 
     if !PathBuf::from(&paths.destination_path).exists() {
         error!("Dir {} is missing!", paths.destination_path);
         panic!();
     }
-
 
     // building a list of modules to write out to the parent files later
     // let mut modules: HashMap<&str, Vec<String>> = HashMap::new();
