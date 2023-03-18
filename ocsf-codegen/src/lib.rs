@@ -15,18 +15,19 @@ pub mod dictionary;
 pub mod enums;
 pub mod events;
 pub mod objects;
+pub mod other;
 pub mod profiles;
 use categories::*;
 use dictionary::*;
 use enums::*;
 use events::*;
 use objects::*;
+use other::*;
 use profiles::*;
 
-pub fn find_files(base_path: &str) -> Vec<String> {
-    let schema_dir = format!("{base_path}ocsf-schema/");
-    debug!("looking for schema files in {schema_dir}");
-    let files: Vec<DirEntry> = WalkDir::new(&schema_dir)
+pub fn find_files(schema_path: &str) -> Vec<String> {
+    debug!("looking for schema files in {schema_path}");
+    let files: Vec<DirEntry> = WalkDir::new(&schema_path)
         .into_iter()
         .filter_map(|p| p.ok())
         .collect();
@@ -54,6 +55,7 @@ pub enum ClassPath {
     Event { class_path: String },
     Unknown,
 }
+
 pub fn filename_to_classpath(schema_base_path: &str, filename: &str) -> ClassPath {
     let fname = filename.to_owned().replace(schema_base_path, "");
     if fname.starts_with("enums/") {
@@ -200,53 +202,12 @@ pub fn generate_scope(base_path: &str) -> Result<(), Box<dyn Error>> {
         panic!();
     }
 
-    // building a list of modules to write out to the parent files later
-    // let mut modules: HashMap<&str, Vec<String>> = HashMap::new();
-    // let mut classes: ClassesHashMap = HashMap::new();
-
-    // modules.insert("enums", vec![]);
-    // modules.insert("events", vec![]);
-
-    // classes.insert("enums", HashMap::new());
-    // classes.insert("events", HashMap::new());
-
-    // // find all the schema files
-    // let mut files = find_files(base_path);
-    // files.sort();
-
-    // for file in files.into_iter() {
-    //     if !file.ends_with(".json") {
-    //         continue;
-    //     }
-    //     if
-    //     // !file.contains("enum") &&
-    //     !file.contains("events") || file.contains("/extensions/")
-    //     // || !file.contains("base_event.json")
-    //     {
-    //         // debug!("Skipping {file}");
-    //         continue;
-    //     }
-    //     match process_file(
-    //         &format!("{base_path}ocsf-schema/"),
-    //         &mut modules,
-    //         &mut classes,
-    //         &ocsf_dir,
-    //         &file,
-    //     ) {
-    //         Err(err) => error!("Failed to handle {file}: {err:?}"),
-    //         Ok(_) => info!("[OK] {file}"),
-    //     }
-    // }
-
-    // write_modules(&ocsf_dir, modules)?;
-
-    write_source_file(
-        &format!("{}src/dictionary.rs", paths.destination_path),
-        &parse_dictionary_file(&paths)?,
-    )?;
-    generate_profiles(&paths)?;
-    generate_objects(&paths)?;
-    generate_categories(&paths)?;
+    // generate_event_modules(&paths)?;
+    // generate_dictionary_entries(&paths)?;
+    // generate_profiles(&paths)?;
+    // generate_objects(&paths)?;
+    // generate_categories(&paths)?;
+    generate_other(&paths)?;
 
     Ok(())
 }

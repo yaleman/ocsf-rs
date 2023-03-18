@@ -17,6 +17,49 @@ pub struct EventDef {
     pub profiles: Vec<String>,
 }
 
+pub fn generate_event_modules(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
+
+    // building a list of modules to write out to the parent files later
+    let mut modules: HashMap<&str, Vec<String>> = HashMap::new();
+    let mut classes: ClassesHashMap = HashMap::new();
+
+    modules.insert("enums", vec![]);
+    modules.insert("events", vec![]);
+
+    classes.insert("enums", HashMap::new());
+    classes.insert("events", HashMap::new());
+
+    // find all the schema files
+    let mut files = find_files(&paths.schema_path);
+    files.sort();
+
+    for file in files.into_iter() {
+        if !file.ends_with(".json") {
+            continue;
+        }
+        if
+        // !file.contains("enum") &&
+        !file.contains("events") || file.contains("/extensions/")
+        // || !file.contains("base_event.json")
+        {
+            // debug!("Skipping {file}");
+            continue;
+        }
+        match process_file(
+            &paths.schema_path,
+            &mut modules,
+            &mut classes,
+            &paths.destination_path,
+            &file,
+        ) {
+            Err(err) => error!("Failed to handle {file}: {err:?}"),
+            Ok(_) => info!("[OK] {file}"),
+        }
+    }
+
+    write_modules(&paths.destination_path, modules)
+}
+
 /// this finds an event schema file based on its name and returns the contents - or panics if not
 fn find_event_schema_file(base_path: &str, name: &str) -> String {
     let search_string = format!("{base_path}events/**/*.json");

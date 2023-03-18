@@ -33,6 +33,13 @@ pub struct DictType {
     values: Option<String>,
 }
 
+pub fn generate_dictionary_entries(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
+    write_source_file(
+        &format!("{}src/dictionary.rs", paths.destination_path),
+        &parse_dictionary_file(&paths)?,
+    )
+}
+
 pub fn parse_dictionary_file(paths: &DirPaths) -> Result<String, Box<dyn Error>> {
     let dict_filepath = format!("{}/dictionary.json", paths.schema_path);
 
