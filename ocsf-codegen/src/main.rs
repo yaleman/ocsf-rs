@@ -1,4 +1,8 @@
-use ocsf_codegen::generate_scope;
+#[macro_use]
+extern crate log;
+
+use env_logger::{Builder, Target};
+use ocsf_codegen::*;
 
 use clap::Parser;
 
@@ -9,6 +13,13 @@ struct Cli {
 }
 
 pub fn main() {
+    if std::env::var("RUST_LOG").is_err() {
+        std::env::set_var("RUST_LOG", "TRACE");
+    }
+
+    let mut builder = Builder::from_default_env();
+    builder.target(Target::Stdout).format_timestamp(None).init();
+
     let cli = Cli::parse();
 
     let base_path = match cli.dirpath {
@@ -18,7 +29,7 @@ pub fn main() {
 
     generate_scope(&base_path)
         .map_err(|err| {
-            eprintln!("Failed to do the thing! {err:?}");
+            error!("Failed to do the thing! {err:?}");
         })
         .unwrap();
 }
