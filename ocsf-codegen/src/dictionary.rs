@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 
 use super::*;
+use codegen::{Field, Variant};
 // use regex::Regex;
 use serde::{Deserialize, Deserializer, Serialize};
 
@@ -21,7 +22,7 @@ pub struct DictAttribute {
 #[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DictType {
-    caption: Option<String>,
+    caption: String,
     description: Option<String>,
     max_len: Option<String>,
     observable: Option<String>,
@@ -41,47 +42,48 @@ pub fn parse_dictionary_file(paths: &DirPaths) -> Result<String, Box<dyn Error>>
 
     let mut output = String::new();
 
-    output.push_str(&format!("//* {}", dict_file.get("description").unwrap()));
-    output.push_str(
-        "
-use serde::{Serialize};
+    output.push_str(&format!("//* {}\n\n", dict_file.get("description").unwrap()));
+    let mut output_scope = codegen::Scope::new();
+
+    output_scope.raw("use serde::{Serialize};");
+
+    output_scope.new_struct("DictAttribute")
+        .vis("pub")
+        .derive("Debug,Clone,Serialize")
+        .push_field(Field::new("caption", "&'static str").vis("pub").to_owned())
+        .push_field(Field::new("default", "Option<i32>").vis("pub").to_owned())
+        .push_field(Field::new("description", "&'static str").vis("pub").to_owned())
+        .push_field(Field::new("attr_enum", "Option<&'static str>").vis("pub").to_owned())
+        .push_field(Field::new("is_array", "Option<bool>").vis("pub").to_owned())
+        .push_field(Field::new("sibling", "Option<&'static str>").vis("pub").to_owned())
+        .push_field(Field::new("attr_type", "TypeNames").vis("pub").annotation("#[serde(alias=\"type\")]").to_owned());
+
+    output_scope.new_enum("TypeNames")
+        .vis("pub")
+        .derive("Debug,Clone,Serialize")
+        .push_variant(Variant::new("Integer"))
+        .push_variant(Variant::new("Json"))
+        .push_variant(Variant::new("String"))
+        .push_variant(Variant::new("Timestamp"))
+        .push_variant(Variant::new("NotSupported{ name: &'static str }"));
 
 
-#[derive(Debug, Clone, Serialize)]
-pub struct DictAttribute {
-    pub caption: &'static str,
-    pub default: Option<i32>,
-    pub description: &'static str,
-    pub attr_enum: Option<&'static str>,
-    pub is_array: Option<bool>,
-    pub sibling: Option<&'static str>,
-    #[serde(alias=\"type\")]
-    pub attr_type: TypeNames,
-}
 
-#[derive(Debug, Clone, Serialize)]
-pub struct DictType {
-    pub caption: Option<&'static str>,
-    pub description: Option<&'static str>,
-    pub max_len: Option<&'static str>,
-    pub observable: Option<&'static str>,
-    pub range: Option<&'static str>,
-    pub regex: Option<&'static str>,
-    pub value_type: Option<&'static str>,
-    pub type_name: Option<&'static str>,
-    pub values: Option<&'static str>,
-}
+    output_scope.new_struct("DictType")
+        .vis("pub")
+        .derive("Debug,Clone,Serialize")
+        .push_field(Field::new("caption", "&'static str").vis("pub").to_owned())
+        .push_field(Field::new("description", "Option<&'static str>").vis("pub").to_owned())
+        .push_field(Field::new("max_len", "Option<&'static str>").vis("pub").to_owned())
+        .push_field(Field::new("observable", "Option<&'static str>").vis("pub").to_owned())
+        .push_field(Field::new("range", "Option<&'static str>").vis("pub").to_owned())
+        .push_field(Field::new("regex", "Option<&'static str>").vis("pub").to_owned())
+        .push_field(Field::new("value_type", "Option<&'static str>").vis("pub").to_owned())
+        .push_field(Field::new("type_name", "Option<&'static str>").vis("pub").to_owned())
+        .push_field(Field::new("values", "Option<&'static str>").vis("pub").to_owned())
+        ;
 
-#[derive(Clone, Debug, Serialize)]
-pub enum TypeNames {
-    Integer,
-    Json,
-    String,
-    Timestamp,
-    NotSupported{ name: &'static str },
-}
-",
-    );
+    output.push_str(&output_scope.to_string());
 
     // let make_it_pub_re = Regex::new(r#"(?m)^(?P<thespace>\s+)(?P<theitem>\S+: (Some|None))"#).unwrap();
 
@@ -96,19 +98,14 @@ pub enum TypeNames {
             let attribute: DictAttribute =
                 serde_json::from_value(attribute_value.to_owned()).unwrap();
             debug!("{attribute:#?}");
+            #[allow(clippy::single_char_add_str)]
             output.push_str("\n");
             let thing_to_push = format!(
-            "pub const {}: DictAttribute = {:#?};\n",
-            attribute_name.to_uppercase(),
-            attribute
-        )
-            // .replace("\",\n", "\".to_string(),\n")
-            ;
-            // debug!("{}", thing_to_push);
-            // let thing_to_push = make_it_pub_re.replace_all(&thing_to_push, "$thespace pub $theitem").into_owned();
-            // debug!("{}", thing_to_push);
+                "pub const {}: DictAttribute = {:#?};\n",
+                attribute_name.to_uppercase(),
+                attribute
+            );
             output.push_str(&thing_to_push);
-            // attribute
         });
 
     Ok(output)

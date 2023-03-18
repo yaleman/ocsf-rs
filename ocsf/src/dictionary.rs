@@ -1,4 +1,5 @@
 //* "The Attribute Dictionary defines attributes and includes references to the events and objects in which they are used."
+
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize)]
@@ -14,8 +15,17 @@ pub struct DictAttribute {
 }
 
 #[derive(Debug, Clone, Serialize)]
+pub enum TypeNames {
+    Integer,
+    Json,
+    String,
+    Timestamp,
+    NotSupported { name: &'static str },
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct DictType {
-    pub caption: Option<&'static str>,
+    pub caption: &'static str,
     pub description: Option<&'static str>,
     pub max_len: Option<&'static str>,
     pub observable: Option<&'static str>,
@@ -25,16 +35,6 @@ pub struct DictType {
     pub type_name: Option<&'static str>,
     pub values: Option<&'static str>,
 }
-
-#[derive(Clone, Debug, Serialize)]
-pub enum TypeNames {
-    Integer,
-    Json,
-    String,
-    Timestamp,
-    NotSupported { name: &'static str },
-}
-
 pub const ACCESS_LIST: DictAttribute = DictAttribute {
     caption: "Access List",
     default: None,
