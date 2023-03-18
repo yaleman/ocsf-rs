@@ -1,0 +1,3 @@
+[submodule "ocsf-schema"]
+	path = ocsf-schema
+	url = https://github.com/ocsf/ocsf-schema
