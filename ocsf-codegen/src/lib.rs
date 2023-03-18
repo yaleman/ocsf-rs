@@ -10,12 +10,18 @@ use log::*;
 use serde_json::{self, Value};
 use walkdir::{DirEntry, WalkDir};
 
+pub mod categories;
 pub mod dictionary;
 pub mod enums;
 pub mod events;
+pub mod objects;
+pub mod profiles;
+use categories::*;
 use dictionary::*;
 use enums::*;
 use events::*;
+use objects::*;
+use profiles::*;
 
 pub fn find_files(base_path: &str) -> Vec<String> {
     let schema_dir = format!("{base_path}ocsf-schema/");
@@ -238,6 +244,10 @@ pub fn generate_scope(base_path: &str) -> Result<(), Box<dyn Error>> {
         &format!("{}src/dictionary.rs", paths.destination_path),
         &parse_dictionary_file(&paths)?,
     )?;
+    generate_profiles(&paths)?;
+    generate_objects(&paths)?;
+    generate_categories(&paths)?;
+
     Ok(())
 }
 
