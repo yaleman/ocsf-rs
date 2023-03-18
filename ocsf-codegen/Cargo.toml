@@ -11,6 +11,7 @@ codegen = "0.2.0"
 env_logger = "0.10.0"
 glob = "0.3.1"
 log = "0.4.17"
+regex = "1.7.1"
 serde = { version = "1.0.157", features = ["derive", "serde_derive"] }
 serde_json = "1.0.94"
 string_morph = "0.1.0"

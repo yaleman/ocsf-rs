@@ -234,6 +234,7 @@ dependencies = [
  "env_logger",
  "glob",
  "log",
+ "regex",
  "serde",
  "serde_json",
  "string_morph",
