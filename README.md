@@ -6,10 +6,10 @@ It's very very very very very early stages, don't try and use it yet 😇
 
 ## Crates
 
-| name           | Description                                                 |
-| ---            | ---                                                         |
-| `ocsf-codegen` | Code which generates the `ocsf` module.                     |
-| `ocsf`         | (Mostly) auto-generated code to do OCSF-parsing and output. |
+| name           | Description                                                 | Docs link |
+| ---            | ---                                                         | |
+| `ocsf-codegen` | Code which generates the `ocsf` module.                     | |
+| `ocsf`         | (Mostly) auto-generated code to do OCSF-parsing and output. | [here](https://yaleman.github.io/ocsf-rs/ocsf/) |
 
 ## Getting started
 
