@@ -32,6 +32,8 @@ schema_pull:
 .PHONY: doc
 doc:
 	cargo doc -p ocsf --no-deps --all-features
+	echo "<meta http-equiv=\"refresh\" content=\"0; url=ocsf\">" > target/doc/index.html
+
 
 .PHONY: doc/open
 doc/open:
