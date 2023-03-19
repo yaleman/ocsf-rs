@@ -23,37 +23,17 @@ jobs:
         with:
           fetch-depth: 0
           clean: false
-
-      # - name: Setup deno
-      #   # Documentation: https://github.com/denoland/setup-deno
-      #   uses: denoland/setup-deno@v1
-      #   with:
-      #     deno-version: v1.x
-
-      # - name: Test document formatting
-      #   run: |
-      #     make doc/format
-
-      # - name: Setup mdBook
-      #   uses: peaceiris/actions-mdbook@v1
-      #   with:
-      #     mdbook-version: "latest"
-
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-
-      # - uses: actions-rs/cargo@v1
-      #   with:
-      #     command: install
-      #     args: mdbook-template
-
       - name: Make all the books
         run: make doc
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
           path: './target/doc/'
+        if: ${{ github.ref == 'refs/heads/main' }}
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
+        if: ${{ github.ref == 'refs/heads/main' }}
