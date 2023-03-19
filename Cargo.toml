@@ -1,13 +1,14 @@
 [workspace.package]
-version = "0.0.1"
+version = "0.0.1-alpha1"
 authors = [
     "James Hodgkinson <james@terminaloutcomes.com>",
     ]
 rust-version = "1.66"
 edition = "2021"
 license = "MPL-2.0"
-homepage = "https://github.com/yaleman/ocsf/"
-repository = "https://github.com/yaleman/ocsf/"
+homepage = "https://yaleman.github.io/ocsf-rs/"
+repository = "https://github.com/yaleman/ocsf-rs/"
+documentation = "https://github.com/yaleman/ocsf-rs/"
 
 [workspace]
 members = [
