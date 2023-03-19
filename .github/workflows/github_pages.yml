@@ -3,6 +3,8 @@ name: GitHub Pages
 
 "on":
   push:
+    branches:
+      - "main"
 
 permissions:
   contents: read
@@ -32,8 +34,6 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           path: './target/doc/'
-        if: ${{ github.ref == 'refs/heads/main' }}
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
-        if: ${{ github.ref == 'refs/heads/main' }}
