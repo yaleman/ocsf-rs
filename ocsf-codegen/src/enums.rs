@@ -150,6 +150,7 @@ pub fn generate_enums(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
 
         let enum_name = collapsed_title_case(filename.split("/").last().unwrap());
         let mut new_enum = Enum::new(&enum_name);
+        new_enum.vis("pub");
 
         let mut enum_to_u8 = Function::new("from");
         enum_to_u8.arg("input", &enum_name).ret("u8");
@@ -161,7 +162,11 @@ pub fn generate_enums(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
 
         base_object.iter().for_each(|(key, value)| {
             let variant_name = collapsed_title_case(&value.caption);
-            let variant = Variant::new(&variant_name);
+            let mut variant = Variant::new(&variant_name);
+            if let Some(description) = &value.description {
+                variant.annotation(&format!("/// {}", description));
+
+            }
             new_enum.push_variant(variant);
 
             enum_to_u8.line(&format!("    {}::{} => {},", enum_name, variant_name, &key));
