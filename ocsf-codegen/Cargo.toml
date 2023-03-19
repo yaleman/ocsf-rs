@@ -6,10 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+chrono = "0.4.24"
 clap = { version = "4.1.9", features = ["derive"] }
 codegen = "0.2.0"
 env_logger = "0.10.0"
 glob = "0.3.1"
+lazy_static = "1.4.0"
 log = "0.4.17"
 regex = "1.7.1"
 serde = { version = "1.0.157", features = ["derive", "serde_derive"] }

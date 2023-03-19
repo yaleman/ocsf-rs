@@ -34,38 +34,49 @@ pub struct DictType {
 }
 
 pub fn generate_dictionary_entries(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
-    write_source_file(
-        &format!("{}src/dictionary.rs", paths.destination_path),
-        &parse_dictionary_file(&paths)?,
-    )
-}
+    let mut output_scope = Scope::new();
 
-pub fn parse_dictionary_file(paths: &DirPaths) -> Result<String, Box<dyn Error>> {
-    let dict_filepath = format!("{}/dictionary.json", paths.schema_path);
+    let dict_file = read_file_to_value(&format!("{}/dictionary.json", paths.schema_path))?;
 
-    let dict_file = read_file_to_value(&dict_filepath)?;
+    output_scope.writeln(format!(
+        "//* {}\n\n",
+        dict_file.get("description").unwrap()
+    ));
 
-    // debug!("{dict_file:#?}");
+    output_scope.add_generation_timestamp_comment();
+    output_scope.writeln("use serde::{Serialize};");
 
-    let mut output = String::new();
-
-    output.push_str(&format!("//* {}\n\n", dict_file.get("description").unwrap()));
-    let mut output_scope = codegen::Scope::new();
-
-    output_scope.raw("use serde::{Serialize};");
-
-    output_scope.new_struct("DictAttribute")
+    output_scope
+        .new_struct("DictAttribute")
         .vis("pub")
         .derive("Debug,Clone,Serialize")
         .push_field(Field::new("caption", "&'static str").vis("pub").to_owned())
         .push_field(Field::new("default", "Option<i32>").vis("pub").to_owned())
-        .push_field(Field::new("description", "&'static str").vis("pub").to_owned())
-        .push_field(Field::new("attr_enum", "Option<&'static str>").vis("pub").to_owned())
+        .push_field(
+            Field::new("description", "&'static str")
+                .vis("pub")
+                .to_owned(),
+        )
+        .push_field(
+            Field::new("attr_enum", "Option<&'static str>")
+                .vis("pub")
+                .to_owned(),
+        )
         .push_field(Field::new("is_array", "Option<bool>").vis("pub").to_owned())
-        .push_field(Field::new("sibling", "Option<&'static str>").vis("pub").to_owned())
-        .push_field(Field::new("attr_type", "TypeNames").vis("pub").annotation("#[serde(alias=\"type\")]").to_owned());
+        .push_field(
+            Field::new("sibling", "Option<&'static str>")
+                .vis("pub")
+                .to_owned(),
+        )
+        .push_field(
+            Field::new("attr_type", "TypeNames")
+                .vis("pub")
+                .annotation("#[serde(alias=\"type\")]")
+                .to_owned(),
+        );
 
-    output_scope.new_enum("TypeNames")
+    output_scope
+        .new_enum("TypeNames")
         .vis("pub")
         .derive("Debug,Clone,Serialize")
         .push_variant(Variant::new("Integer"))
@@ -74,25 +85,51 @@ pub fn parse_dictionary_file(paths: &DirPaths) -> Result<String, Box<dyn Error>>
         .push_variant(Variant::new("Timestamp"))
         .push_variant(Variant::new("NotSupported{ name: &'static str }"));
 
-
-
-    output_scope.new_struct("DictType")
+    output_scope
+        .new_struct("DictType")
         .vis("pub")
         .derive("Debug,Clone,Serialize")
         .push_field(Field::new("caption", "&'static str").vis("pub").to_owned())
-        .push_field(Field::new("description", "Option<&'static str>").vis("pub").to_owned())
-        .push_field(Field::new("max_len", "Option<&'static str>").vis("pub").to_owned())
-        .push_field(Field::new("observable", "Option<&'static str>").vis("pub").to_owned())
-        .push_field(Field::new("range", "Option<&'static str>").vis("pub").to_owned())
-        .push_field(Field::new("regex", "Option<&'static str>").vis("pub").to_owned())
-        .push_field(Field::new("value_type", "Option<&'static str>").vis("pub").to_owned())
-        .push_field(Field::new("type_name", "Option<&'static str>").vis("pub").to_owned())
-        .push_field(Field::new("values", "Option<&'static str>").vis("pub").to_owned())
-        ;
-
-    output.push_str(&output_scope.to_string());
-
-    // let make_it_pub_re = Regex::new(r#"(?m)^(?P<thespace>\s+)(?P<theitem>\S+: (Some|None))"#).unwrap();
+        .push_field(
+            Field::new("description", "Option<&'static str>")
+                .vis("pub")
+                .to_owned(),
+        )
+        .push_field(
+            Field::new("max_len", "Option<&'static str>")
+                .vis("pub")
+                .to_owned(),
+        )
+        .push_field(
+            Field::new("observable", "Option<&'static str>")
+                .vis("pub")
+                .to_owned(),
+        )
+        .push_field(
+            Field::new("range", "Option<&'static str>")
+                .vis("pub")
+                .to_owned(),
+        )
+        .push_field(
+            Field::new("regex", "Option<&'static str>")
+                .vis("pub")
+                .to_owned(),
+        )
+        .push_field(
+            Field::new("value_type", "Option<&'static str>")
+                .vis("pub")
+                .to_owned(),
+        )
+        .push_field(
+            Field::new("type_name", "Option<&'static str>")
+                .vis("pub")
+                .to_owned(),
+        )
+        .push_field(
+            Field::new("values", "Option<&'static str>")
+                .vis("pub")
+                .to_owned(),
+        );
 
     dict_file
         .get("attributes")
@@ -106,16 +143,25 @@ pub fn parse_dictionary_file(paths: &DirPaths) -> Result<String, Box<dyn Error>>
                 serde_json::from_value(attribute_value.to_owned()).unwrap();
             debug!("{attribute:#?}");
             #[allow(clippy::single_char_add_str)]
-            output.push_str("\n");
+            output_scope.writeln("");
             let thing_to_push = format!(
                 "pub const {}: DictAttribute = {:#?};\n",
                 attribute_name.to_uppercase(),
                 attribute
             );
-            output.push_str(&thing_to_push);
+            output_scope.writeln(&format!(
+                "/// {} - {}",
+                attribute.caption, fix_docstring(attribute.description, Some("///"))
+            ));
+            output_scope.writeln(&thing_to_push);
         });
 
-    Ok(output)
+    write_source_file(
+        &format!("{}src/dictionary.rs", paths.destination_path),
+        &output_scope.to_string(),
+    )?;
+
+    Ok(())
 }
 
 #[derive(Clone, Serialize)]

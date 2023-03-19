@@ -1,5 +1,8 @@
 .DEFAULT: codegen
-SCHEMA_VERSION ?= "v1.0.0-rc.2"
+# SCHEMA_BRANCH ?= "v1.0.0"
+SCHEMA_BRANCH ?= "main"
+SCHEMA_MODULE_NAME ?= "ocsf-schema"
+SCHEMA_PATH ?= ./ocsf-schema
 
 .PHONY: codegen
 codegen:
@@ -8,13 +11,30 @@ codegen:
 	cargo build -p ocsf
 	cargo fmt -p ocsf
 
-.PHONY: build
-build: codegen
+.PHONY: fmt
+fmt:
 	cargo fmt -p ocsf --check
-	cargo doc -p ocsf
-	cargo test -p ocsf
 
-.PHONY: schema
-schema:
-	rm -rf ./ocsf-schema/
-	git clone -b $(SCHEMA_VERSION) https://github.com/ocsf/ocsf-schema ./ocsf-schema/
+.PHONY: build
+build: codegen fmt doc
+	cargo test -p ocsf
+	cargo clippy
+
+.PHONY: schema_pull
+schema_pull:
+	git submodule set-branch --branch $(SCHEMA_BRANCH) $(SCHEMA_MODULE_NAME)
+	@echo "Removing existing schema dir...
+	@rm -rf "$(SCHEMA_PATH)"
+	git submodule update --checkout --force
+	@git submodule update --remote $(SCHEMA_MODULE_NAME)
+	@echo "Checking version..."
+	cat "$(SCHEMA_PATH)/version.json"
+
+.PHONY: doc
+doc:
+	cargo doc -p ocsf --no-deps --all-features
+
+.PHONY: doc/open
+doc/open:
+	cargo doc -p ocsf --no-deps --all-features --open
+

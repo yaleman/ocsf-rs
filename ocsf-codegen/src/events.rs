@@ -18,7 +18,6 @@ pub struct EventDef {
 }
 
 pub fn generate_event_modules(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
-
     // building a list of modules to write out to the parent files later
     let mut modules: HashMap<&str, Vec<String>> = HashMap::new();
     let mut classes: ClassesHashMap = HashMap::new();
