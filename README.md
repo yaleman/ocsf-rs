@@ -1,14 +1,16 @@
 # ocfs-rs
 
-A bunch of things making rust hooks to do [OCSF](https://ocsf.io) parsing and output.
+Rust hooks to do [OCSF](https://ocsf.io) format read and writing.
 
 It's very very very very very early stages, don't try and use it yet 😇
 
 ## Crates
 
-| name           | Description                                                 | Docs link |
-| ---            | ---                                                         | --- |
-| `ocsf-codegen` | Code which generates the `ocsf` module.                     | |
+There's a couple...
+
+| Name           | Description                                                 | Docs link |
+| ---            | ---                                                         | ---       |
+| `ocsf-codegen` | Code which generates the `ocsf` module.                     |           |
 | `ocsf`         | (Mostly) auto-generated code to do OCSF-parsing and output. | [here](https://yaleman.github.io/ocsf-rs/ocsf/) |
 
 ## Getting started
@@ -43,9 +45,9 @@ cat "./ocsf-schema/version.json"
 This is all you should need to do:
 
 ```shell
-cargo run -p ocsf-codegen
+make build
 ```
 
 ## Requirements
 
-So far, only rust. The MSRV's set in `Cargo.toml`.
+So far, only rust and `make`. The MSRV's set in `Cargo.toml`.
