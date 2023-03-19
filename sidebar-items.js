@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["categories","OCSF Category data"],["dictionary",""],["events",""],["objects",""],["profiles",""]],"static":[["OCSF_SCHEMA_VERSION","This was the schema version that the code was generated from (1.0.0-rc.2)."]]};

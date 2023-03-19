@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Category","Initial working list of categories (work in progress)."]]};
