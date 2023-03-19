@@ -29,6 +29,26 @@ use objects::*;
 use other::*;
 use profiles::*;
 
+
+lazy_static!{
+    static ref URL_FINDER: Regex = Regex::new(r#"(?P<url>\w+://[^<\s]+)"#).unwrap();
+    }
+
+
+type ClassesHashMap = HashMap<&'static str, HashMap<String, ClassType>>;
+
+#[derive(Debug)]
+pub enum ClassType {
+    Event { value: EventDef },
+    Enum { value: EnumDef },
+}
+
+#[derive(Debug)]
+pub enum ClassPath {
+    Enums { class_path: String },
+    Event { class_path: String },
+    Unknown,
+}
 pub fn find_files(schema_path: &str) -> Vec<String> {
     debug!("looking for schema files in {schema_path}");
     let files: Vec<DirEntry> = WalkDir::new(schema_path)
@@ -45,20 +65,6 @@ pub fn find_files(schema_path: &str) -> Vec<String> {
         .collect()
 }
 
-type ClassesHashMap = HashMap<&'static str, HashMap<String, ClassType>>;
-
-#[derive(Debug)]
-pub enum ClassType {
-    Event { value: EventDef },
-    Enum { value: EnumDef },
-}
-
-#[derive(Debug)]
-pub enum ClassPath {
-    Enums { class_path: String },
-    Event { class_path: String },
-    Unknown,
-}
 
 pub fn filename_to_classpath(schema_base_path: &str, filename: &str) -> ClassPath {
     let fname = filename.to_owned().replace(schema_base_path, "");
@@ -84,6 +90,7 @@ fn collapsed_title_case(input: impl std::fmt::Display) -> String {
 
 /// write a file to a place
 pub fn write_source_file(filename: &str, contents: &str) -> Result<(), Box<dyn Error>> {
+    debug!("Writing source file to {filename}");
     let file = File::create(filename)?;
     let mut writer = BufWriter::new(file);
     let written_bytes = writer.write(contents.as_bytes())?;
@@ -104,7 +111,7 @@ pub fn read_file_to_value(filename: &str) -> Result<Value, Box<dyn Error>> {
 
 pub fn process_file(
     schema_base_path: &str,
-    modules: &mut HashMap<&str, Vec<String>>,
+    _modules: &mut HashMap<&str, Vec<String>>,
     classes: &mut ClassesHashMap,
     base_path: &str,
     filename: &str,
@@ -116,10 +123,12 @@ pub fn process_file(
     debug!("ClassPath: {classpath:?}");
 
     match classpath {
-        ClassPath::Enums { class_path } => {
-            add_enum(&class_path, base_path, filename)?;
-            modules.get_mut("enums").unwrap().push(class_path);
-        }
+        ClassPath::Enums { .. } => {
+            panic!("You shouldn't get here...");
+        },
+        //     add_enum(&class_path, base_path, filename)?;
+        //     modules.get_mut("enums").unwrap().push(class_path);
+        // }
         ClassPath::Event { class_path } => {
             let event = add_event(
                 // modules,
@@ -196,49 +205,7 @@ fn write_modules(
     Ok(())
 }
 
-pub fn generate_scope(base_path: &str) -> Result<(), Box<dyn Error>> {
-    let paths = DirPaths::new(base_path);
 
-    if !PathBuf::from(&paths.destination_path).exists() {
-        error!("Dir {} is missing!", paths.destination_path);
-        panic!();
-    }
-
-    let mut output_scope = Scope::new();
-    output_scope.raw("//! OCSF crate, does Open Cyber Security Framework things.");
-    output_scope.raw("//! ");
-    output_scope.raw("//! <h1><span color=\"red\"> THIS IS VERY VERY VERY EARLY ALPHA</span></h1>");
-    output_scope.raw("//! ");
-    output_scope.raw("//! The base schema is available at <https://ocsf.io>.");
-    output_scope.add_generation_timestamp_comment();
-
-    for module_name in [
-        "categories",
-        "dictionary",
-        "events",
-        "objects",
-        // "other",
-        "profiles",
-    ] {
-        output_scope.raw(&format!("pub mod {};", module_name));
-    }
-
-    add_version_element(&paths, &mut output_scope)?;
-
-    generate_event_modules(&paths)?;
-    generate_dictionary_entries(&paths)?;
-    generate_profiles(&paths)?;
-    generate_objects(&paths)?;
-    // generate_other(&paths)?;
-    generate_categories(&paths)?;
-
-    write_source_file(
-        &format!("{}src/lib.rs", paths.destination_path),
-        &output_scope.to_string(),
-    )?;
-
-    Ok(())
-}
 
 pub struct DirPaths {
     pub destination_path: String,
@@ -279,10 +246,6 @@ impl CustomScopeThings for Scope {
 }
 
 
-lazy_static!{
-static ref URL_FINDER: Regex = Regex::new(r#"(?P<url>\w+://[^<\s]+)"#).unwrap();
-}
-
 /// Strips a bunch of stuff out
 pub fn fix_docstring(input: String, leading_docstring: Option<&'static str>) -> String {
     let comment = leading_docstring.unwrap_or("///");
@@ -294,4 +257,50 @@ pub fn fix_docstring(input: String, leading_docstring: Option<&'static str>) -> 
         .replace("</p>", &format!("\n{}", comment))
         .replace("<code>", "`")
         .replace("</code>", "`")
+}
+
+/// main function of the library that generates the `ocsf` crate.
+pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
+    let paths = DirPaths::new(base_path);
+
+    if !PathBuf::from(&paths.destination_path).exists() {
+        error!("Dir {} is missing!", paths.destination_path);
+        panic!();
+    }
+
+    let mut output_scope = Scope::new();
+    output_scope.raw("//! OCSF crate, does Open Cyber Security Framework things.");
+    output_scope.raw("//! ");
+    output_scope.raw("//! <h1><span color=\"red\"> THIS IS VERY VERY VERY EARLY ALPHA</span></h1>");
+    output_scope.raw("//! ");
+    output_scope.raw("//! The base schema is available at <https://ocsf.io>.");
+    output_scope.add_generation_timestamp_comment();
+
+    for module_name in [
+        "categories",
+        "dictionary",
+        "enums",
+        "events",
+        "objects",
+        // "other",
+        "profiles",
+    ] {
+        output_scope.raw(&format!("pub mod {};", module_name));
+    }
+
+    add_version_element(&paths, &mut output_scope)?;
+    generate_event_modules(&paths)?;
+    generate_dictionary_entries(&paths)?;
+    generate_profiles(&paths)?;
+    generate_objects(&paths)?;
+    // generate_other(&paths)?;
+    generate_categories(&paths)?;
+    generate_enums(&paths)?;
+
+    write_source_file(
+        &format!("{}src/lib.rs", paths.destination_path),
+        &output_scope.to_string(),
+    )?;
+
+    Ok(())
 }

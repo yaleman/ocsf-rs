@@ -41,7 +41,7 @@ pub fn generate_categories(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
     let mut category_to_u8 = Function::new("from");
     category_to_u8.arg("input", enum_name)
     .ret("u8");
-category_to_u8.line("match input {");
+    category_to_u8.line("match input {");
 
     // impl TryFrom<u8> for Category
     let mut u8_to_category = Function::new("try_from");
@@ -60,8 +60,14 @@ category_to_u8.line("match input {");
                 // debug!("{key} {category:#?}");
                 let variant_name = collapsed_title_case(key);
 
+                let variant_docstring = vec![
+                    format!("/// {}", category.description),
+                    "///".to_string(),
+                    format!("/// `uid={}`", category.uid),
+                ];
+
                 let variant = Variant::new(&variant_name)
-                    .annotation(&format!("/// {}", category.description))
+                    .annotation(variant_docstring.join("\n"))
                     .to_owned();
                 category_enum.push_variant(variant);
                 category_to_u8.line(format!("{}::{} => {},", enum_name, variant_name, category.uid));

@@ -39,8 +39,8 @@ pub fn generate_dictionary_entries(paths: &DirPaths) -> Result<(), Box<dyn Error
     let dict_file = read_file_to_value(&format!("{}/dictionary.json", paths.schema_path))?;
 
     output_scope.writeln(format!(
-        "//* {}\n\n",
-        dict_file.get("description").unwrap()
+        "//! {}\n\n",
+        dict_file.get("description").unwrap().as_str().unwrap_or("")
     ));
 
     output_scope.add_generation_timestamp_comment();
@@ -49,6 +49,7 @@ pub fn generate_dictionary_entries(paths: &DirPaths) -> Result<(), Box<dyn Error
     output_scope
         .new_struct("DictAttribute")
         .vis("pub")
+        .doc("A generic way of identifying attributes from the dictionary.")
         .derive("Debug,Clone,Serialize")
         .push_field(Field::new("caption", "&'static str").vis("pub").to_owned())
         .push_field(Field::new("default", "Option<i32>").vis("pub").to_owned())
@@ -71,6 +72,7 @@ pub fn generate_dictionary_entries(paths: &DirPaths) -> Result<(), Box<dyn Error
         .push_field(
             Field::new("attr_type", "TypeNames")
                 .vis("pub")
+                .doc("`attr_type` maps to 'type' in the actual schema.")
                 .annotation("#[serde(alias=\"type\")]")
                 .to_owned(),
         );
@@ -78,6 +80,7 @@ pub fn generate_dictionary_entries(paths: &DirPaths) -> Result<(), Box<dyn Error
     output_scope
         .new_enum("TypeNames")
         .vis("pub")
+        .doc("Attribute variable types.")
         .derive("Debug,Clone,Serialize")
         .push_variant(Variant::new("Integer"))
         .push_variant(Variant::new("Json"))
@@ -88,6 +91,7 @@ pub fn generate_dictionary_entries(paths: &DirPaths) -> Result<(), Box<dyn Error
     output_scope
         .new_struct("DictType")
         .vis("pub")
+        .doc("Trying to annotate the attribute types.")
         .derive("Debug,Clone,Serialize")
         .push_field(Field::new("caption", "&'static str").vis("pub").to_owned())
         .push_field(

@@ -27,7 +27,7 @@ pub fn main() {
         None => String::from("../"),
     };
 
-    generate_scope(&base_path)
+    generate_source_code(&base_path)
         .map_err(|err| {
             error!("Failed to do the thing! {err:?}");
         })

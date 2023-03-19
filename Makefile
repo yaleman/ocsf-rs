@@ -32,10 +32,20 @@ schema_pull:
 .PHONY: doc
 doc:
 	cargo doc -p ocsf --no-deps --all-features
-	echo "<meta http-equiv=\"refresh\" content=\"0; url=ocsf\">" > target/doc/index.html
+	@echo "Recreating index redirector file..."
+	@echo "<meta http-equiv=\"refresh\" content=\"0; url=ocsf\">" > target/doc/index.html
 
 
 .PHONY: doc/open
 doc/open:
 	cargo doc -p ocsf --no-deps --all-features --open
+
+
+.PHONY: watch/doc
+watch/doc:
+	cargo watch -w ocsf --no-restart -s 'make doc'
+
+.PHONY: watch/build
+watch/build:
+	cargo watch -w ocsf-codegen --no-restart -s 'make'
 
