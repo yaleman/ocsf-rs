@@ -1,0 +1,52 @@
+---
+name: GitHub Pages
+
+"on":
+  push:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  deploy_book:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          clean: false
+
+      # - name: Setup deno
+      #   # Documentation: https://github.com/denoland/setup-deno
+      #   uses: denoland/setup-deno@v1
+      #   with:
+      #     deno-version: v1.x
+
+      # - name: Test document formatting
+      #   run: |
+      #     make doc/format
+
+      # - name: Setup mdBook
+      #   uses: peaceiris/actions-mdbook@v1
+      #   with:
+      #     mdbook-version: "latest"
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      # - uses: actions-rs/cargo@v1
+      #   with:
+      #     command: install
+      #     args: mdbook-template
+
+      - name: Make all the books
+        run: make doc
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/main' }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/doc/ocsf/
+          destination_dir: ./
