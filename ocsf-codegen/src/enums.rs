@@ -160,7 +160,11 @@ pub fn generate_enums(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
         try_u8_to_enum.arg("input", "u8").ret("Result<Self, String>");
         try_u8_to_enum.line("let res = match input {");
 
-        base_object.iter().for_each(|(key, value)| {
+        let mut sorted_keys: Vec<&u8> = base_object.keys().map(|k| k).collect();
+        sorted_keys.sort();
+
+        sorted_keys.into_iter().for_each(|key| {
+            let value = base_object.get(&key).unwrap();
             let variant_name = collapsed_title_case(&value.caption);
             let mut variant = Variant::new(&variant_name);
             if let Some(description) = &value.description {
