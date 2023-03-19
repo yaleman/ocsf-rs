@@ -391,7 +391,7 @@ dependencies = [
 
 [[package]]
 name = "ocsf"
-version = "0.0.1-alpha"
+version = "0.0.1-alpha1"
 dependencies = [
  "lazy_static",
  "serde",
@@ -399,7 +399,7 @@ dependencies = [
 
 [[package]]
 name = "ocsf-codegen"
-version = "0.0.1-alpha"
+version = "0.0.1-alpha1"
 dependencies = [
  "chrono",
  "clap",
