@@ -14,7 +14,7 @@ struct Cli {
 
 pub fn main() {
     if std::env::var("RUST_LOG").is_err() {
-        std::env::set_var("RUST_LOG", "TRACE");
+        std::env::set_var("RUST_LOG", "DEBUG");
     }
 
     let mut builder = Builder::from_default_env();

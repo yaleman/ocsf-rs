@@ -1,65 +1,32 @@
 use std::error::Error;
+use std::path::Path;
+// use std::path::Path;
 
-use serde_json::{json, Map};
+use serde::{Deserialize, Deserializer, Serialize};
+use serde_json::Map;
 
 use crate::*;
 use glob::glob;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct EventDef {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub uid: Option<u32>,
-    pub class_name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub class_name: Option<String>,
     pub name: String,
     pub description: String,
-    pub category: String,
-    pub attributes: Vec<EventAttribute>,
-    pub associations: Map<String, Value>,
-    pub profiles: Vec<String>,
-}
-
-pub fn generate_event_modules(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
-    // building a list of modules to write out to the parent files later
-    let mut modules: HashMap<&str, Vec<String>> = HashMap::new();
-    let mut classes: ClassesHashMap = HashMap::new();
-
-    modules.insert("enums", vec![]);
-    modules.insert("events", vec![]);
-
-    classes.insert("enums", HashMap::new());
-    classes.insert("events", HashMap::new());
-
-    // find all the schema files
-    let mut files = find_files(&paths.schema_path);
-    files.sort();
-
-    for file in files.into_iter() {
-        if !file.ends_with(".json") {
-            continue;
-        }
-        if
-        // !file.contains("enum") &&
-        !file.contains("events") || file.contains("/extensions/")
-        // || !file.contains("base_event.json")
-        {
-            // debug!("Skipping {file}");
-            continue;
-        }
-        match process_file(
-            &paths.schema_path,
-            &mut modules,
-            &mut classes,
-            &paths.destination_path,
-            &file,
-        ) {
-            Err(err) => error!("Failed to handle {file}: {err:?}"),
-            Ok(_) => info!("[OK] {file}"),
-        }
-    }
-
-    write_modules(&paths.destination_path, modules)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub category: Option<String>,
+    pub attributes: HashMap<String, EventAttribute>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub associations: Option<Map<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub profiles: Option<Vec<String>>,
 }
 
 /// this finds an event schema file based on its name and returns the contents - or panics if not
+#[allow(dead_code)]
 fn find_event_schema_file(base_path: &str, name: &str) -> String {
     let search_string = format!("{base_path}events/**/*.json");
     debug!("Looking for object called {name} in {search_string}");
@@ -109,6 +76,7 @@ fn find_event_schema_file(base_path: &str, name: &str) -> String {
 //     }
 // }
 
+#[allow(dead_code)]
 fn handle_attribute_includes(
     _base_path: &str,
     _module_source_path: &str,
@@ -120,13 +88,25 @@ fn handle_attribute_includes(
         .for_each(|i| warn!("Need to write include handler for {i}"))
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub enum Group {
     Classification,
     Context,
     Occurrence,
     Primary,
 }
+
+impl<'de> Deserialize<'de> for Group {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let stringval = String::deserialize(deserializer)?.to_lowercase();
+        let result: Group = stringval.as_str().into();
+        Ok(result)
+    }
+}
+
 impl From<&str> for Group {
     fn from(value: &str) -> Self {
         match value {
@@ -149,11 +129,22 @@ impl From<Group> for &'static str {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub enum Requirement {
     Optional,
     Recommended,
     Required,
+}
+
+impl<'de> Deserialize<'de> for Requirement {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let stringval = String::deserialize(deserializer)?.to_lowercase();
+        let result: Requirement = stringval.as_str().into();
+        Ok(result)
+    }
 }
 
 impl From<&str> for Requirement {
@@ -191,20 +182,28 @@ fn test_from_str_invalid_requirement() {
 }
 
 #[allow(dead_code)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct EventAttribute {
-    name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     profile: Option<String>,
-    description: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     caption: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     requirement: Option<Requirement>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     group: Option<Group>,
+    #[serde(alias = "$include", skip_serializing_if = "Option::is_none")]
+    include: Option<String>,
 }
 
 impl EventAttribute {
     pub fn new(name: String) -> Self {
         EventAttribute {
-            name,
+            name: Some(name),
             ..Self::default()
         }
     }
@@ -213,19 +212,23 @@ impl EventAttribute {
 impl Default for EventAttribute {
     fn default() -> Self {
         Self {
-            name: "".to_string(),
+            name: Some("".to_string()),
             caption: Default::default(),
-            description: "No description provided".to_string(),
+            description: None,
             group: Default::default(),
             profile: Default::default(),
             requirement: Default::default(),
+            include: Default::default(),
         }
     }
 }
 
 impl EventAttribute {
     pub fn name(self, name: String) -> Self {
-        Self { name, ..self }
+        Self {
+            name: Some(name),
+            ..self
+        }
     }
     pub fn profile(self, profile: Option<&str>) -> Self {
         Self {
@@ -235,7 +238,7 @@ impl EventAttribute {
     }
     pub fn description(self, description: String) -> Self {
         Self {
-            description,
+            description: Some(description),
             ..self
         }
     }
@@ -260,6 +263,7 @@ impl EventAttribute {
 }
 
 /// returns an [EventAttribute] and  list of attribute names, so I can track down what I need to support :D
+#[allow(dead_code)]
 fn handle_attribute(
     _base_path: &str,
     _module_source_path: &str,
@@ -316,183 +320,136 @@ fn handle_attribute(
     result
 }
 
-pub fn add_event(
-    // modules: &mut HashMap<&str, Vec<String>>,
-    classes: &mut ClassesHashMap,
-    // TODO: rename this to be sensible
-    base_path: &str, // this is the base path of the event file, it's terrible
-    module_source_path: &str,
-    schema_base_path: &str,
-    filename: &str,
-) -> Result<EventDef, Box<dyn Error>> {
-    debug!("Module source path: {}", module_source_path);
+pub fn generate_events(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
+    let event_schema_path = format!("{}events/", paths.schema_path);
+    let filenames = find_files(&event_schema_path);
 
-    let file_object = read_file_to_value(filename).unwrap();
-    if !file_object.is_object() {
-        error!("Not sure what this is!");
-        error!("{:?}", file_object);
-        panic!();
-    }
-    let base_path = base_path.replace("events/", "");
-    let event_name = collapsed_title_case(&base_path);
-
-    info!(
-        "Adding event called {} from {} to {}",
-        event_name, filename, base_path
+    let mut module_map: HashMap<String, Scope> = HashMap::new();
+    module_map.insert(
+        "mod.rs".to_string(),
+        get_new_scope_with_comment(Some("//! Events Module for the OCSF crate".to_string())),
     );
 
-    if event_name.contains('/') {
-        warn!("Uh, event names can't have / in them!");
-    }
+    for file in filenames {
+        let stripped_file = file.replace(&event_schema_path, "");
+        let filepath_split: Vec<String> = stripped_file.split('/').map(|f| f.to_string()).collect();
+        let mut module_filename = "mod.rs".to_string();
+        let filename = filepath_split.last().unwrap().to_owned();
+        if filepath_split.len() > 1 {
+            let res: Vec<String> = filepath_split[0..(filepath_split.len() - 1)].to_vec();
+            module_filename = format!("{}.rs", res.join("/"));
 
-    let file_object = file_object.as_object().unwrap().to_owned();
-    debug!("{:#?}", file_object);
+            let module_name = module_filename.split('.').next().unwrap();
+            match module_name.contains('/') {
+                true => {
+                    // we're in a nested module
 
-    let mut result: EventDef = match file_object.get("extends") {
-        Some(extend_val) => {
-            let extend_schema_name = extend_val.as_str().unwrap();
+                    let splitmodule: Vec<&str> = module_name.split('/').into_iter().collect();
+                    if splitmodule.len() > 2 {
+                        panic!("can't handle events modules with multiple levels of nesting...?");
+                    };
 
-            let mut start_point: EventDef = EventDef::default();
-            if let Some(val) = classes.get("events").unwrap().get(extend_schema_name) {
-                // panic!("found it!");
-                if let ClassType::Event { value } = val {
-                    start_point = value.clone();
+                    let parent_module_name =
+                        format!("{}.rs", module_name.split('/').next().unwrap());
+                    let parent_module = module_map.get_mut(&parent_module_name).unwrap();
+                    let module_def = format!("pub mod {};", module_name.split('/').last().unwrap());
+                    if !parent_module.to_string().contains(&module_def) {
+                        // we need to add the module def
+                        parent_module.raw(module_def);
+                    }
                 }
-            } else {
-                let extend_schema_filename =
-                    find_event_schema_file(schema_base_path, extend_schema_name);
-                start_point = add_event(
-                    classes,
-                    &base_path,
-                    module_source_path,
-                    schema_base_path,
-                    &extend_schema_filename,
-                )?;
-                debug!("Extending from base of:\n:{start_point:#?}");
-                classes.get_mut("events").unwrap().insert(
-                    extend_schema_name.to_string(),
-                    ClassType::Event {
-                        value: start_point.clone(),
-                    },
-                );
+                false => {
+                    // we can add to the base module
+                    let base_module = module_map.get_mut("mod.rs").unwrap();
+                    let module_def = format!("pub mod {};", module_name);
+                    if !base_module.to_string().contains(&module_def) {
+                        // we need to add the module def
+                        base_module.raw(module_def);
+                    }
+                }
+            };
+        }
+
+        if !module_map.contains_key(&module_filename) {
+            module_map.insert(module_filename.clone(), get_new_scope_with_comment(None));
+        }
+
+        let mut event = read_file_to_value(&file)?;
+        let mut attribute_file_includes: Vec<Value> = vec![];
+
+        // let's pull the attribute $includes out so as not to upset the apple cart.
+        if let Some(attributes) = event.as_object_mut().unwrap().get_mut("attributes") {
+            if let Some(include_vals) = attributes.as_object_mut().unwrap().remove("$include") {
+                if include_vals.is_array() {
+                    let include_vals_array = include_vals.as_array().unwrap();
+                    attribute_file_includes.extend(include_vals_array.to_owned());
+                } else if include_vals.is_string() {
+                    attribute_file_includes.push(include_vals.to_owned());
+                }
             }
-
-            start_point
         }
-        None => EventDef::default(),
-    };
+        #[allow(unused_variables)]
+        let attribute_includes: Vec<String> = attribute_file_includes
+            .into_iter()
+            .map(|i| i.as_str().unwrap().to_string())
+            .collect();
 
-    result.description = file_object
-        .get("description")
-        .unwrap_or(&json!("No description was included in the schema."))
-        .as_str()
-        .unwrap()
-        .to_string();
-    result.name = file_object
-        .get("name")
-        .expect("No 'name' field was in the schema definition!")
-        .as_str()
-        .unwrap()
-        .to_string();
+        // debug!("includes: {:#?}", attribute_includes);
+        let mut event: EventDef = serde_json::from_value(event)?;
+        // TODO: attribute value includes.
 
-    result.category = match file_object.get("category") {
-        Some(val) => val.as_str().unwrap().to_string(),
-        None => match file_object.get("extends") {
-            None => panic!("No category or extends in this file!"),
-            Some(val) => val.as_str().unwrap().to_string(),
-        },
-    };
+        let output_scope = module_map.get_mut(&module_filename).unwrap();
 
-    // TODO: work out if the profiles are additive when you extend from them
-    result.profiles = file_object
-        .get("profiles")
-        .unwrap_or(&json!(Vec::<Value>::new()))
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|p| p.to_string())
-        .collect();
 
-    let attributes = file_object
-        .get("attributes")
-        .unwrap()
-        .as_object()
-        .unwrap()
-        .to_owned();
-    if let Some(includes) = attributes.get("$include") {
-        let mut includes_list: Vec<String> = vec![];
+        // TODO: deal with attribute *internal* includes - there's one in registry_key.json
+        event.attributes.iter_mut().for_each(|(_key, attrib)| {
+            if let Some(include_filename) = attrib.include.clone() {
+                info!("need to include {} in {}", include_filename, &filename);
+                // because we haven't dealt with them yet!
+                if !include_filename.starts_with("enums/") {
+                    panic!(
+                        "Attribute in {filename} trying to include {include_filename} and it's not an enum!"
+                    );
+                }
+                let include_file =
+                    read_file_to_value(&format!("{}{}", paths.schema_path, include_filename)).unwrap();
+                // let include_file = include_file.as_object().unwrap();
+                debug!("included file: {include_file:#?}");
+                let enum_name = collapsed_title_case(include_filename.replace(".json", "").split('/').last().unwrap());
 
-        if includes.is_array() {
-            includes_list.extend(includes.as_array().unwrap().iter().map(|i| i.to_string()));
-        } else if includes.is_string() {
-            includes_list.push(includes.to_string());
+                // TODO: see if we can figure out if the enum already exists over in enums, because it probably already does!
+
+                enum_from_value(paths, output_scope, include_file, enum_name, None).unwrap();
+
+                // include_file.keys().for_each(|(key, value)| {
+                // attrib.include.insert(key, value);
+                // });
+            };
+        });
+
+        if filename == "registry_key.json" {
+            debug!("{}", serde_json::to_string_pretty(&event)?);
         }
 
-        handle_attribute_includes(&base_path, module_source_path, filename, includes_list)
+        output_scope.raw(&format!("// kilroy was here {filename}"));
+
+        // debug!("Module filename: {module_filename}");
     }
 
-    result.associations = match attributes.get("associations") {
-        Some(val) => val.as_object().unwrap().to_owned(),
-        None => Map::new(),
-    };
-
-    // let mut attribute_keys: Vec<String> = vec![];
-    let mut event_attributes = vec![];
-
-    attributes.iter().for_each(|(attribute_name, attribute)| {
-        if attribute_name == "$include" {
-            return;
+    // writing out the module files to disk
+    module_map.iter().for_each(|(filename, scope)| {
+        let full_path = format!("{}src/events/{}", paths.destination_path, filename);
+        // create the dirs if they don't exist
+        let parent_dir = Path::new(&full_path).parent().unwrap();
+        if !parent_dir.exists() {
+            std::fs::create_dir_all(parent_dir).unwrap();
         }
-        let attribute = attribute.as_object().unwrap().to_owned();
-        let event_attribute = handle_attribute(
-            &base_path,
-            module_source_path,
-            filename,
-            attribute_name,
-            attribute,
-        );
-        // for key in attrkeys {
-        //     if !attribute_keys.contains(&key) {
-        //         attribute_keys.push(key);
-        //     }
-        // }
-        event_attributes.push(event_attribute);
+
+        write_source_file(
+            &full_path,
+            &scope.to_string()
+        ).unwrap();
     });
 
-    result.class_name = collapsed_title_case(file_object.get("name").unwrap().as_str().unwrap());
-    result.attributes.extend(event_attributes);
-
-    // info!("Seen attribute keys:");
-    // attribute_keys.iter().for_each(|k| info!("attrkey {k}"));
-
-    // check that the schema's all done
-    let handled_fields: Vec<String> = [
-        "description",
-        "profiles",
-        "name",
-        "category",
-        "caption", // TODO: do we care about the caption?
-        "attributes",
-        "associations",
-        "uid",
-        "extends",
-    ]
-    .into_iter()
-    .map(|f| f.to_string())
-    .collect();
-
-    file_object.iter().for_each(|(k, v)| {
-        if !handled_fields.contains(k) {
-            warn!("Unhandled field in event schema: {k}");
-            warn!("Unhandled field in event schema: {k} => {v}");
-        }
-    });
-
-    result.uid = file_object
-        .get("uid")
-        .map(|val| val.as_u64().unwrap() as u32);
-
-    debug!("{result:#?}");
-
-    Ok(result)
+    Ok(())
 }

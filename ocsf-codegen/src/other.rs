@@ -15,7 +15,10 @@ pub fn add_version_element(
 
     let schema_version: VersionFile = serde_json::from_value(version_file)?;
     debug!("OCSF Schema Version: {}", schema_version.version);
-    output_scope.raw(format!("/// This was the schema version that the code was generated from ({}).", &    schema_version.version));
+    output_scope.raw(format!(
+        "/// This was the schema version that the code was generated from ({}).",
+        &schema_version.version
+    ));
     output_scope.raw(format!(
         "pub static OCSF_SCHEMA_VERSION: &str = {:?};\n\n",
         schema_version.version

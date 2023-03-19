@@ -1,5 +1,5 @@
 use crate::*;
-use codegen::{Variant, Function};
+use codegen::{Function, Variant};
 use serde::Deserialize;
 
 // TODO: categories from the categories file
@@ -20,7 +20,8 @@ pub fn generate_categories(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
         .get("description")
         .unwrap_or(&Value::String("".to_string()))
         .as_str()
-        .unwrap().to_string();
+        .unwrap()
+        .to_string();
 
     output_scope.writeln("//! OCSF Category data");
     output_scope.writeln("//!".to_string());
@@ -28,29 +29,24 @@ pub fn generate_categories(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
 
     output_scope.add_generation_timestamp_comment();
 
-
     let enum_name = "Category";
 
     // enum Category
     let mut category_enum = codegen::Enum::new(enum_name);
-    category_enum
-        .vis("pub")
-        .doc(&categories_description);
+    category_enum.vis("pub").doc(&categories_description);
 
     // impl From<Category> for u8
     let mut category_to_u8 = Function::new("from");
-    category_to_u8.arg("input", enum_name)
-    .ret("u8");
+    category_to_u8.arg("input", enum_name).ret("u8");
     category_to_u8.line("match input {");
 
     // impl TryFrom<u8> for Category
     let mut u8_to_category = Function::new("try_from");
-    u8_to_category.arg("input", "u8")
-        .ret("Result<Self, String>")
-        ;
+    u8_to_category
+        .arg("input", "u8")
+        .ret("Result<Self, String>");
     // u8_to_category.line("type Error = String;");
     u8_to_category.line("let res = match input {");
-
 
     // generate details based on the attributes
     if let Some(attributes) = categories_file.get("attributes") {
@@ -70,8 +66,14 @@ pub fn generate_categories(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
                     .annotation(variant_docstring.join("\n"))
                     .to_owned();
                 category_enum.push_variant(variant);
-                category_to_u8.line(format!("{}::{} => {},", enum_name, variant_name, category.uid));
-                u8_to_category.line(format!("{} => {}::{},", category.uid, enum_name, variant_name));
+                category_to_u8.line(format!(
+                    "{}::{} => {},",
+                    enum_name, variant_name, category.uid
+                ));
+                u8_to_category.line(format!(
+                    "{} => {}::{},",
+                    category.uid, enum_name, variant_name
+                ));
             })
         }
     }
@@ -87,15 +89,14 @@ pub fn generate_categories(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
     u8_to_category.line("};");
     u8_to_category.line("Ok(res)");
     let mut u8_to_category_impl = codegen::Impl::new(enum_name);
-        u8_to_category_impl.impl_trait("TryFrom<u8>")
+    u8_to_category_impl
+        .impl_trait("TryFrom<u8>")
         .associate_type("Error", "String");
     u8_to_category_impl.push_fn(u8_to_category);
 
     output_scope.push_enum(category_enum.to_owned());
     output_scope.push_impl(category_to_u8_impl.to_owned());
     output_scope.push_impl(u8_to_category_impl.to_owned());
-
-
 
     write_source_file(
         &format!("{}src/categories.rs", paths.destination_path),

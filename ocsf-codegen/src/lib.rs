@@ -29,12 +29,11 @@ use objects::*;
 use other::*;
 use profiles::*;
 
-
-lazy_static!{
+lazy_static! {
     static ref URL_FINDER: Regex = Regex::new(r#"(?P<url>\w+://[^<\s]+)"#).unwrap();
-    }
+}
 
-
+#[allow(dead_code)]
 type ClassesHashMap = HashMap<&'static str, HashMap<String, ClassType>>;
 
 #[derive(Debug)]
@@ -64,7 +63,6 @@ pub fn find_files(schema_path: &str) -> Vec<String> {
         })
         .collect()
 }
-
 
 pub fn filename_to_classpath(schema_base_path: &str, filename: &str) -> ClassPath {
     let fname = filename.to_owned().replace(schema_base_path, "");
@@ -98,9 +96,18 @@ pub fn write_source_file(filename: &str, contents: &str) -> Result<(), Box<dyn E
     Ok(())
 }
 
+pub fn get_new_scope_with_comment(first_line: Option<String>) -> Scope {
+    let mut new_scope = Scope::new();
+    if let Some(comment) = first_line {
+        new_scope.raw(&comment);
+    }
+    new_scope.add_generation_timestamp_comment();
+    new_scope
+}
+
 /// uses serde_json to try and parse a given file
 pub fn read_file_to_value(filename: &str) -> Result<Value, Box<dyn Error>> {
-    debug!("read_file_to_value {filename}");
+    trace!("read_file_to_value {filename}");
     let file = File::open(filename)?;
     let reader = BufReader::new(file);
 
@@ -109,47 +116,47 @@ pub fn read_file_to_value(filename: &str) -> Result<Value, Box<dyn Error>> {
     Ok(res)
 }
 
-pub fn process_file(
-    schema_base_path: &str,
-    _modules: &mut HashMap<&str, Vec<String>>,
-    classes: &mut ClassesHashMap,
-    base_path: &str,
-    filename: &str,
-) -> Result<(), Box<dyn Error>> {
-    info!("#########################################");
-    info!("Processing {filename:?}");
+// pub fn process_file(
+//     schema_base_path: &str,
+//     _modules: &mut HashMap<&str, Vec<String>>,
+//     classes: &mut ClassesHashMap,
+//     base_path: &str,
+//     filename: &str,
+// ) -> Result<(), Box<dyn Error>> {
+//     info!("#########################################");
+//     info!("Processing {filename:?}");
 
-    let classpath = filename_to_classpath(schema_base_path, filename);
-    debug!("ClassPath: {classpath:?}");
+//     let classpath = filename_to_classpath(schema_base_path, filename);
+//     debug!("ClassPath: {classpath:?}");
 
-    match classpath {
-        ClassPath::Enums { .. } => {
-            panic!("You shouldn't get here...");
-        },
-        //     add_enum(&class_path, base_path, filename)?;
-        //     modules.get_mut("enums").unwrap().push(class_path);
-        // }
-        ClassPath::Event { class_path } => {
-            let event = add_event(
-                // modules,
-                classes,
-                &class_path,
-                base_path,
-                schema_base_path,
-                filename,
-            )?;
-            classes.get_mut("events").unwrap().insert(
-                event.class_name.to_owned(),
-                ClassType::Event { value: event },
-            );
-        }
-        ClassPath::Unknown => {
-            warn!("Nothing to do yet with {filename:?}!");
-        }
-    }
+//     match classpath {
+//         ClassPath::Enums { .. } => {
+//             panic!("You shouldn't get here...");
+//         },
+//         //     add_enum(&class_path, base_path, filename)?;
+//         //     modules.get_mut("enums").unwrap().push(class_path);
+//         // }
+//         ClassPath::Event { class_path } => {
+//             let event = add_event(
+//                 // modules,
+//                 classes,
+//                 &class_path,
+//                 base_path,
+//                 schema_base_path,
+//                 filename,
+//             )?;
+//             classes.get_mut("events").unwrap().insert(
+//                 event.class_name.to_owned(),
+//                 ClassType::Event { value: event },
+//             );
+//         }
+//         ClassPath::Unknown => {
+//             warn!("Nothing to do yet with {filename:?}!");
+//         }
+//     }
 
-    Ok(())
-}
+//     Ok(())
+// }
 
 #[allow(dead_code)]
 fn write_modules(
@@ -205,8 +212,6 @@ fn write_modules(
     Ok(())
 }
 
-
-
 pub struct DirPaths {
     pub destination_path: String,
     pub schema_path: String,
@@ -244,7 +249,6 @@ impl CustomScopeThings for Scope {
         self.writeln(&generate_timestamp_comment());
     }
 }
-
 
 /// Strips a bunch of stuff out
 pub fn fix_docstring(input: String, leading_docstring: Option<&'static str>) -> String {
@@ -289,13 +293,14 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
     }
 
     add_version_element(&paths, &mut output_scope)?;
-    generate_event_modules(&paths)?;
+    // generate_event_modules(&paths)?;
     generate_dictionary_entries(&paths)?;
     generate_profiles(&paths)?;
     generate_objects(&paths)?;
     // generate_other(&paths)?;
     generate_categories(&paths)?;
     generate_enums(&paths)?;
+    generate_events(&paths)?;
 
     write_source_file(
         &format!("{}src/lib.rs", paths.destination_path),

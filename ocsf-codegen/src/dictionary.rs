@@ -155,7 +155,8 @@ pub fn generate_dictionary_entries(paths: &DirPaths) -> Result<(), Box<dyn Error
             );
             output_scope.writeln(&format!(
                 "/// {} - {}",
-                attribute.caption, fix_docstring(attribute.description, Some("///"))
+                attribute.caption,
+                fix_docstring(attribute.description, Some("///"))
             ));
             output_scope.writeln(&thing_to_push);
         });
