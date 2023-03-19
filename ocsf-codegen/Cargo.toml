@@ -1,11 +1,12 @@
 [package]
 name = "ocsf-codegen"
-version = {workspace=true}
 description = "Codegen package for the OCSF crate"
-license = {workspace = true}
-edition = {workspace = true}
-repository = {workspace = true}
 documentation = {workspace = true}
+edition = {workspace = true}
+license = {workspace = true}
+repository = {workspace = true}
+rust-version = {workspace = true}
+version = {workspace=true}
 
 
 [dependencies]
