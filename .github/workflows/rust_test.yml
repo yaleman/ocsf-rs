@@ -9,6 +9,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: true
+          depth: 1
       - uses: icepuma/rust-action@master
         with:
           args: cargo run -p ocsf-codegen -- -d ./

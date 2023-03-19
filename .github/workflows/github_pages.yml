@@ -42,13 +42,6 @@ jobs:
 
       - name: Make all the books
         run: make doc
-      # - name: Deploy
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   if: ${{ github.ref == 'refs/heads/main' }}
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     publish_dir: ./target/doc/ocsf/
-      #     destination_dir: ./
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
