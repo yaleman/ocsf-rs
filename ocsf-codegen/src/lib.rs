@@ -92,7 +92,7 @@ pub fn write_source_file(filename: &str, contents: &str) -> Result<(), Box<dyn E
     let file = File::create(filename)?;
     let mut writer = BufWriter::new(file);
     let written_bytes = writer.write(contents.as_bytes())?;
-    debug!("Successfully wrote {written_bytes} bytes to {filename}!");
+    debug!("Successfully wrote {written_bytes} bytes to {filename}");
     Ok(())
 }
 
@@ -115,48 +115,6 @@ pub fn read_file_to_value(filename: &str) -> Result<Value, Box<dyn Error>> {
     let res: Value = serde_json::from_reader(reader)?;
     Ok(res)
 }
-
-// pub fn process_file(
-//     schema_base_path: &str,
-//     _modules: &mut HashMap<&str, Vec<String>>,
-//     classes: &mut ClassesHashMap,
-//     base_path: &str,
-//     filename: &str,
-// ) -> Result<(), Box<dyn Error>> {
-//     info!("#########################################");
-//     info!("Processing {filename:?}");
-
-//     let classpath = filename_to_classpath(schema_base_path, filename);
-//     debug!("ClassPath: {classpath:?}");
-
-//     match classpath {
-//         ClassPath::Enums { .. } => {
-//             panic!("You shouldn't get here...");
-//         },
-//         //     add_enum(&class_path, base_path, filename)?;
-//         //     modules.get_mut("enums").unwrap().push(class_path);
-//         // }
-//         ClassPath::Event { class_path } => {
-//             let event = add_event(
-//                 // modules,
-//                 classes,
-//                 &class_path,
-//                 base_path,
-//                 schema_base_path,
-//                 filename,
-//             )?;
-//             classes.get_mut("events").unwrap().insert(
-//                 event.class_name.to_owned(),
-//                 ClassType::Event { value: event },
-//             );
-//         }
-//         ClassPath::Unknown => {
-//             warn!("Nothing to do yet with {filename:?}!");
-//         }
-//     }
-
-//     Ok(())
-// }
 
 #[allow(dead_code)]
 fn write_modules(
@@ -296,12 +254,12 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
     // generate_event_modules(&paths)?;
     generate_dictionary_entries(&paths)?;
     generate_profiles(&paths)?;
-    generate_objects(&paths)?;
     // generate_other(&paths)?;
     generate_categories(&paths)?;
     generate_enums(&paths)?;
     generate_events(&paths)?;
 
+    generate_objects(&paths)?;
     write_source_file(
         &format!("{}src/lib.rs", paths.destination_path),
         &output_scope.to_string(),

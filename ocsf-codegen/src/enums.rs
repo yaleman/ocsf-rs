@@ -156,6 +156,7 @@ pub fn generate_enums(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
     )
 }
 
+/// the passed output scope gets the shiny new enum, grats to the scope!
 pub fn enum_from_value(
     paths: &DirPaths,
     output_scope: &mut Scope,

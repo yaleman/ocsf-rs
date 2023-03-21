@@ -86,6 +86,7 @@ pub fn generate_dictionary_entries(paths: &DirPaths) -> Result<(), Box<dyn Error
         .push_variant(Variant::new("Json"))
         .push_variant(Variant::new("String"))
         .push_variant(Variant::new("Timestamp"))
+        .push_variant(Variant::new("Boolean"))
         .push_variant(Variant::new("NotSupported{ name: &'static str }"));
 
     output_scope
@@ -175,12 +176,14 @@ enum TypeNames {
     Json,
     String,
     Timestamp,
+    Boolean,
     NotSupported { name: String },
 }
 
 impl Debug for TypeNames {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Boolean => write!(f, "TypeNames::Boolean"),
             Self::Integer => write!(f, "TypeNames::Integer"),
             Self::Json => write!(f, "TypeNames::Json"),
             Self::String => write!(f, "TypeNames::String"),
@@ -197,6 +200,7 @@ impl Debug for TypeNames {
 impl From<&str> for TypeNames {
     fn from(value: &str) -> Self {
         match value {
+            "boolean_t" => Self::Boolean,
             "string_t" => Self::String,
             "integer_t" => Self::Integer,
             "json_t" => Self::Json,

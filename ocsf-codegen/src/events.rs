@@ -57,25 +57,6 @@ fn find_event_schema_file(base_path: &str, name: &str) -> String {
     // None
 }
 
-// trait EventDataTrait {
-//     fn handle_event_extends(&mut self, schema_path: &str, modules: &mut HashMap<&str, Vec<String>>)  -> Self;
-// }
-
-// impl EventDataTrait for Map<String, Value> {
-//     fn handle_event_extends(&mut self, schema_path: &str, modules: &mut HashMap<&str, Vec<String>>)  -> Self {
-//         let extend_val = self.get("extends").unwrap().as_str().unwrap();
-//         warn!("Extends issued for {}: {}", self.get("name").unwrap().to_string(), extend_val);
-//         if modules["events"].contains(&extend_val.to_string()) {
-//             info!("Already loaded this one, woo!");
-//         } else {
-//             info!("Haven't Already loaded {}", extend_val);
-//             find_event_schema_file(schema_path, extend_val);
-//         }
-//         // TODO: we need to basically load the event and return that... but we probably haven't parsed *that* event yet!
-//         self.to_owned()
-//     }
-// }
-
 #[allow(dead_code)]
 fn handle_attribute_includes(
     _base_path: &str,
@@ -394,7 +375,6 @@ pub fn generate_events(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
             .map(|i| i.as_str().unwrap().to_string())
             .collect();
 
-        // debug!("includes: {:#?}", attribute_includes);
         let mut event: EventDef = serde_json::from_value(event)?;
         // TODO: attribute value includes.
 
@@ -428,7 +408,8 @@ pub fn generate_events(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
         });
 
         if filename == "registry_key.json" {
-            debug!("{}", serde_json::to_string_pretty(&event)?);
+            debug!("{} -> {}", filename, serde_json::to_string_pretty(&event)?);
+            return Ok(());
         }
 
         output_scope.raw(&format!("// kilroy was here {filename}"));
