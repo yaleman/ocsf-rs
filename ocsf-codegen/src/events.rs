@@ -6,6 +6,7 @@ use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Map;
 
 use crate::*;
+use crate::module::Module;
 use glob::glob;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -301,7 +302,7 @@ fn handle_attribute(
     result
 }
 
-pub fn generate_events(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
+pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(), Box<dyn Error>> {
     let event_schema_path = format!("{}events/", paths.schema_path);
     let filenames = find_files(&event_schema_path);
 
@@ -325,7 +326,7 @@ pub fn generate_events(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
                 true => {
                     // we're in a nested module
 
-                    let splitmodule: Vec<&str> = module_name.split('/').into_iter().collect();
+                    let splitmodule: Vec<&str> = module_name.split('/').collect();
                     if splitmodule.len() > 2 {
                         panic!("can't handle events modules with multiple levels of nesting...?");
                     };
@@ -399,11 +400,16 @@ pub fn generate_events(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
 
                 // TODO: see if we can figure out if the enum already exists over in enums, because it probably already does!
 
-                enum_from_value(paths, output_scope, include_file, enum_name, None).unwrap();
-
-                // include_file.keys().for_each(|(key, value)| {
-                // attrib.include.insert(key, value);
-                // });
+                match
+                enum_from_value(
+                    paths,
+                    root_module,
+                     include_file,
+                     enum_name.clone(),
+                     ) {
+                        Ok(val) => root_module.enums.push(val),
+                        Err(err) => error!("Tried to add {}: {}", enum_name, err),
+                     };
             };
         });
 

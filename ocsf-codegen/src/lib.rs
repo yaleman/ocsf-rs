@@ -16,8 +16,10 @@ use walkdir::{DirEntry, WalkDir};
 
 pub mod categories;
 pub mod dictionary;
+pub mod errors;
 pub mod enums;
 pub mod events;
+pub mod module;
 pub mod objects;
 pub mod other;
 pub mod profiles;
@@ -25,6 +27,7 @@ use categories::*;
 use dictionary::*;
 use enums::*;
 use events::*;
+pub use errors::*;
 use objects::*;
 use other::*;
 use profiles::*;
@@ -229,41 +232,86 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
         error!("Dir {} is missing!", paths.destination_path);
         panic!();
     }
+    let src_dir = PathBuf::from(&format!("{}/src/", &paths.destination_path));
+    if !src_dir.exists() {
+        std::fs::create_dir(src_dir)?;
+    }
 
-    let mut output_scope = Scope::new();
-    output_scope.raw("//! OCSF crate, does Open Cyber Security Framework things.");
-    output_scope.raw("//! ");
-    output_scope.raw("//! <h1><span color=\"red\"> THIS IS VERY VERY VERY EARLY ALPHA</span></h1>");
-    output_scope.raw("//! ");
-    output_scope.raw("//! The base schema is available at <https://ocsf.io>.");
-    output_scope.add_generation_timestamp_comment();
 
-    for module_name in [
+    let mut root_module = module::Module::new("lib".to_string(), true);
+
+
+    root_module.scope = Scope::new();
+    root_module.scope.raw("//! OCSF crate, does Open Cyber Security Framework things.");
+    root_module.scope.raw("//! ");
+    root_module.scope.raw("//! <h1><span color=\"red\"> THIS IS VERY VERY VERY EARLY ALPHA</span></h1>");
+    root_module.scope.raw("//! ");
+    root_module.scope.raw("//! The base schema is available at <https://ocsf.io>.");
+    root_module.scope.add_generation_timestamp_comment();
+
+    let modules = vec![
         "categories",
         "dictionary",
-        "enums",
+        // "enums",
         "events",
         "objects",
         // "other",
         "profiles",
-    ] {
-        output_scope.raw(&format!("pub mod {};", module_name));
+    ];
+
+    for module_name in modules.iter() {
+        root_module.add_child(module_name.to_string());
     }
 
-    add_version_element(&paths, &mut output_scope)?;
-    // generate_event_modules(&paths)?;
-    generate_dictionary_entries(&paths)?;
-    generate_profiles(&paths)?;
-    // generate_other(&paths)?;
-    generate_categories(&paths)?;
-    generate_enums(&paths)?;
-    generate_events(&paths)?;
+    add_version_element(&paths, &mut root_module.scope)?;
 
-    generate_objects(&paths)?;
-    write_source_file(
-        &format!("{}src/lib.rs", paths.destination_path),
-        &output_scope.to_string(),
-    )?;
+    generate_enums(&paths, &mut root_module)?;
+
+    // generate_event_modules(&paths)?;
+    generate_dictionary_entries(&paths, &mut root_module)?;
+    generate_profiles(&paths, &mut root_module)?;
+    // generate_other(&paths)?;
+    generate_categories(&paths, &mut root_module)?;
+    generate_events(&paths, &mut root_module)?;
+
+    generate_objects(&paths, &mut root_module)?;
+
+    root_module.write_module(&paths.destination_path.clone().into())?;
+
+    check_crate_files(&paths, modules);
 
     Ok(())
+}
+
+
+fn check_crate_files(paths: &DirPaths, modules: Vec<&str>) {
+
+    let mut ok_paths: Vec<String> = vec![];
+
+    modules.iter().for_each(|m| {
+            ok_paths.push(format!("{}src/{}.rs", paths.destination_path, m));
+            ok_paths.push(format!("{}src/{}/", paths.destination_path, m));
+    });
+
+    ok_paths.push(format!("{}src/", paths.destination_path));
+    ok_paths.push(format!("{}src/lib.rs", paths.destination_path));
+
+    // let's double-check that any files we expect actually exist...
+    for filename in walkdir::WalkDir::new(format!("{}src/", paths.destination_path)) {
+        let filename = filename.unwrap();
+
+        let mut file_type = "file";
+        if filename.path().is_dir() {
+            file_type = "directory";
+        }
+
+        let filename_str = filename.path().to_str().unwrap().to_string();
+
+        if !ok_paths.contains(&filename_str) {
+
+            error!("module has unexpected {file_type}: {filename_str}");
+        } else {
+            debug!("Found expected crate source file file: {filename_str}");
+        }
+    }
 }
