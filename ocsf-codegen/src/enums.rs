@@ -1,5 +1,5 @@
-use crate::*;
 use crate::module::{Module, ModuleEnumWithU8};
+use crate::*;
 // use codegen::{Enum, Function, Variant};
 use serde::{Deserialize, Serialize};
 // use itertools::Itertools;
@@ -121,7 +121,6 @@ pub struct EnumFile {
     pub elements: HashMap<u8, EnumData>,
 }
 
-
 pub fn generate_enums(paths: &DirPaths, root_module: &mut Module) -> Result<(), Box<dyn Error>> {
     // let mut output_scope = Scope::new();
 
@@ -144,7 +143,6 @@ pub fn generate_enums(paths: &DirPaths, root_module: &mut Module) -> Result<(), 
     Ok(())
 }
 
-
 impl std::fmt::Display for OcsfCodegenError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "OcsfCodegenError: {}", self.errortext)
@@ -158,20 +156,20 @@ pub fn enum_from_value(
     value: Value,
     name: String,
 ) -> Result<ModuleEnumWithU8, OcsfCodegenError> {
-
     if root_module.has_enum(&name) {
         return Err(OcsfCodegenError::new(format!("Already has enum {name}!")));
     }
 
     let mut base_object = ModuleEnumWithU8::new(paths, name);
 
-    let parsed_file: EnumFile = serde_json::from_value(value).map_err(OcsfCodegenError::from).unwrap();
+    let parsed_file: EnumFile = serde_json::from_value(value)
+        .map_err(OcsfCodegenError::from)
+        .unwrap();
 
     parsed_file.elements.into_iter().for_each(|(key, value)| {
         base_object.variants.insert(key, value);
     });
     debug!("{base_object:#?}");
-
 
     // root_module.enums.push(base_object);
     Ok(base_object)

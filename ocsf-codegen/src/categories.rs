@@ -1,5 +1,5 @@
-use crate::*;
 use crate::module::Module;
+use crate::*;
 use codegen::{Function, Variant};
 use serde::Deserialize;
 
@@ -13,10 +13,14 @@ struct Category {
     uid: u8,
 }
 
-pub fn generate_categories(paths: &DirPaths, root_module: &mut Module) -> Result<(), Box<dyn Error>> {
-
-    let categories_module = root_module.children.get_mut("categories").expect("Couldn't find categories module in root module?");
-
+pub fn generate_categories(
+    paths: &DirPaths,
+    root_module: &mut Module,
+) -> Result<(), Box<dyn Error>> {
+    let categories_module = root_module
+        .children
+        .get_mut("categories")
+        .expect("Couldn't find categories module in root module?");
 
     let categories_file = read_file_to_value(&format!("{}categories.json", paths.schema_path))?;
 
@@ -29,7 +33,9 @@ pub fn generate_categories(paths: &DirPaths, root_module: &mut Module) -> Result
 
     categories_module.scope.writeln("//! OCSF Category data");
     categories_module.scope.writeln("//!".to_string());
-    categories_module.scope.writeln(format!("//! {categories_description}"));
+    categories_module
+        .scope
+        .writeln(format!("//! {categories_description}"));
 
     categories_module.scope.add_generation_timestamp_comment();
 
@@ -99,8 +105,12 @@ pub fn generate_categories(paths: &DirPaths, root_module: &mut Module) -> Result
     u8_to_category_impl.push_fn(u8_to_category);
 
     categories_module.scope.push_enum(category_enum.to_owned());
-    categories_module.scope.push_impl(category_to_u8_impl.to_owned());
-    categories_module.scope.push_impl(u8_to_category_impl.to_owned());
+    categories_module
+        .scope
+        .push_impl(category_to_u8_impl.to_owned());
+    categories_module
+        .scope
+        .push_impl(u8_to_category_impl.to_owned());
 
     write_source_file(
         &format!("{}src/categories.rs", paths.destination_path),

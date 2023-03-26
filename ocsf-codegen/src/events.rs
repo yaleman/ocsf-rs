@@ -5,8 +5,8 @@ use std::path::Path;
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Map;
 
-use crate::*;
 use crate::module::Module;
+use crate::*;
 use glob::glob;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -381,7 +381,6 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
 
         let output_scope = module_map.get_mut(&module_filename).unwrap();
 
-
         // TODO: deal with attribute *internal* includes - there's one in registry_key.json
         event.attributes.iter_mut().for_each(|(_key, attrib)| {
             if let Some(include_filename) = attrib.include.clone() {
@@ -408,7 +407,7 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
                      enum_name.clone(),
                      ) {
                         Ok(val) => root_module.enums.push(val),
-                        Err(err) => error!("Tried to add {}: {}", enum_name, err),
+                        Err(err) => debug!("Tried to add {}: {}", enum_name, err),
                      };
             };
         });
@@ -432,10 +431,7 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
             std::fs::create_dir_all(parent_dir).unwrap();
         }
 
-        write_source_file(
-            &full_path,
-            &scope.to_string()
-        ).unwrap();
+        write_source_file(&full_path, &scope.to_string()).unwrap();
     });
 
     Ok(())

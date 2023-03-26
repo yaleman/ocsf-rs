@@ -35,10 +35,16 @@ pub struct DictType {
     values: Option<String>,
 }
 
-pub fn generate_dictionary_entries(paths: &DirPaths, root_module: &mut Module) -> Result<(), Box<dyn Error>> {
+pub fn generate_dictionary_entries(
+    paths: &DirPaths,
+    root_module: &mut Module,
+) -> Result<(), Box<dyn Error>> {
     // let mut output_scope = Scope::new();
 
-    let dictionary_module = root_module.children.get_mut("dictionary").expect("Couldn't get dictionary module from root?");
+    let dictionary_module = root_module
+        .children
+        .get_mut("dictionary")
+        .expect("Couldn't get dictionary module from root?");
 
     let dict_file = read_file_to_value(&format!("{}/dictionary.json", paths.schema_path))?;
 
@@ -50,7 +56,8 @@ pub fn generate_dictionary_entries(paths: &DirPaths, root_module: &mut Module) -
     dictionary_module.scope.add_generation_timestamp_comment();
     dictionary_module.scope.writeln("use serde::{Serialize};");
 
-    dictionary_module.scope
+    dictionary_module
+        .scope
         .new_struct("DictAttribute")
         .vis("pub")
         .doc("A generic way of identifying attributes from the dictionary.")
@@ -81,7 +88,8 @@ pub fn generate_dictionary_entries(paths: &DirPaths, root_module: &mut Module) -
                 .to_owned(),
         );
 
-    dictionary_module.scope
+    dictionary_module
+        .scope
         .new_enum("TypeNames")
         .vis("pub")
         .doc("Attribute variable types.")
@@ -93,7 +101,8 @@ pub fn generate_dictionary_entries(paths: &DirPaths, root_module: &mut Module) -
         .push_variant(Variant::new("Boolean"))
         .push_variant(Variant::new("NotSupported{ name: &'static str }"));
 
-    dictionary_module.scope
+    dictionary_module
+        .scope
         .new_struct("DictType")
         .vis("pub")
         .doc("Trying to annotate the attribute types.")

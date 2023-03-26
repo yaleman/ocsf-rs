@@ -1,8 +1,7 @@
 use std::error::Error;
 
-
 #[derive(Debug)]
-pub struct OcsfCodegenError{
+pub struct OcsfCodegenError {
     pub errortext: String,
 }
 
@@ -17,7 +16,7 @@ impl OcsfCodegenError {
 impl From<Box<dyn Error>> for OcsfCodegenError {
     fn from(value: Box<dyn Error>) -> Self {
         Self {
-            errortext: format!("{:?}", value)
+            errortext: format!("{:?}", value),
         }
     }
 }
@@ -25,7 +24,7 @@ impl From<Box<dyn Error>> for OcsfCodegenError {
 impl From<serde_json::Error> for OcsfCodegenError {
     fn from(value: serde_json::Error) -> Self {
         Self {
-            errortext: format!("{:?}", value)
+            errortext: format!("{:?}", value),
         }
     }
 }

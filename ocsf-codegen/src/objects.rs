@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use crate::*;
 use crate::module::Module;
+use crate::*;
 
 // TODO: objects from the objects dir
 
@@ -17,14 +17,14 @@ struct ObjectDef {
     constraints: Option<HashMap<String, Vec<String>>>,
 }
 
-
-
 pub fn generate_objects(paths: &DirPaths, root_module: &mut Module) -> Result<(), Box<dyn Error>> {
     // let mut output_scope = codegen::Scope::new();
-    let object_module = root_module.children.get_mut("objects").expect("Couldn't get objects module from root?");
+    let object_module = root_module
+        .children
+        .get_mut("objects")
+        .expect("Couldn't get objects module from root?");
 
     object_module.scope.writeln("//* hello world");
-
 
     for filename in find_files(&format!("{}objects/", &paths.schema_path)) {
         debug!("Object file: {filename:?}");
@@ -33,8 +33,7 @@ pub fn generate_objects(paths: &DirPaths, root_module: &mut Module) -> Result<()
         let objectdef: ObjectDef = serde_json::from_value(file_value)?;
 
         debug!("Object Def: {objectdef:#?}");
-
-    };
+    }
 
     write_source_file(
         &format!("{}src/objects.rs", paths.destination_path),

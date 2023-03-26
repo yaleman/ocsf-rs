@@ -1,13 +1,14 @@
-
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use codegen::{Scope, Function, Enum, Variant};
-use itertools::{Itertools, any};
-use log::{trace, debug};
+use codegen::{Enum, Function, Scope, Variant};
+use itertools::{any, Itertools};
+use log::{debug, trace};
 
 use crate::enums::EnumData;
-use crate::{DirPaths, read_file_to_value, write_source_file, collapsed_title_case, CustomScopeThings};
+use crate::{
+    collapsed_title_case, read_file_to_value, write_source_file, CustomScopeThings, DirPaths,
+};
 
 #[derive(Debug)]
 pub struct ModuleEnumWithU8 {
@@ -19,16 +20,16 @@ impl ModuleEnumWithU8 {
     pub fn new(paths: &DirPaths, name: String) -> Self {
         let variants = Self::get_enum_defaults(paths).unwrap();
 
-        ModuleEnumWithU8 {
-            name,
-            variants,
-        }
+        ModuleEnumWithU8 { name, variants }
     }
 
-    pub fn get_enum_defaults(paths: &DirPaths) -> Result<HashMap<u8, EnumData>, Box<dyn std::error::Error>> {
+    pub fn get_enum_defaults(
+        paths: &DirPaths,
+    ) -> Result<HashMap<u8, EnumData>, Box<dyn std::error::Error>> {
         let defaults = format!("{}enums/defaults.json", paths.schema_path);
         trace!("Pulling defaults from {defaults}");
-        let defaults: crate::enums::EnumFile = serde_json::from_value(read_file_to_value(&defaults)?)?;
+        let defaults: crate::enums::EnumFile =
+            serde_json::from_value(read_file_to_value(&defaults)?)?;
         let defaults = defaults.elements;
 
         trace!("Defaults: {defaults:#?}");
@@ -36,15 +37,12 @@ impl ModuleEnumWithU8 {
     }
 
     pub fn add_to_scope(&self, scope: &mut Scope) {
-
-
         let mut new_enum = Enum::new(&self.name);
         new_enum.vis("pub");
 
         let mut enum_to_u8 = Function::new("from");
         enum_to_u8.arg("input", &self.name).ret("u8");
         enum_to_u8.line("match input {");
-
 
         let mut try_u8_to_enum = Function::new("try_from");
         try_u8_to_enum
@@ -65,8 +63,6 @@ impl ModuleEnumWithU8 {
             try_u8_to_enum.line(&format!("    {} => {}::{},", &key, self.name, variant_name));
         });
 
-
-
         debug!("Adding enum called {} to scope...", &self.name);
         enum_to_u8.line("}");
         try_u8_to_enum.line("_ => return Err(\"invalid value\".to_string()),");
@@ -84,7 +80,6 @@ impl ModuleEnumWithU8 {
             .impl_trait("TryFrom<u8>")
             .associate_type("Error", "String");
         try_u8_to_enum_impl.push_fn(try_u8_to_enum);
-
     }
 }
 
@@ -152,12 +147,17 @@ impl Module {
         if !self.is_root {
             panic!("Only add enums to the root module please!");
         }
-        self.enums.push(ModuleEnumWithU8 { name, variants: HashMap::new() })
+        self.enums.push(ModuleEnumWithU8 {
+            name,
+            variants: HashMap::new(),
+        })
     }
 
     /// write all the things!
-    pub fn write_module(&mut self, parent_dirname: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-
+    pub fn write_module(
+        &mut self,
+        parent_dirname: &PathBuf,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let my_filename = parent_dirname.join(format!("src/{}.rs", self.name));
         debug!("My filename: {:#?}", my_filename);
 
@@ -180,7 +180,6 @@ impl Module {
         }
         write_source_file(my_filename.to_str().unwrap(), &self.scope.to_string())
     }
-
 }
 
 #[cfg(test)]
@@ -197,7 +196,5 @@ mod tests {
         root.add_child("cheese".to_string());
 
         assert!(root.has_child("cheese"));
-
     }
-
 }
