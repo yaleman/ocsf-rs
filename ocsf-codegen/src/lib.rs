@@ -311,12 +311,13 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
 
     root_module.write_module(&paths.destination_path.clone().into())?;
 
-    check_crate_files(&paths, modules);
+    check_crate_files(&paths, modules)?;
 
     Ok(())
 }
 
-fn check_crate_files(paths: &DirPaths, modules: Vec<&str>) {
+/// checks that all the expected files are there, and if not then it's
+fn check_crate_files(paths: &DirPaths, modules: Vec<&str>) -> Result<(), &'static str> {
     let mut ok_paths: Vec<String> = vec![];
 
     modules.iter().for_each(|m| {
@@ -326,6 +327,8 @@ fn check_crate_files(paths: &DirPaths, modules: Vec<&str>) {
 
     ok_paths.push(format!("{}src/", paths.destination_path));
     ok_paths.push(format!("{}src/lib.rs", paths.destination_path));
+
+    let mut found_bad_files = false;
 
     // let's double-check that any files we expect actually exist...
     for filename in walkdir::WalkDir::new(format!("{}src/", paths.destination_path)) {
@@ -340,8 +343,14 @@ fn check_crate_files(paths: &DirPaths, modules: Vec<&str>) {
 
         if !ok_paths.contains(&filename_str) {
             error!("module has unexpected {file_type}: {filename_str}");
+            found_bad_files = true;
         } else {
             debug!("Found expected crate source file file: {filename_str}");
         }
+    }
+
+    match found_bad_files {
+        false => Ok(()),
+        true => Err("found something bad, you should check that!"),
     }
 }

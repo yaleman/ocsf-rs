@@ -27,9 +27,8 @@ pub fn main() {
         None => String::from("../"),
     };
 
-    generate_source_code(&base_path)
-        .map_err(|err| {
-            error!("Failed to do the thing! {err:?}");
-        })
-        .unwrap();
+    if let Err(err) = generate_source_code(&base_path) {
+            error!("Failed to do the thing! {:?}", err);
+            std::process::exit(1);
+        }
 }
