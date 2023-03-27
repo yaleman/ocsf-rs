@@ -318,8 +318,10 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
         let filename = filepath_split.last().unwrap().to_owned();
 
         if filepath_split.len() <= 1 {
-            panic!("Can't handle file {}", filename);
+            warn!("Can't handle file {}", filename);
+            continue
         }
+
         let res: Vec<String> = filepath_split[0..(filepath_split.len() - 1)].to_vec();
 
         let module_name = res.join("/");
@@ -430,6 +432,8 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
 
 
 
+        let events_module = root_module.children.get_mut("events").unwrap();
+
         let target_module = match res.len() > 1 {
             true => {
 
@@ -456,19 +460,11 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
             }
             false => {
                 // we can add to the base module
-                if !root_module
-                    .children
-                    .get_mut("events")
-                    .expect("Couldn't get events module?")
-                    .has_struct(module_name)
+                if !events_module.has_child(module_name)
                 {
-                    root_module
-                        .children
-                        .get_mut("events")
-                        .expect("Couldn't get events module?")
-                        .add_struct(module_name)
+                    events_module.add_child(module_name.to_string());
                 }
-                root_module.children.get_mut("events").unwrap()
+                events_module.children.get_mut(module_name).unwrap()
             }
         };
         target_module.scope.push_struct(module_struct);
@@ -481,11 +477,11 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
 
         // account.json has an enum in it
         // registry_key.json has an included enum in it
-        if filename == "account.json" {
-            // debug!("{} -> {}", filename, serde_json::to_string_pretty(&event)?);
-            debug!("Done with registry_key.json");
-            return Ok(());
-        }
+        // if filename == "account.json" {
+        //     // debug!("{} -> {}", filename, serde_json::to_string_pretty(&event)?);
+        //     debug!("Done with registry_key.json");
+        //     return Ok(());
+        // }
 
 
         // add random things
