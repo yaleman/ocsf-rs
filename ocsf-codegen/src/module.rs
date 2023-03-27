@@ -89,6 +89,15 @@ pub struct ModuleStruct {
     pub scope: Scope,
 }
 
+impl ModuleStruct {
+    pub fn new(name: impl ToString) -> Self {
+        Self {
+            name: name.to_string(),
+            scope: Scope::new(),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Module {
     name: String,
@@ -97,6 +106,7 @@ pub struct Module {
     pub structs: Vec<ModuleStruct>,
     pub is_root: bool,
     pub scope: codegen::Scope,
+    pub imports: Vec<String>,
 }
 
 impl Default for Module {
@@ -108,6 +118,7 @@ impl Default for Module {
             structs: vec![],
             is_root: false,
             scope: codegen::Scope::new(),
+            imports: vec![],
         }
     }
 }
@@ -125,6 +136,11 @@ impl Module {
     /// add an empty child module
     pub fn add_child(&mut self, name: String) {
         self.children.insert(name.clone(), Module::new(name, false));
+    }
+
+    /// add an empty struct module
+    pub fn add_struct(&mut self, name: impl ToString) {
+        self.structs.push(ModuleStruct::new(name));
     }
 
     pub fn has_enum(&self, name: &str) -> bool {
@@ -161,12 +177,15 @@ impl Module {
         let my_filename = parent_dirname.join(format!("src/{}.rs", self.name));
         debug!("My filename: {:#?}", my_filename);
 
-        self.enums.iter().for_each(|object| {
-            debug!("adding enum to scope {:?}", object.name);
-            object.add_to_scope(&mut self.scope)
-        });
+        for import in self.imports.iter() {
+            self.scope.raw(&format!("{};", import));
+        }
 
         let child_keys: Vec<String> = self.children.keys().cloned().collect();
+
+        child_keys.iter().for_each(|key| {
+            self.scope.raw(&format!("pub mod {};", key));
+        });
 
         child_keys.into_iter().for_each(|key| {
             let child = self.children.get_mut(&key).unwrap();
@@ -174,6 +193,13 @@ impl Module {
                 child.write_module(parent_dirname).unwrap();
             };
         });
+
+        self.enums.iter().for_each(|object| {
+            debug!("adding enum to scope {:?}", object.name);
+            object.add_to_scope(&mut self.scope)
+        });
+
+
 
         if !self.scope.to_string().contains("automatically generated") {
             self.scope.add_generation_timestamp_comment();

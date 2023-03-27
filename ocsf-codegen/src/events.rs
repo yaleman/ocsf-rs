@@ -1,7 +1,6 @@
 use std::error::Error;
-use std::path::Path;
-// use std::path::Path;
 
+use codegen::{Struct, Field};
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Map;
 
@@ -306,55 +305,28 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
     let event_schema_path = format!("{}events/", paths.schema_path);
     let filenames = find_files(&event_schema_path);
 
-    let mut module_map: HashMap<String, Scope> = HashMap::new();
-    module_map.insert(
-        "mod.rs".to_string(),
-        get_new_scope_with_comment(Some("//! Events Module for the OCSF crate".to_string())),
-    );
+    // let mut module_map: HashMap<String, Scope> = HashMap::new();
+    // module_map.insert(
+    //     "mod.rs".to_string(),
+    //     get_new_scope_with_comment(Some("//! Events Module for the OCSF crate".to_string())),
+    // );
 
     for file in filenames {
         let stripped_file = file.replace(&event_schema_path, "");
         let filepath_split: Vec<String> = stripped_file.split('/').map(|f| f.to_string()).collect();
-        let mut module_filename = "mod.rs".to_string();
+        // let mut module_filename = "mod.rs".to_string();
         let filename = filepath_split.last().unwrap().to_owned();
-        if filepath_split.len() > 1 {
-            let res: Vec<String> = filepath_split[0..(filepath_split.len() - 1)].to_vec();
-            module_filename = format!("{}.rs", res.join("/"));
 
-            let module_name = module_filename.split('.').next().unwrap();
-            match module_name.contains('/') {
-                true => {
-                    // we're in a nested module
-
-                    let splitmodule: Vec<&str> = module_name.split('/').collect();
-                    if splitmodule.len() > 2 {
-                        panic!("can't handle events modules with multiple levels of nesting...?");
-                    };
-
-                    let parent_module_name =
-                        format!("{}.rs", module_name.split('/').next().unwrap());
-                    let parent_module = module_map.get_mut(&parent_module_name).unwrap();
-                    let module_def = format!("pub mod {};", module_name.split('/').last().unwrap());
-                    if !parent_module.to_string().contains(&module_def) {
-                        // we need to add the module def
-                        parent_module.raw(module_def);
-                    }
-                }
-                false => {
-                    // we can add to the base module
-                    let base_module = module_map.get_mut("mod.rs").unwrap();
-                    let module_def = format!("pub mod {};", module_name);
-                    if !base_module.to_string().contains(&module_def) {
-                        // we need to add the module def
-                        base_module.raw(module_def);
-                    }
-                }
-            };
+        if filepath_split.len() <= 1 {
+            panic!("Can't handle file {}", filename);
         }
+        let res: Vec<String> = filepath_split[0..(filepath_split.len() - 1)].to_vec();
 
-        if !module_map.contains_key(&module_filename) {
-            module_map.insert(module_filename.clone(), get_new_scope_with_comment(None));
-        }
+        let module_name = res.join("/");
+        let module_name = module_name.split('.').next().unwrap();
+        info!("Module name: {} from {}", module_name, filename);
+
+
 
         let mut event = read_file_to_value(&file)?;
         let mut attribute_file_includes: Vec<Value> = vec![];
@@ -379,7 +351,7 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
         let mut event: EventDef = serde_json::from_value(event)?;
         // TODO: attribute value includes.
 
-        let output_scope = module_map.get_mut(&module_filename).unwrap();
+        // let output_scope = module_map.get_mut(&module_filename).unwrap();
 
         // TODO: deal with attribute *internal* includes - there's one in registry_key.json
         event.attributes.iter_mut().for_each(|(_key, attrib)| {
@@ -393,11 +365,8 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
                 }
                 let include_file =
                     read_file_to_value(&format!("{}{}", paths.schema_path, include_filename)).unwrap();
-                // let include_file = include_file.as_object().unwrap();
-                debug!("included file: {include_file:#?}");
-                let enum_name = collapsed_title_case(include_filename.replace(".json", "").split('/').last().unwrap());
 
-                // TODO: see if we can figure out if the enum already exists over in enums, because it probably already does!
+                let enum_name = collapsed_title_case(include_filename.replace(".json", "").split('/').last().unwrap());
 
                 match
                 enum_from_value(
@@ -412,27 +381,124 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
             };
         });
 
-        if filename == "registry_key.json" {
-            debug!("{} -> {}", filename, serde_json::to_string_pretty(&event)?);
+        let struct_doc = format!("{}\n\nSourced from: `events/{}`", &event.description, stripped_file);
+        let mut module_struct = Struct::new(&collapsed_title_case(&event.name));
+        module_struct
+        .doc(&struct_doc)
+        .vis("pub")
+        .derive("Deserialize")
+        .derive("Serialize");
+
+
+        event.attributes.iter().for_each(|(attr_name, attr)| {
+            debug!("asdf attr name: {attr_name}");
+
+            let name = match attr_name == "type" {
+                true => "type_field".to_string(),
+                false => attr_name.to_string()
+            };
+
+            let field_requirement_template: &'static str  = match &attr.requirement {
+                Some(val) => {
+                    match val {
+                        Requirement::Optional => "Option<{}>",
+                        Requirement::Recommended => "Option<{}>",
+                        Requirement::Required => "{}",
+                    }
+                },
+                None => "Option<{}>",
+            };
+
+            debug!("{} {:#?}", name, attr);
+
+            let mut attr_field = Field::new(&name, field_requirement_template.replace("{}", "String"));
+
+            // documentation is always nice
+            if let Some(description) = &attr.description {
+                attr_field.doc(fix_docstring(description.to_owned(), None));
+            }
+            if attr_name == "type" {
+                // because when we serialize it out, it needs the right name
+                attr_field.annotation("#[serde(alias=\"type\")]");
+            }
+
+            module_struct.push_field(attr_field);
+        });
+
+        let mut scope = Scope::new();
+        scope.push_struct(module_struct.clone());
+
+
+
+        let target_module = match res.len() > 1 {
+            true => {
+
+                // we're in a nested module
+
+                let splitmodule: Vec<&str> = module_name.split('/').collect();
+                if splitmodule.len() > 2 {
+                    panic!("can't handle events modules with multiple levels of nesting...?");
+                };
+
+                // TODO: need to support finding the child module for this event
+                // todo!("Can't handle {} yet", module_name);
+
+                // first we get the events module
+                let base_module = root_module.children.get_mut("events").expect("Couldn't get events module from root?");
+
+                let parent_module_name = module_name.split('/').next().unwrap();
+
+                if !base_module.has_child(parent_module_name) {
+                    base_module.add_child(parent_module_name.to_owned());
+                }
+
+                base_module.children.get_mut(parent_module_name).unwrap()
+            }
+            false => {
+                // we can add to the base module
+                if !root_module
+                    .children
+                    .get_mut("events")
+                    .expect("Couldn't get events module?")
+                    .has_struct(module_name)
+                {
+                    root_module
+                        .children
+                        .get_mut("events")
+                        .expect("Couldn't get events module?")
+                        .add_struct(module_name)
+                }
+                root_module.children.get_mut("events").unwrap()
+            }
+        };
+        target_module.scope.push_struct(module_struct);
+
+        if !target_module.imports.iter().any(|x| x=="use serde::{Deserialize, Serialize}") {
+            target_module.imports.push("use serde::{Deserialize, Serialize}".to_string());
+        }
+
+        debug!("Scope code output:\n{}", scope.to_string());
+
+        // account.json has an enum in it
+        // registry_key.json has an included enum in it
+        if filename == "account.json" {
+            // debug!("{} -> {}", filename, serde_json::to_string_pretty(&event)?);
+            debug!("Done with registry_key.json");
             return Ok(());
         }
 
-        output_scope.raw(&format!("// kilroy was here {filename}"));
+
+        // add random things
+        root_module
+            .children
+            .get_mut("events")
+            .expect("Couldn't find events module in the crate?")
+            .scope
+            .raw(&format!("// kilroy was here {filename}"));
 
         // debug!("Module filename: {module_filename}");
     }
 
-    // writing out the module files to disk
-    module_map.iter().for_each(|(filename, scope)| {
-        let full_path = format!("{}src/events/{}", paths.destination_path, filename);
-        // create the dirs if they don't exist
-        let parent_dir = Path::new(&full_path).parent().unwrap();
-        if !parent_dir.exists() {
-            std::fs::create_dir_all(parent_dir).unwrap();
-        }
-
-        write_source_file(&full_path, &scope.to_string()).unwrap();
-    });
 
     Ok(())
 }

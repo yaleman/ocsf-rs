@@ -149,7 +149,7 @@ impl std::fmt::Display for OcsfCodegenError {
     }
 }
 
-/// the passed output scope gets the shiny new enum, grats to the scope!
+/// Insert a new enum into the target module's scope
 pub fn enum_from_value(
     paths: &DirPaths,
     root_module: &mut Module,

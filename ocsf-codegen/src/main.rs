@@ -28,7 +28,7 @@ pub fn main() {
     };
 
     if let Err(err) = generate_source_code(&base_path) {
-            error!("Failed to do the thing! {:?}", err);
-            std::process::exit(1);
-        }
+        error!("Failed to do the thing! {:?}", err);
+        std::process::exit(1);
+    }
 }
