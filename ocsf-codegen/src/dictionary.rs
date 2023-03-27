@@ -1,5 +1,7 @@
 use std::fmt::Debug;
 
+use crate::module::Module;
+
 use super::*;
 use codegen::{Field, Variant};
 // use regex::Regex;
@@ -33,20 +35,29 @@ pub struct DictType {
     values: Option<String>,
 }
 
-pub fn generate_dictionary_entries(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
-    let mut output_scope = Scope::new();
+pub fn generate_dictionary_entries(
+    paths: &DirPaths,
+    root_module: &mut Module,
+) -> Result<(), Box<dyn Error>> {
+    // let mut output_scope = Scope::new();
+
+    let dictionary_module = root_module
+        .children
+        .get_mut("dictionary")
+        .expect("Couldn't get dictionary module from root?");
 
     let dict_file = read_file_to_value(&format!("{}/dictionary.json", paths.schema_path))?;
 
-    output_scope.writeln(format!(
+    dictionary_module.scope.writeln(format!(
         "//! {}\n\n",
         dict_file.get("description").unwrap().as_str().unwrap_or("")
     ));
 
-    output_scope.add_generation_timestamp_comment();
-    output_scope.writeln("use serde::{Serialize};");
+    dictionary_module.scope.add_generation_timestamp_comment();
+    dictionary_module.scope.writeln("use serde::{Serialize};");
 
-    output_scope
+    dictionary_module
+        .scope
         .new_struct("DictAttribute")
         .vis("pub")
         .doc("A generic way of identifying attributes from the dictionary.")
@@ -77,7 +88,8 @@ pub fn generate_dictionary_entries(paths: &DirPaths) -> Result<(), Box<dyn Error
                 .to_owned(),
         );
 
-    output_scope
+    dictionary_module
+        .scope
         .new_enum("TypeNames")
         .vis("pub")
         .doc("Attribute variable types.")
@@ -86,9 +98,11 @@ pub fn generate_dictionary_entries(paths: &DirPaths) -> Result<(), Box<dyn Error
         .push_variant(Variant::new("Json"))
         .push_variant(Variant::new("String"))
         .push_variant(Variant::new("Timestamp"))
+        .push_variant(Variant::new("Boolean"))
         .push_variant(Variant::new("NotSupported{ name: &'static str }"));
 
-    output_scope
+    dictionary_module
+        .scope
         .new_struct("DictType")
         .vis("pub")
         .doc("Trying to annotate the attribute types.")
@@ -147,23 +161,23 @@ pub fn generate_dictionary_entries(paths: &DirPaths) -> Result<(), Box<dyn Error
                 serde_json::from_value(attribute_value.to_owned()).unwrap();
             debug!("{attribute:#?}");
             #[allow(clippy::single_char_add_str)]
-            output_scope.writeln("");
+            dictionary_module.scope.writeln("");
             let thing_to_push = format!(
                 "pub const {}: DictAttribute = {:#?};\n",
                 attribute_name.to_uppercase(),
                 attribute
             );
-            output_scope.writeln(&format!(
+            dictionary_module.scope.writeln(&format!(
                 "/// {} - {}",
                 attribute.caption,
                 fix_docstring(attribute.description, Some("///"))
             ));
-            output_scope.writeln(&thing_to_push);
+            dictionary_module.scope.writeln(&thing_to_push);
         });
 
     write_source_file(
         &format!("{}src/dictionary.rs", paths.destination_path),
-        &output_scope.to_string(),
+        &dictionary_module.scope.to_string(),
     )?;
 
     Ok(())
@@ -175,12 +189,14 @@ enum TypeNames {
     Json,
     String,
     Timestamp,
+    Boolean,
     NotSupported { name: String },
 }
 
 impl Debug for TypeNames {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Boolean => write!(f, "TypeNames::Boolean"),
             Self::Integer => write!(f, "TypeNames::Integer"),
             Self::Json => write!(f, "TypeNames::Json"),
             Self::String => write!(f, "TypeNames::String"),
@@ -197,6 +213,7 @@ impl Debug for TypeNames {
 impl From<&str> for TypeNames {
     fn from(value: &str) -> Self {
         match value {
+            "boolean_t" => Self::Boolean,
             "string_t" => Self::String,
             "integer_t" => Self::Integer,
             "json_t" => Self::Json,

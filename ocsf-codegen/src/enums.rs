@@ -1,7 +1,8 @@
+use crate::module::{Module, ModuleEnumWithU8};
 use crate::*;
-use codegen::{Enum, Function, Variant};
+// use codegen::{Enum, Function, Variant};
 use serde::{Deserialize, Serialize};
-use itertools::Itertools;
+// use itertools::Itertools;
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -110,112 +111,66 @@ pub struct EnumDef {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EnumData {
-    caption: String,
-    description: Option<String>,
+    pub caption: String,
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct EnumFile {
+pub struct EnumFile {
     #[serde(alias = "enum")]
-    elements: HashMap<u8, EnumData>,
+    pub elements: HashMap<u8, EnumData>,
 }
 
-pub fn get_enum_defaults(paths: &DirPaths) -> Result<HashMap<u8, EnumData>, Box<dyn Error>> {
-    let defaults = format!("{}enums/defaults.json", paths.schema_path);
-    trace!("Pulling defaults from {defaults}");
-    let defaults: EnumFile = serde_json::from_value(read_file_to_value(&defaults)?)?;
-    let defaults = defaults.elements;
+pub fn generate_enums(paths: &DirPaths, root_module: &mut Module) -> Result<(), Box<dyn Error>> {
+    // let mut output_scope = Scope::new();
 
-    trace!("Defaults: {defaults:#?}");
-    Ok(defaults)
-}
-
-pub fn generate_enums(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
-    let mut output_scope = Scope::new();
-
-    let defaults = get_enum_defaults(paths)?;
+    // let defaults = get_enum_defaults(paths)?;
 
     for filename in find_files(&format!("{}enums", paths.schema_path)) {
         debug!("Enum filename: {filename}");
 
         let enum_file = read_file_to_value(&filename)?;
         // debug!("{parsed_file:#?}");
-        enum_from_value(
+        let enum_data: crate::module::ModuleEnumWithU8 = enum_from_value(
             paths,
-            &mut output_scope,
+            root_module,
             enum_file,
             collapsed_title_case(filename.split('/').last().unwrap()),
-            Some(defaults.clone()),
         )?;
-    }
 
-    debug!("{}", output_scope.to_string());
-    write_source_file(
-        &format!("{}src/enums/mod.rs", paths.destination_path),
-        &output_scope.to_string(),
-    )
+        root_module.enums.push(enum_data);
+    }
+    Ok(())
 }
 
+impl std::fmt::Display for OcsfCodegenError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "OcsfCodegenError: {}", self.errortext)
+    }
+}
+
+/// Insert a new enum into the target module's scope
 pub fn enum_from_value(
     paths: &DirPaths,
-    output_scope: &mut Scope,
+    root_module: &mut Module,
     value: Value,
-    enum_name: String,
-    defaults: Option<HashMap<u8, EnumData>>,
-) -> Result<(), Box<dyn Error>> {
-    let mut base_object = defaults.unwrap_or(get_enum_defaults(&paths)?);
+    name: String,
+) -> Result<ModuleEnumWithU8, OcsfCodegenError> {
+    if root_module.has_enum(&name) {
+        return Err(OcsfCodegenError::new(format!("Already has enum {name}!")));
+    }
 
-    let parsed_file: EnumFile = serde_json::from_value(value)?;
+    let mut base_object = ModuleEnumWithU8::new(paths, name);
+
+    let parsed_file: EnumFile = serde_json::from_value(value)
+        .map_err(OcsfCodegenError::from)
+        .unwrap();
 
     parsed_file.elements.into_iter().for_each(|(key, value)| {
-        base_object.insert(key, value);
+        base_object.variants.insert(key, value);
     });
     debug!("{base_object:#?}");
 
-    let mut new_enum = Enum::new(&enum_name);
-    new_enum.vis("pub");
-
-    let mut enum_to_u8 = Function::new("from");
-    enum_to_u8.arg("input", &enum_name).ret("u8");
-    enum_to_u8.line("match input {");
-
-    let mut try_u8_to_enum = Function::new("try_from");
-    try_u8_to_enum
-        .arg("input", "u8")
-        .ret("Result<Self, String>");
-    try_u8_to_enum.line("let res = match input {");
-
-    base_object.keys().sorted().for_each(|key| {
-        let value = base_object.get(&key).unwrap();
-        let variant_name = collapsed_title_case(&value.caption);
-        let mut variant = Variant::new(&variant_name);
-        if let Some(description) = &value.description {
-            variant.annotation(&format!("/// {}", description));
-        }
-        new_enum.push_variant(variant);
-
-        enum_to_u8.line(&format!("    {}::{} => {},", enum_name, variant_name, &key));
-        try_u8_to_enum.line(&format!("    {} => {}::{},", &key, enum_name, variant_name));
-    });
-
-
-    debug!("Adding enum called {enum_name} to scope...");
-    enum_to_u8.line("}");
-    try_u8_to_enum.line("_ => return Err(\"invalid value\".to_string()),");
-    try_u8_to_enum.line("}; Ok(res)");
-    // debug!("{:#?}",enum_to_u8.to_owned());
-
-    output_scope.push_enum(new_enum);
-
-    let enum_to_u8_impl = output_scope.new_impl("u8");
-    enum_to_u8_impl.impl_trait(&format!("From<{enum_name}>"));
-    enum_to_u8_impl.push_fn(enum_to_u8);
-
-    let try_u8_to_enum_impl = output_scope.new_impl(&enum_name);
-    try_u8_to_enum_impl
-        .impl_trait("TryFrom<u8>")
-        .associate_type("Error", "String");
-    try_u8_to_enum_impl.push_fn(try_u8_to_enum);
-
-    Ok(())
+    // root_module.enums.push(base_object);
+    Ok(base_object)
 }
