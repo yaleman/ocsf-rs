@@ -65,13 +65,12 @@ pub fn generate_categories(
         if let Some(attributes_object) = attributes.as_object() {
             attributes_object.into_iter().for_each(|(key, value)| {
                 let category: Category = serde_json::from_value(value.clone()).unwrap();
-                // debug!("{key} {category:#?}");
                 let variant_name = collapsed_title_case(key);
 
                 let variant_docstring = vec![
                     format!("/// {}", category.description),
                     "///".to_string(),
-                    format!("/// `uid={}000`", category.uid),
+                    format!("/// `uid={}`", category.uid),
                 ];
 
                 let variant = Variant::new(&variant_name)

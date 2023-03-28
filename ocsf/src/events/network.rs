@@ -1,15 +1,3 @@
-/// Network Activity events report network connection and traffic activity.
-///
-/// Sourced from: `events/events/network/network.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct NetworkActivity {
-    pub activity_id: Option<crate::NetworkActivity>,
-}
-
-impl NetworkActivity {
-    pub const UID: u16 = 4001;
-}
-
 /// DHCP Activity events report MAC to IP assignment via DHCP from a client or server.
 ///
 /// Sourced from: `events/events/network/dhcp.json`
@@ -59,30 +47,27 @@ impl EmailActivity {
     pub const UID: u16 = 4009;
 }
 
-/// Server Message Block (SMB) Protocol Activity events report client/server connections sharing resources within the network.
+/// DNS Activity events report DNS queries and answers as seen on the network.
 ///
-/// Sourced from: `events/events/network/smb.json`
+/// Sourced from: `events/events/network/dns.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct SmbActivity {
-    pub activity_id: Option<String>,
-    pub client_dialects: Option<String>,
-    /// The command name (e.g. SMB2_COMMAND_CREATE, SMB1_COMMAND_WRITE_ANDX).
-    pub command: Option<String>,
-    pub dce_rpc: Option<String>,
-    pub dialect: Option<String>,
-    /// The file that is the target of the SMB activity.
-    pub file: Option<String>,
-    /// Indicates how the file was opened (e.g. normal, delete on close).
-    pub open_type: Option<String>,
-    /// The server response in an SMB network connection.
-    pub response: Option<String>,
-    pub share: Option<String>,
-    pub share_type: Option<String>,
-    pub tree_uid: Option<String>,
+pub struct DnsActivity {
+    pub activity_id: Option<crate::DnsActivity>,
+    pub answers: Option<String>,
+    pub connection_info: Option<String>,
+    pub proxy: Option<String>,
+    pub query: Option<String>,
+    pub query_time: Option<String>,
+    /// The DNS server response code, as defined by the event source.
+    pub rcode: Option<String>,
+    /// The normalized identifier of the DNS server response code. See <a target='_blank' href='https://datatracker.ietf.org/doc/html/rfc6895'>RFC-6895</a>.
+    pub rcode_id: Option<String>,
+    pub response_time: Option<String>,
+    pub traffic: Option<String>,
 }
 
-impl SmbActivity {
-    pub const UID: u16 = 6;
+impl DnsActivity {
+    pub const UID: u16 = 3;
 }
 
 /// HTTP Activity events report HTTP connection and traffic information.
@@ -93,6 +78,18 @@ pub struct HttpActivity;
 
 impl HttpActivity {
     pub const UID: u16 = 2;
+}
+
+/// Network Activity events report network connection and traffic activity.
+///
+/// Sourced from: `events/events/network/network.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct NetworkActivity {
+    pub activity_id: Option<crate::NetworkActivity>,
+}
+
+impl NetworkActivity {
+    pub const UID: u16 = 4001;
 }
 
 /// Remote Desktop Protocol (RDP) Activity events report remote client connections to a server as seen on the network.
@@ -120,27 +117,19 @@ impl RdpActivity {
     pub const UID: u16 = 5;
 }
 
-/// DNS Activity events report DNS queries and answers as seen on the network.
+/// SSH Activity events report remote client connections to a server using the Secure Shell (SSH) Protocol.
 ///
-/// Sourced from: `events/events/network/dns.json`
+/// Sourced from: `events/events/network/ssh.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct DnsActivity {
-    pub activity_id: Option<crate::DnsActivity>,
-    pub answers: Option<String>,
-    pub connection_info: Option<String>,
-    pub proxy: Option<String>,
-    pub query: Option<String>,
-    pub query_time: Option<String>,
-    /// The DNS server response code, as defined by the event source.
-    pub rcode: Option<String>,
-    /// The normalized identifier of the DNS server response code. See <a target='_blank' href='https://datatracker.ietf.org/doc/html/rfc6895'>RFC-6895</a>.
-    pub rcode_id: Option<String>,
-    pub response_time: Option<String>,
-    pub traffic: Option<String>,
+pub struct SshActivity {
+    pub client_hassh: Option<String>,
+    /// The Secure Shell Protocol version.
+    pub protocol_ver: Option<String>,
+    pub server_hassh: Option<String>,
 }
 
-impl DnsActivity {
-    pub const UID: u16 = 3;
+impl SshActivity {
+    pub const UID: u16 = 7;
 }
 
 /// File Transfer Protocol (FTP) Activity events report file transfers between a server and a client as seen on the network.
@@ -167,19 +156,30 @@ impl FtpActivity {
     pub const UID: u16 = 8;
 }
 
-/// SSH Activity events report remote client connections to a server using the Secure Shell (SSH) Protocol.
+/// Server Message Block (SMB) Protocol Activity events report client/server connections sharing resources within the network.
 ///
-/// Sourced from: `events/events/network/ssh.json`
+/// Sourced from: `events/events/network/smb.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct SshActivity {
-    pub client_hassh: Option<String>,
-    /// The Secure Shell Protocol version.
-    pub protocol_ver: Option<String>,
-    pub server_hassh: Option<String>,
+pub struct SmbActivity {
+    pub activity_id: Option<String>,
+    pub client_dialects: Option<String>,
+    /// The command name (e.g. SMB2_COMMAND_CREATE, SMB1_COMMAND_WRITE_ANDX).
+    pub command: Option<String>,
+    pub dce_rpc: Option<String>,
+    pub dialect: Option<String>,
+    /// The file that is the target of the SMB activity.
+    pub file: Option<String>,
+    /// Indicates how the file was opened (e.g. normal, delete on close).
+    pub open_type: Option<String>,
+    /// The server response in an SMB network connection.
+    pub response: Option<String>,
+    pub share: Option<String>,
+    pub share_type: Option<String>,
+    pub tree_uid: Option<String>,
 }
 
-impl SshActivity {
-    pub const UID: u16 = 7;
+impl SmbActivity {
+    pub const UID: u16 = 6;
 }
 
-// This file was automatically generated by ocsf-codegen at 2023-03-28T12:22:45+00:00 branch: "yaleman/issue9" link: <https://github.com/yaleman/ocsf-rs/commit/f3541d74751677f4bb36aff1c977d9dc0b9ef4d6>
+// This file was automatically generated by ocsf-codegen at 2023-03-28T12:51:15+00:00 branch: "yaleman/issue9" link: <https://github.com/yaleman/ocsf-rs/commit/a19241f10710e7d5f5a476bfa2484030090763e4>

@@ -68,7 +68,6 @@ impl ModuleEnumWithU8 {
         enum_to_u8.line("}");
         try_u8_to_enum.line("_ => return Err(\"invalid value\".to_string()),");
         try_u8_to_enum.line("}; Ok(res)");
-        // debug!("{:#?}",enum_to_u8.to_owned());
 
         scope.push_enum(new_enum);
 

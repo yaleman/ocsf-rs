@@ -149,7 +149,7 @@ impl<'de> Deserialize<'de> for EventAttribute {
     {
         let value = Value::deserialize(deserializer)?;
 
-        debug!("Deserializing to EventAttribute: {:?}", value);
+        trace!("Deserializing to EventAttribute: {:?}", value);
 
         if value.is_array() {
             return Ok(EventAttribute {
@@ -256,112 +256,6 @@ impl Default for EventAttribute {
     }
 }
 
-// impl EventAttribute {
-//     pub fn name(self, name: String) -> Self {
-//         Self {
-//             name: Some(name),
-//             ..self
-//         }
-//     }
-//     pub fn profile(self, profile: Option<&str>) -> Self {
-//         Self {
-//             profile: profile.map(|val| val.to_string()),
-//             ..self
-//         }
-//     }
-//     pub fn description(self, description: String) -> Self {
-//         Self {
-//             description: Some(description),
-//             ..self
-//         }
-//     }
-//     pub fn caption(self, value: String) -> Self {
-//         Self {
-//             caption: Some(value),
-//             ..self
-//         }
-//     }
-//     pub fn requirement(self, value: Requirement) -> Self {
-//         Self {
-//             requirement: Some(value),
-//             ..self
-//         }
-//     }
-//     pub fn group(self, value: Group) -> Self {
-//         Self {
-//             group: Some(value),
-//             ..self
-//         }
-//     }
-// }
-
-// /// returns an [EventAttribute] and  list of attribute names, so I can track down what I need to support :D
-// fn handle_attribute(
-//     _base_path: &str,
-//     _module_source_path: &str,
-//     filename: &str,
-//     attribute_name: &str,
-//     attribute: Map<String, Value>,
-// ) -> EventAttribute {
-//     let attrkeys: Vec<String> = attribute.keys().map(|k| k.to_string()).collect();
-//     info!(
-//         "Handling attribute {} (keys: {:#?})",
-//         attribute_name,
-//         attrkeys.join(",")
-//     );
-
-//     let mut result = EventAttribute::new(attribute_name.to_string());
-
-//     attribute.iter().for_each(|(key, value)| {
-//         info!("attr: {} val: {:?}", key, value);
-//         result = match key.to_owned().as_str() {
-//             "$include" => {
-//                 // TODO: handle includes inside attributes!
-//                 warn!(
-//                     "Attribute {} in {} needs include: {}",
-//                     attribute_name,
-//                     filename,
-//                     value.as_str().unwrap()
-//                 );
-//                 result.clone()
-//             }
-//             "caption" => result.clone().caption(value.as_str().unwrap().into()),
-//             "description" => result.clone().description(value.as_str().unwrap().into()),
-//             "enum" => {
-//                 warn!(
-//                     "Attribute {} in {} needs enum: {:?}",
-//                     attribute_name,
-//                     filename,
-//                     value.to_string()
-//                 );
-//                 result.clone() // TODO: handle arbitrary enums inside of events!
-//             }
-//             "group" => result.clone().group(value.as_str().unwrap().into()),
-//             "profile" => {
-//                 debug!("profile value: {:?}", value.as_str());
-//                 result.clone().profile(value.as_str())
-//             }
-//             "requirement" => result.clone().requirement(value.as_str().unwrap().into()),
-//             _ => {
-//                 warn!("Unhandled attr key: {key:?}");
-//                 result.clone()
-//             }
-//         };
-//     });
-//     debug!("{result:#?}");
-//     result
-// }
-
-// /// load a category name so we can extend from it
-// fn load_base_module(paths: &DirPaths, category_name: String) -> Result<Value, String> {
-
-//     let target_file = format!("{}events/{}/{}.json", paths.schema_path, category_name, category_name);
-
-
-//     read_file_to_value(&target_file).map_err(|e| format!("{e:?}"))
-
-// }
-
 fn load_all_event_files(paths: &DirPaths) -> HashMap<String, EventDef> {
     let target_path = format!("{}events/", paths.schema_path);
     info!("loading all event files from {}", target_path);
@@ -425,7 +319,7 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
             target_module = target_module.children.get_mut(tm).unwrap_or_else(|| panic!("Couldn't get {tm}"));
         }
 
-        debug!("Target module: {:#?}", target_module);
+        trace!("Target module: {:#?}", target_module);
 
         // if !target_module.imports.iter().any(|e| e == "use serde::Deserialise") {
         //     target_module.imports.push("use serde::Deserialize".to_string());
@@ -464,10 +358,10 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
         .for_each(|(attr_name, attr)| {
             if attr_name == "$include" {
                 return
-                error!("need to handle attribute $include {attr:#?}");
+                error!("need to handle attribute $include {:#?}", attr.just_includes);
                 //TODO: need to parse attributes
             } else {
-                debug!("attr name: {attr_name}");
+                trace!("attr name: {attr_name}");
             }
             let attr_name = match attr_name == "type" {
                 true => "type_name",
@@ -506,7 +400,7 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
         if let Some(category) = event.category.clone() {
             if categories.contains_key(&category) {
                 uid += 1000 * categories[&category].uid;
-                debug!("Set UID to {uid}");
+                trace!("Set UID to {uid}");
             }
         }
 

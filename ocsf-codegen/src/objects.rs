@@ -32,7 +32,7 @@ pub fn generate_objects(paths: &DirPaths, root_module: &mut Module) -> Result<()
         let file_value = read_file_to_value(&filename)?;
         let objectdef: ObjectDef = serde_json::from_value(file_value)?;
 
-        debug!("Object Def: {objectdef:#?}");
+        trace!("Object Def: {objectdef:#?}");
     }
 
     write_source_file(

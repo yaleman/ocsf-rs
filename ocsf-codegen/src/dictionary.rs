@@ -156,10 +156,10 @@ pub fn generate_dictionary_entries(
         .unwrap()
         .into_iter()
         .for_each(|(attribute_name, attribute_value)| {
-            debug!("attribute_value: {attribute_value:#?}");
+            trace!("attribute_value: {attribute_value:#?}");
             let attribute: DictAttribute =
                 serde_json::from_value(attribute_value.to_owned()).unwrap();
-            debug!("{attribute:#?}");
+            trace!("{attribute:#?}");
             #[allow(clippy::single_char_add_str)]
             dictionary_module.scope.writeln("");
             let thing_to_push = format!(
