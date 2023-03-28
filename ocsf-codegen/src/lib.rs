@@ -9,6 +9,7 @@ use std::path::PathBuf;
 
 use chrono::Utc;
 use codegen::Scope;
+use itertools::Itertools;
 use log::*;
 use regex::Regex;
 use serde_json::{self, Value};
@@ -123,7 +124,7 @@ pub fn get_new_scope_with_comment(first_line: Option<String>) -> Scope {
 
 /// uses serde_json to try and parse a given file
 pub fn read_file_to_value(filename: &str) -> Result<Value, Box<dyn Error>> {
-    trace!("read_file_to_value {filename}");
+    debug!("read_file_to_value {filename}");
     let file = File::open(filename)?;
     let reader = BufReader::new(file);
 
@@ -155,6 +156,9 @@ fn write_modules(
     enums.sort();
     let _ = enums_mod.write("\n".as_bytes())?;
     enums.iter().for_each(|e| {
+        if e.is_empty() {
+            panic!("Empty module name?");
+        }
         enums_mod.write_fmt(format_args!("pub mod {e};\n")).unwrap();
     });
 
@@ -172,6 +176,9 @@ fn write_modules(
     let _ = events_mod.write("\n".as_bytes())?;
 
     events.iter().for_each(|e| {
+        if e.is_empty() {
+            panic!("Empty module name?");
+        }
         events_mod
             .write_fmt(format_args!("pub mod {e};\n"))
             .unwrap();
@@ -197,6 +204,10 @@ impl DirPaths {
             destination_path: format!("{base_path}ocsf/"),
             schema_path: format!("{base_path}ocsf-schema/"),
         }
+    }
+    /// destination path + `src/`
+    fn source_path(&self) -> PathBuf {
+        PathBuf::from(&format!("{}src/", &self.destination_path))
     }
 }
 
@@ -249,8 +260,7 @@ pub fn fix_docstring(input: String, leading_docstring: Option<&'static str>) -> 
 }
 
 
-/// checks that all the expected files are there, and if not then it's
-fn check_crate_files(paths: &DirPaths, modules: Vec<&str>) -> Result<(), &'static str> {
+fn generate_expected_paths(paths: &DirPaths, modules: &[String]) -> Vec<String> {
     let mut ok_paths: Vec<String> = vec![];
 
     modules.iter().for_each(|m| {
@@ -260,6 +270,14 @@ fn check_crate_files(paths: &DirPaths, modules: Vec<&str>) -> Result<(), &'stati
 
     ok_paths.push(format!("{}src/", paths.destination_path));
     ok_paths.push(format!("{}src/lib.rs", paths.destination_path));
+    ok_paths
+}
+
+/// checks that all the expected files are there, and if not then it's
+fn check_crate_files(paths: &DirPaths, ok_paths: Vec<String>) -> Result<(), &'static str> {
+
+    debug!("OK Paths:{:#?}", ok_paths.iter().sorted());
+
 
     let mut found_bad_files = false;
 
@@ -326,6 +344,7 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
         // "other",
         "profiles",
     ];
+    let modules: Vec<String> = modules.iter().map(|f| f.to_string()).collect();
 
     for module_name in modules.iter() {
         root_module.add_child(module_name.to_string());
@@ -341,9 +360,9 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
     generate_objects(&paths, &mut root_module)?;
     generate_events(&paths, &mut root_module)?;
 
-
-    root_module.write_module(&paths.destination_path.clone().into())?;
-    check_crate_files(&paths, modules)?;
+    let mut expected_paths: Vec<String> = generate_expected_paths(&paths, &modules);
+    root_module.write_module(&mut expected_paths, &paths.source_path(), )?;
+    check_crate_files(&paths, expected_paths)?;
 
     Ok(())
 }

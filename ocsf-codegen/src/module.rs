@@ -1,9 +1,10 @@
 use std::collections::HashMap;
+use std::fs::create_dir_all;
 use std::path::PathBuf;
 
 use codegen::{Enum, Function, Scope, Variant};
 use itertools::{any, Itertools};
-use log::{debug, trace};
+use log::{debug, trace, info, error};
 
 use crate::enums::EnumData;
 use crate::{
@@ -38,7 +39,7 @@ impl ModuleEnumWithU8 {
 
     pub fn add_to_scope(&self, scope: &mut Scope) {
         let mut new_enum = Enum::new(&self.name);
-        new_enum.vis("pub");
+        new_enum.vis("pub").derive("serde::Serialize").derive("serde::Deserialize");
 
         let mut enum_to_u8 = Function::new("from");
         enum_to_u8.arg("input", &self.name).ret("u8");
@@ -172,10 +173,22 @@ impl Module {
     /// write all the things!
     pub fn write_module(
         &mut self,
+        expected_paths: &mut Vec<String>,
         parent_dirname: &PathBuf,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let my_filename = parent_dirname.join(format!("src/{}.rs", self.name));
+
+        let my_filename = parent_dirname.join(format!("{}.rs", self.name));
         debug!("My filename: {:#?}", my_filename);
+
+        if !expected_paths.contains(&my_filename.to_str().unwrap().to_owned()) {
+            debug!("Adding expected path from filename {}", my_filename.to_str().unwrap());
+            expected_paths.push(my_filename.to_str().unwrap().to_owned());
+        }
+
+        if !parent_dirname.exists() {
+            debug!("Creating directory {:?}", parent_dirname);
+            create_dir_all(parent_dirname)?;
+        }
 
         for import in self.imports.iter() {
             self.scope.raw(&format!("{};", import));
@@ -183,23 +196,39 @@ impl Module {
 
         let child_keys: Vec<String> = self.children.keys().cloned().collect();
 
+        info!("Child modules: {child_keys:#?}");
+
         child_keys.iter().for_each(|key| {
+            if key.is_empty() {
+                panic!("Empty module name?");
+            }
             self.scope.raw(&format!("pub mod {};", key));
         });
 
-        child_keys.into_iter().for_each(|key| {
-            let child = self.children.get_mut(&key).unwrap();
-            if self.is_root {
-                child.write_module(parent_dirname).unwrap();
+        child_keys.iter().for_each(|key| {
+
+            let child_path = match self.is_root {
+                true => parent_dirname.clone(),
+                false => parent_dirname.clone().join(&self.name),
             };
+
+            info!("writing child module '{}' to {:?}", key, child_path);
+            let child = self.children.get_mut(key).unwrap();
+            // if self.is_root {
+            if let Err(err) = child.write_module(expected_paths, &child_path) {
+                error!("Failed to write child module '{}' to {:?}: {:?}", key, parent_dirname, err);
+            };
+
+            if !expected_paths.contains(&child_path.to_str().unwrap().to_owned()) {
+                debug!("Adding expected path {}", child_path.to_str().unwrap());
+                expected_paths.push(child_path.to_str().unwrap().to_owned());
+            }
         });
 
         self.enums.iter().for_each(|object| {
             debug!("adding enum to scope {:?}", object.name);
             object.add_to_scope(&mut self.scope)
         });
-
-
 
         if !self.scope.to_string().contains("automatically generated") {
             self.scope.add_generation_timestamp_comment();

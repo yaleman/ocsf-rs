@@ -109,7 +109,7 @@ pub struct EnumDef {
 //     Ok(())
 // }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone,PartialEq, Eq, Serialize, Deserialize)]
 pub struct EnumData {
     pub caption: String,
     pub description: Option<String>,

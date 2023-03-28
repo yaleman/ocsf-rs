@@ -5,13 +5,15 @@ use serde::Deserialize;
 
 // TODO: categories from the categories file
 
-#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
-struct Category {
-    caption: String,
-    description: String,
-    uid: u8,
+pub struct Category {
+    pub caption: String,
+    pub description: String,
+    pub uid: u32,
 }
+
+
+
 
 pub fn generate_categories(
     paths: &DirPaths,
