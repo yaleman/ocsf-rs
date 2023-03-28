@@ -259,7 +259,6 @@ pub fn fix_docstring(input: String, leading_docstring: Option<&'static str>) -> 
         .replace("</code>", "`")
 }
 
-
 fn generate_expected_paths(paths: &DirPaths, modules: &[String]) -> Vec<String> {
     let mut ok_paths: Vec<String> = vec![];
 
@@ -275,9 +274,7 @@ fn generate_expected_paths(paths: &DirPaths, modules: &[String]) -> Vec<String> 
 
 /// checks that all the expected files are there, and if not then it's
 fn check_crate_files(paths: &DirPaths, ok_paths: Vec<String>) -> Result<(), &'static str> {
-
     debug!("OK Paths:{:#?}", ok_paths.iter().sorted());
-
 
     let mut found_bad_files = false;
 
@@ -361,9 +358,8 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
     generate_events(&paths, &mut root_module)?;
 
     let mut expected_paths: Vec<String> = generate_expected_paths(&paths, &modules);
-    root_module.write_module(&mut expected_paths, &paths.source_path(), )?;
+    root_module.write_module(&mut expected_paths, &paths.source_path())?;
     check_crate_files(&paths, expected_paths)?;
 
     Ok(())
 }
-

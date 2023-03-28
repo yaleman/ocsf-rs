@@ -10,7 +10,7 @@ pub struct EnumDef {
     class_name: String,
 }
 
-#[derive(Debug, Clone,PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EnumData {
     pub caption: String,
     pub description: Option<String>,

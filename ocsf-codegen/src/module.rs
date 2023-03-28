@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 use codegen::{Enum, Function, Scope, Variant};
 use itertools::{any, Itertools};
-use log::{debug, trace, info, error};
+use log::{debug, error, info, trace};
 
 use crate::enums::EnumData;
 use crate::{
@@ -39,7 +39,10 @@ impl ModuleEnumWithU8 {
 
     pub fn add_to_scope(&self, scope: &mut Scope) {
         let mut new_enum = Enum::new(&self.name);
-        new_enum.vis("pub").derive("serde::Serialize").derive("serde::Deserialize");
+        new_enum
+            .vis("pub")
+            .derive("serde::Serialize")
+            .derive("serde::Deserialize");
 
         let mut enum_to_u8 = Function::new("from");
         enum_to_u8.arg("input", &self.name).ret("u8");
@@ -175,12 +178,14 @@ impl Module {
         expected_paths: &mut Vec<String>,
         parent_dirname: &PathBuf,
     ) -> Result<(), Box<dyn std::error::Error>> {
-
         let my_filename = parent_dirname.join(format!("{}.rs", self.name));
         debug!("My filename: {:#?}", my_filename);
 
         if !expected_paths.contains(&my_filename.to_str().unwrap().to_owned()) {
-            debug!("Adding expected path from filename {}", my_filename.to_str().unwrap());
+            debug!(
+                "Adding expected path from filename {}",
+                my_filename.to_str().unwrap()
+            );
             expected_paths.push(my_filename.to_str().unwrap().to_owned());
         }
 
@@ -205,7 +210,6 @@ impl Module {
         });
 
         child_keys.iter().sorted().for_each(|key| {
-
             let child_path = match self.is_root {
                 true => parent_dirname.clone(),
                 false => parent_dirname.clone().join(&self.name),
@@ -215,7 +219,10 @@ impl Module {
             let child = self.children.get_mut(key).unwrap();
             // if self.is_root {
             if let Err(err) = child.write_module(expected_paths, &child_path) {
-                error!("Failed to write child module '{}' to {:?}: {:?}", key, parent_dirname, err);
+                error!(
+                    "Failed to write child module '{}' to {:?}: {:?}",
+                    key, parent_dirname, err
+                );
             };
 
             if !expected_paths.contains(&child_path.to_str().unwrap().to_owned()) {

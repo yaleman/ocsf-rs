@@ -12,9 +12,6 @@ pub struct Category {
     pub uid: u32,
 }
 
-
-
-
 pub fn generate_categories(
     paths: &DirPaths,
     root_module: &mut Module,
