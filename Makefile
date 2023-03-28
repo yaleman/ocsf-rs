@@ -1,4 +1,4 @@
-.DEFAULT: codegen
+DEFAULT: codegen
 
 # SCHEMA_BRANCH ?= "v1.0.0"
 SCHEMA_BRANCH ?= "main"
@@ -14,6 +14,7 @@ codegen: ## generate the ocsf crate, run cargo fmt on it and test it actually bu
 	cargo run -p ocsf-codegen -- -d ./
 	cargo fmt -p ocsf
 	cargo build -p ocsf
+
 
 .PHONY: build
 build: ## codegen + doc generation + clippy + test

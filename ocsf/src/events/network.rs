@@ -1,152 +1,212 @@
-/// SSH Activity events report remote client connections to a server using the Secure Shell (SSH) Protocol.
+/// DNS Activity events report DNS queries and answers as seen on the network.
 ///
-/// Sourced from: `events/network/ssh.json`
-#[derive(Deserialize, Serialize)]
-pub struct SshActivity {
-    server_hassh: Option<String>,
-    /// The Secure Shell Protocol version.
-    protocol_ver: Option<String>,
-    client_hassh: Option<String>,
+/// Sourced from: `events/events/network/dns.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct DnsActivity {
+    pub activity_id: Option<crate::DnsActivity>,
+    pub answers: Option<String>,
+    pub connection_info: Option<String>,
+    pub proxy: Option<String>,
+    pub query: Option<String>,
+    pub query_time: Option<String>,
+    /// The DNS server response code, as defined by the event source.
+    pub rcode: Option<String>,
+    /// The normalized identifier of the DNS server response code. See <a target='_blank' href='https://datatracker.ietf.org/doc/html/rfc6895'>RFC-6895</a>.
+    pub rcode_id: Option<String>,
+    pub response_time: Option<String>,
+    pub traffic: Option<String>,
 }
 
-/// DHCP Activity events report MAC to IP assignment via DHCP from a client or server.
-///
-/// Sourced from: `events/network/dhcp.json`
-#[derive(Deserialize, Serialize)]
-pub struct DhcpActivity {
-    activity_id: String,
-    relay: Option<String>,
-    /// The initiator (client) of the DHCP connection.
-    src_endpoint: Option<String>,
-    /// The unique identifier of the transaction. This is typically a random number generated from the client to associate a dhcp request/response pair.
-    transaction_uid: Option<String>,
-    /// The responder (server) of the DHCP connection.
-    dst_endpoint: Option<String>,
-    lease_dur: Option<String>,
-    is_renewal: Option<String>,
+impl DnsActivity {
+    /// Returns the UID of the event type (3)
+    pub fn uid() -> u16 {
+        3 // UID value of event 3
+    }
 }
 
 /// Server Message Block (SMB) Protocol Activity events report client/server connections sharing resources within the network.
 ///
-/// Sourced from: `events/network/smb.json`
-#[derive(Deserialize, Serialize)]
+/// Sourced from: `events/events/network/smb.json`
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct SmbActivity {
-    client_dialects: Option<String>,
-    dce_rpc: Option<String>,
-    dialect: Option<String>,
+    pub activity_id: Option<String>,
+    pub client_dialects: Option<String>,
     /// The command name (e.g. SMB2_COMMAND_CREATE, SMB1_COMMAND_WRITE_ANDX).
-    command: Option<String>,
-    tree_uid: Option<String>,
-    /// Indicates how the file was opened (e.g. normal, delete on close).
-    open_type: Option<String>,
-    /// The server response in an SMB network connection.
-    response: Option<String>,
+    pub command: Option<String>,
+    pub dce_rpc: Option<String>,
+    pub dialect: Option<String>,
     /// The file that is the target of the SMB activity.
-    file: Option<String>,
-    share: Option<String>,
-    activity_id: Option<String>,
-    share_type: Option<String>,
+    pub file: Option<String>,
+    /// Indicates how the file was opened (e.g. normal, delete on close).
+    pub open_type: Option<String>,
+    /// The server response in an SMB network connection.
+    pub response: Option<String>,
+    pub share: Option<String>,
+    pub share_type: Option<String>,
+    pub tree_uid: Option<String>,
 }
 
-/// Remote Desktop Protocol (RDP) Activity events report remote client connections to a server as seen on the network.
-///
-/// Sourced from: `events/network/rdp.json`
-#[derive(Deserialize, Serialize)]
-pub struct RdpActivity {
-    /// The list of observed certificates in an RDP TLS connection.
-    certificate_chain: Option<String>,
-    /// The client request in an RDP network connection.
-    request: Option<String>,
-    activity_id: Option<String>,
-    capabilities: Option<String>,
-    identifier_cookie: Option<String>,
-    /// The Remote Desktop Protocol version.
-    protocol_ver: Option<String>,
-    remote_display: Option<String>,
-    /// The server response in an RDP network connection.
-    response: Option<String>,
-    /// The device instigating the RDP connection.
-    device: Option<String>,
-}
-
-/// DNS Activity events report DNS queries and answers as seen on the network.
-///
-/// Sourced from: `events/network/dns.json`
-#[derive(Deserialize, Serialize)]
-pub struct DnsActivity {
-    answers: Option<String>,
-    activity_id: Option<String>,
-    query_time: Option<String>,
-    connection_info: Option<String>,
-    proxy: Option<String>,
-    traffic: Option<String>,
-    response_time: Option<String>,
-    query: Option<String>,
-    /// The normalized identifier of the DNS server response code. See <a target='_blank' href='https://datatracker.ietf.org/doc/html/rfc6895'>RFC-6895</a>.
-    rcode_id: Option<String>,
-    /// The DNS server response code, as defined by the event source.
-    rcode: Option<String>,
+impl SmbActivity {
+    /// Returns the UID of the event type (6)
+    pub fn uid() -> u16 {
+        6 // UID value of event 6
+    }
 }
 
 /// HTTP Activity events report HTTP connection and traffic information.
 ///
-/// Sourced from: `events/network/http.json`
-#[derive(Deserialize, Serialize)]
+/// Sourced from: `events/events/network/http.json`
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct HttpActivity;
 
-/// Network Activity events report network connection and traffic activity.
-///
-/// Sourced from: `events/network/network.json`
-#[derive(Deserialize, Serialize)]
-pub struct NetworkActivity {
-    activity_id: Option<String>,
+impl HttpActivity {
+    /// Returns the UID of the event type (2)
+    pub fn uid() -> u16 {
+        2 // UID value of event 2
+    }
 }
 
-/// Email events report activities of emails.
+/// SSH Activity events report remote client connections to a server using the Secure Shell (SSH) Protocol.
 ///
-/// Sourced from: `events/network/email.json`
-#[derive(Deserialize, Serialize)]
-pub struct EmailActivity {
-    activity_id: Option<String>,
-    email_auth: Option<String>,
-    /// The attempt number for attempting to deliver the email.
-    attempt: Option<String>,
-    /// The direction of the email relative to the scanning host or organization.
-    /// ///Email scanned at an internet gateway might be characterized as inbound to the organization from the Internet, outbound from the organization to the Internet, or internal within the organization. Email scanned at a workstation might be characterized as inbound to, or outbound from the workstation.
-    direction_id: String,
-    /// The initiator (client) sending the email.
-    src_endpoint: Option<String>,
-    /// The value of the SMTP HELO or EHLO command sent by the initiator (client).
-    smtp_hello: Option<String>,
-    banner: Option<String>,
-    email: String,
-    /// The direction of the email, as defined by the `direction_id` value.
-    direction: Option<String>,
-    /// The responder (server) receiving the email.
-    dst_endpoint: Option<String>,
+/// Sourced from: `events/events/network/ssh.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct SshActivity {
+    pub client_hassh: Option<String>,
+    /// The Secure Shell Protocol version.
+    pub protocol_ver: Option<String>,
+    pub server_hassh: Option<String>,
+}
+
+impl SshActivity {
+    /// Returns the UID of the event type (7)
+    pub fn uid() -> u16 {
+        7 // UID value of event 7
+    }
 }
 
 /// File Transfer Protocol (FTP) Activity events report file transfers between a server and a client as seen on the network.
 ///
-/// Sourced from: `events/network/ftp.json`
-#[derive(Deserialize, Serialize)]
+/// Sourced from: `events/events/network/ftp.json`
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct FtpActivity {
-    /// The list of responses to the FTP command.
-    command_responses: Option<String>,
+    pub activity_id: Option<String>,
     /// The list of return codes to the FTP command.
-    codes: Option<String>,
-    /// The dynamic port established for impending data transfers.
-    port: Option<String>,
+    pub codes: Option<String>,
     /// The FTP command.
-    command: Option<String>,
-    activity_id: Option<String>,
-    /// The type of FTP network connection (e.g. active, passive).
-    #[serde(alias = "type")]
-    type_field: Option<String>,
+    pub command: Option<String>,
+    /// The list of responses to the FTP command.
+    pub command_responses: Option<String>,
     /// The name of the data affiliated with the command.
-    name: Option<String>,
+    pub name: Option<String>,
+    /// The dynamic port established for impending data transfers.
+    pub port: Option<String>,
+    /// The type of FTP network connection (e.g. active, passive).
+    pub type_name: Option<String>,
 }
 
-use serde::{Deserialize, Serialize};
+impl FtpActivity {
+    /// Returns the UID of the event type (8)
+    pub fn uid() -> u16 {
+        8 // UID value of event 8
+    }
+}
 
-// This file was automatically generated by ocsf-codegen at 2023-03-27T21:46:59+00:00 branch: "yaleman/issue8" link: <https://github.com/yaleman/ocsf-rs/commit/4e69c4f97b90710c53906ab4e63de0c80aa8f60a>
+/// Remote Desktop Protocol (RDP) Activity events report remote client connections to a server as seen on the network.
+///
+/// Sourced from: `events/events/network/rdp.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct RdpActivity {
+    pub activity_id: Option<String>,
+    pub capabilities: Option<String>,
+    /// The list of observed certificates in an RDP TLS connection.
+    pub certificate_chain: Option<String>,
+    /// The device instigating the RDP connection.
+    pub device: Option<String>,
+    pub identifier_cookie: Option<String>,
+    /// The Remote Desktop Protocol version.
+    pub protocol_ver: Option<String>,
+    pub remote_display: Option<String>,
+    /// The client request in an RDP network connection.
+    pub request: Option<String>,
+    /// The server response in an RDP network connection.
+    pub response: Option<String>,
+}
+
+impl RdpActivity {
+    /// Returns the UID of the event type (5)
+    pub fn uid() -> u16 {
+        5 // UID value of event 5
+    }
+}
+
+/// Network Activity events report network connection and traffic activity.
+///
+/// Sourced from: `events/events/network/network.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct NetworkActivity {
+    pub activity_id: Option<crate::NetworkActivity>,
+}
+
+impl NetworkActivity {
+    /// Returns the UID of the event type (4001)
+    pub fn uid() -> u16 {
+        4001 // UID value of event 4001
+    }
+}
+
+/// Email events report activities of emails.
+///
+/// Sourced from: `events/events/network/email.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct EmailActivity {
+    pub activity_id: Option<String>,
+    /// The attempt number for attempting to deliver the email.
+    pub attempt: Option<String>,
+    pub banner: Option<String>,
+    /// The direction of the email, as defined by the `direction_id` value.
+    pub direction: Option<String>,
+    /// The direction of the email relative to the scanning host or organization.
+    /// ///Email scanned at an internet gateway might be characterized as inbound to the organization from the Internet, outbound from the organization to the Internet, or internal within the organization. Email scanned at a workstation might be characterized as inbound to, or outbound from the workstation.
+    pub direction_id: String,
+    /// The responder (server) receiving the email.
+    pub dst_endpoint: Option<String>,
+    pub email: String,
+    pub email_auth: Option<String>,
+    /// The value of the SMTP HELO or EHLO command sent by the initiator (client).
+    pub smtp_hello: Option<String>,
+    /// The initiator (client) sending the email.
+    pub src_endpoint: Option<String>,
+}
+
+impl EmailActivity {
+    /// Returns the UID of the event type (4009)
+    pub fn uid() -> u16 {
+        4009 // UID value of event 4009
+    }
+}
+
+/// DHCP Activity events report MAC to IP assignment via DHCP from a client or server.
+///
+/// Sourced from: `events/events/network/dhcp.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct DhcpActivity {
+    pub activity_id: String,
+    /// The responder (server) of the DHCP connection.
+    pub dst_endpoint: Option<String>,
+    pub is_renewal: Option<String>,
+    pub lease_dur: Option<String>,
+    pub relay: Option<String>,
+    /// The initiator (client) of the DHCP connection.
+    pub src_endpoint: Option<String>,
+    /// The unique identifier of the transaction. This is typically a random number generated from the client to associate a dhcp request/response pair.
+    pub transaction_uid: Option<String>,
+}
+
+impl DhcpActivity {
+    /// Returns the UID of the event type (4004)
+    pub fn uid() -> u16 {
+        4004 // UID value of event 4004
+    }
+}
+
+// This file was automatically generated by ocsf-codegen at 2023-03-28T11:14:40+00:00 branch: "yaleman/issue8" link: <https://github.com/yaleman/ocsf-rs/commit/9d78df7466f9ac2dd533f1a5efdb53c8ce479741>

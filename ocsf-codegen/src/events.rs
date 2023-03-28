@@ -1,12 +1,11 @@
 use std::error::Error;
 
-use codegen::{Struct, Field};
+use codegen::{Struct, Field, Impl, Function};
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Map;
 
 use crate::module::Module;
 use crate::*;
-use glob::glob;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct EventDef {
@@ -23,50 +22,8 @@ pub struct EventDef {
     pub associations: Option<Map<String, Value>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub profiles: Option<Vec<String>>,
-}
-
-/// this finds an event schema file based on its name and returns the contents - or panics if not
-#[allow(dead_code)]
-fn find_event_schema_file(base_path: &str, name: &str) -> String {
-    let search_string = format!("{base_path}events/**/*.json");
-    debug!("Looking for object called {name} in {search_string}");
-    for filename in glob(&search_string).unwrap().flatten() {
-        let filename_str = filename.to_str().unwrap();
-
-        let file_contents = match read_file_to_value(filename_str) {
-            Ok(val) => val,
-            Err(err) => {
-                error!("Failed to parse {filename_str}: {err:?}");
-                panic!();
-            }
-        };
-        let object_name = file_contents.get("name").unwrap().as_str().unwrap();
-        if object_name == name {
-            info!("Success! {:?}", filename_str);
-            return filename_str.to_string();
-        } else {
-            debug!(
-                "Name from {} didn't match: {} != {}",
-                filename_str, object_name, name
-            );
-            // panic!();
-        }
-    }
-    // This is a panic-level event because we've got schema files relying on others that don't exist
-    panic!("Didn't find {} in {}", name, search_string);
-    // None
-}
-
-#[allow(dead_code)]
-fn handle_attribute_includes(
-    _base_path: &str,
-    _module_source_path: &str,
-    _filename: &str,
-    includes: Vec<String>,
-) {
-    includes
-        .iter()
-        .for_each(|i| warn!("Need to write include handler for {i}"))
+    #[serde(skip_serializing_if = "Option::is_none")]
+    extends: Option<String>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
@@ -134,7 +91,7 @@ impl From<&str> for Requirement {
             "optional" => Self::Optional,
             "recommended" => Self::Recommended,
             "required" => Self::Required,
-            _ => panic!("Invalid enum value {value} - select from optional,recommended, =required"),
+            _ => panic!("Invalid enum value '{value}' - select from optional,recommended,required"),
         }
     }
 }
@@ -162,8 +119,8 @@ fn test_from_str_invalid_requirement() {
     let _ = Requirement::from("requiasdfasdfred");
 }
 
-#[allow(dead_code)]
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+// #[allow(dead_code)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub struct EventAttribute {
     #[serde(skip_serializing_if = "Option::is_none")]
     name: Option<String>,
@@ -177,8 +134,100 @@ pub struct EventAttribute {
     requirement: Option<Requirement>,
     #[serde(skip_serializing_if = "Option::is_none")]
     group: Option<Group>,
-    #[serde(alias = "$include", skip_serializing_if = "Option::is_none")]
+    #[serde(alias = "$include", skip)]
     include: Option<String>,
+    /// This is the string name of the type, not the enum value
+    enum_name: String,
+    just_includes: Vec<String>,
+}
+
+
+impl<'de> Deserialize<'de> for EventAttribute {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = Value::deserialize(deserializer)?;
+
+        debug!("Deserializing to EventAttribute: {:?}", value);
+
+        if value.is_array() {
+            return Ok(EventAttribute {
+                just_includes: value.as_array().unwrap().iter().map(|v| v.as_str().unwrap().to_string()).collect(),
+                ..Default::default()
+            })
+        }
+
+        let name = match value.get("name") {
+            Some(n) => n.as_str().map(|f| f.to_string().replace("type", "type_name")),
+            None => None,
+        };
+
+        let profile = match value.get("profile") {
+            Some(n) => n.as_str().map(|f| f.to_string()),
+            None => None,
+        };
+
+        let description = match value.get("description") {
+            Some(n) => n.as_str().map(|f| f.to_string()),
+            None => None,
+        };
+
+        let caption = match value.get("caption") {
+            Some(n) => n.as_str().map(|f| f.to_string()),
+            None => None,
+        };
+
+        let requirement: Option<Requirement> = match value.get("requirement") {
+            Some(n) => {
+                let strval = n.as_str().unwrap();
+                Some(Requirement::from(strval))
+            },
+            None => None,
+        };
+
+        let group: Option<Group> = match value.get("group") {
+            Some(n) => {
+                let strval = n.as_str().unwrap();
+                Some(Group::from(strval))
+            },
+            None => None,
+        };
+
+        let includes: Vec<String> = match value.get("$include") {
+            Some(include) =>  {
+                let mut result: Vec<String> = vec![];
+
+                if include.is_array() {
+                    panic!("Found include array while deserializing an event attribute: {:?}", include.as_array().unwrap());
+                    // result.extend(include.as_array().unwrap().iter().map(|f| f.as_str().unwrap().to_string()));
+                } else if include.is_string() {
+                    trace!("Found include string or eventattribute: {:?}", include.as_str().unwrap());
+                    result.push(include.as_str().unwrap().to_string());
+                } else {
+                    panic!("found an include we can't handle in deserializing an attribute! {:?}", include);
+                }
+                result
+            },
+            None => vec![],
+        };
+        let mut enum_name = "String".to_string();
+        if !includes.is_empty() {
+            info!("Found includes: {:?}", includes);
+            enum_name = format!("crate::{}", collapsed_title_case(includes.first().unwrap().split('/').last().unwrap()));
+        }
+
+        Ok(EventAttribute {
+            name,
+            profile,
+            description,
+            caption,
+            requirement,
+            group,
+            enum_name,
+            ..Default::default()
+        })
+    }
 }
 
 impl EventAttribute {
@@ -200,204 +249,229 @@ impl Default for EventAttribute {
             profile: Default::default(),
             requirement: Default::default(),
             include: Default::default(),
+            // because everything's a string at some point.:D how's
+            enum_name: "String".to_string(),
+            just_includes: vec![],
         }
     }
 }
 
-impl EventAttribute {
-    pub fn name(self, name: String) -> Self {
-        Self {
-            name: Some(name),
-            ..self
-        }
-    }
-    pub fn profile(self, profile: Option<&str>) -> Self {
-        Self {
-            profile: profile.map(|val| val.to_string()),
-            ..self
-        }
-    }
-    pub fn description(self, description: String) -> Self {
-        Self {
-            description: Some(description),
-            ..self
-        }
-    }
-    pub fn caption(self, value: String) -> Self {
-        Self {
-            caption: Some(value),
-            ..self
-        }
-    }
-    pub fn requirement(self, value: Requirement) -> Self {
-        Self {
-            requirement: Some(value),
-            ..self
-        }
-    }
-    pub fn group(self, value: Group) -> Self {
-        Self {
-            group: Some(value),
-            ..self
-        }
-    }
-}
+// impl EventAttribute {
+//     pub fn name(self, name: String) -> Self {
+//         Self {
+//             name: Some(name),
+//             ..self
+//         }
+//     }
+//     pub fn profile(self, profile: Option<&str>) -> Self {
+//         Self {
+//             profile: profile.map(|val| val.to_string()),
+//             ..self
+//         }
+//     }
+//     pub fn description(self, description: String) -> Self {
+//         Self {
+//             description: Some(description),
+//             ..self
+//         }
+//     }
+//     pub fn caption(self, value: String) -> Self {
+//         Self {
+//             caption: Some(value),
+//             ..self
+//         }
+//     }
+//     pub fn requirement(self, value: Requirement) -> Self {
+//         Self {
+//             requirement: Some(value),
+//             ..self
+//         }
+//     }
+//     pub fn group(self, value: Group) -> Self {
+//         Self {
+//             group: Some(value),
+//             ..self
+//         }
+//     }
+// }
 
-/// returns an [EventAttribute] and  list of attribute names, so I can track down what I need to support :D
-#[allow(dead_code)]
-fn handle_attribute(
-    _base_path: &str,
-    _module_source_path: &str,
-    filename: &str,
-    attribute_name: &str,
-    attribute: Map<String, Value>,
-) -> EventAttribute {
-    let attrkeys: Vec<String> = attribute.keys().map(|k| k.to_string()).collect();
-    info!(
-        "Handling attribute {} (keys: {:#?})",
-        attribute_name,
-        attrkeys.join(",")
-    );
+// /// returns an [EventAttribute] and  list of attribute names, so I can track down what I need to support :D
+// fn handle_attribute(
+//     _base_path: &str,
+//     _module_source_path: &str,
+//     filename: &str,
+//     attribute_name: &str,
+//     attribute: Map<String, Value>,
+// ) -> EventAttribute {
+//     let attrkeys: Vec<String> = attribute.keys().map(|k| k.to_string()).collect();
+//     info!(
+//         "Handling attribute {} (keys: {:#?})",
+//         attribute_name,
+//         attrkeys.join(",")
+//     );
 
-    let mut result = EventAttribute::new(attribute_name.to_string());
+//     let mut result = EventAttribute::new(attribute_name.to_string());
 
-    attribute.iter().for_each(|(key, value)| {
-        info!("attr: {} val: {:?}", key, value);
-        result = match key.to_owned().as_str() {
-            "$include" => {
-                // TODO: handle includes inside attributes!
-                warn!(
-                    "Attribute {} in {} needs include: {}",
-                    attribute_name,
-                    filename,
-                    value.as_str().unwrap()
-                );
-                result.clone()
-            }
-            "caption" => result.clone().caption(value.as_str().unwrap().into()),
-            "description" => result.clone().description(value.as_str().unwrap().into()),
-            "enum" => {
-                warn!(
-                    "Attribute {} in {} needs enum: {:?}",
-                    attribute_name,
-                    filename,
-                    value.to_string()
-                );
-                result.clone() // TODO: handle arbitrary enums inside of events!
-            }
-            "group" => result.clone().group(value.as_str().unwrap().into()),
-            "profile" => {
-                debug!("profile value: {:?}", value.as_str());
-                result.clone().profile(value.as_str())
-            }
-            "requirement" => result.clone().requirement(value.as_str().unwrap().into()),
-            _ => {
-                warn!("Unhandled attr key: {key:?}");
-                result.clone()
+//     attribute.iter().for_each(|(key, value)| {
+//         info!("attr: {} val: {:?}", key, value);
+//         result = match key.to_owned().as_str() {
+//             "$include" => {
+//                 // TODO: handle includes inside attributes!
+//                 warn!(
+//                     "Attribute {} in {} needs include: {}",
+//                     attribute_name,
+//                     filename,
+//                     value.as_str().unwrap()
+//                 );
+//                 result.clone()
+//             }
+//             "caption" => result.clone().caption(value.as_str().unwrap().into()),
+//             "description" => result.clone().description(value.as_str().unwrap().into()),
+//             "enum" => {
+//                 warn!(
+//                     "Attribute {} in {} needs enum: {:?}",
+//                     attribute_name,
+//                     filename,
+//                     value.to_string()
+//                 );
+//                 result.clone() // TODO: handle arbitrary enums inside of events!
+//             }
+//             "group" => result.clone().group(value.as_str().unwrap().into()),
+//             "profile" => {
+//                 debug!("profile value: {:?}", value.as_str());
+//                 result.clone().profile(value.as_str())
+//             }
+//             "requirement" => result.clone().requirement(value.as_str().unwrap().into()),
+//             _ => {
+//                 warn!("Unhandled attr key: {key:?}");
+//                 result.clone()
+//             }
+//         };
+//     });
+//     debug!("{result:#?}");
+//     result
+// }
+
+// /// load a category name so we can extend from it
+// fn load_base_module(paths: &DirPaths, category_name: String) -> Result<Value, String> {
+
+//     let target_file = format!("{}events/{}/{}.json", paths.schema_path, category_name, category_name);
+
+
+//     read_file_to_value(&target_file).map_err(|e| format!("{e:?}"))
+
+// }
+
+fn load_all_event_files(paths: &DirPaths) -> HashMap<String, EventDef> {
+    let target_path = format!("{}events/", paths.schema_path);
+    info!("loading all event files from {}", target_path);
+
+    let mut result: HashMap<String, EventDef> = HashMap::new();
+
+    for file in WalkDir::new(&target_path) {
+        let file = match file {
+            Ok(val) => val,
+            Err(err) => {
+                error!("Failed to walk dir somewhere: {err:?}");
+                continue
             }
         };
-    });
-    debug!("{result:#?}");
+        if !file.clone().into_path().is_file() {
+            debug!("Skipping {:?} as it's not a file...", file);
+            continue
+        }
+        debug!("Reading {file:?} into EventDef");
+        let file_value = read_file_to_value(file.clone().into_path().as_os_str().to_str().unwrap()).unwrap();
+        let file_event: EventDef = serde_json::from_value(file_value).unwrap();
+        result.insert(file.into_path().as_os_str().to_str().unwrap().to_owned().replace(&paths.schema_path, ""), file_event);
+    }
     result
 }
 
 pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(), Box<dyn Error>> {
-    let event_schema_path = format!("{}events/", paths.schema_path);
-    let filenames = find_files(&event_schema_path);
+    // let event_schema_path = format!("{}events/", paths.schema_path);
+    // let filenames = find_files(&event_schema_path);
 
-    // let mut module_map: HashMap<String, Scope> = HashMap::new();
-    // module_map.insert(
-    //     "mod.rs".to_string(),
-    //     get_new_scope_with_comment(Some("//! Events Module for the OCSF crate".to_string())),
-    // );
+    let categories_file = read_file_to_value(&format!("{}categories.json", paths.schema_path))?;
+    let categories_file = categories_file.get("attributes").expect("Coudln't get categories file attributes");
+    let categories: HashMap<String, Category> = serde_json::from_value(categories_file.to_owned())?;
 
-    for file in filenames {
-        let stripped_file = file.replace(&event_schema_path, "");
-        let filepath_split: Vec<String> = stripped_file.split('/').map(|f| f.to_string()).collect();
-        // let mut module_filename = "mod.rs".to_string();
-        let filename = filepath_split.last().unwrap().to_owned();
+    let mut all_events = load_all_event_files(paths);
 
-        if filepath_split.len() <= 1 {
+
+    for (filename, event) in  all_events.iter_mut() {
+
+        if filename.len() <= 1 {
             warn!("Can't handle file {}", filename);
             continue
         }
 
-        let res: Vec<String> = filepath_split[0..(filepath_split.len() - 1)].to_vec();
-
-        let module_name = res.join("/");
-        let module_name = module_name.split('.').next().unwrap();
-        info!("Module name: {} from {}", module_name, filename);
+        let struct_name = event.name.to_owned();
+        info!("Struct name: {} from {}", struct_name, filename);
 
 
+        let target_module_path = PathBuf::from(filename.replace("events/", "")).parent().unwrap().to_str().unwrap().to_owned();
+        debug!("Putting it into module: {}", target_module_path);
 
-        let mut event = read_file_to_value(&file)?;
-        let mut attribute_file_includes: Vec<Value> = vec![];
+        let mut target_module = root_module.children.get_mut("events").expect("Couldn't get events module from root?");
 
-        // let's pull the attribute $includes out so as not to upset the apple cart.
-        if let Some(attributes) = event.as_object_mut().unwrap().get_mut("attributes") {
-            if let Some(include_vals) = attributes.as_object_mut().unwrap().remove("$include") {
-                if include_vals.is_array() {
-                    let include_vals_array = include_vals.as_array().unwrap();
-                    attribute_file_includes.extend(include_vals_array.to_owned());
-                } else if include_vals.is_string() {
-                    attribute_file_includes.push(include_vals.to_owned());
-                }
+        for tm in target_module_path.split('/') {
+            if tm.is_empty() {
+                continue;
             }
+            if !target_module.has_child(tm) {
+                target_module.add_child(tm.to_owned());
+            }
+            target_module = target_module.children.get_mut(tm).unwrap_or_else(|| panic!("Couldn't get {tm}"));
         }
-        #[allow(unused_variables)]
-        let attribute_includes: Vec<String> = attribute_file_includes
-            .into_iter()
-            .map(|i| i.as_str().unwrap().to_string())
-            .collect();
 
-        let mut event: EventDef = serde_json::from_value(event)?;
-        // TODO: attribute value includes.
+        debug!("Target module: {:#?}", target_module);
 
-        // let output_scope = module_map.get_mut(&module_filename).unwrap();
+        // if !target_module.imports.iter().any(|e| e == "use serde::Deserialise") {
+        //     target_module.imports.push("use serde::Deserialize".to_string());
+        // }
+        // if !target_module.imports.iter().any(|e| e == "use serde::Serialize") {
+        //     target_module.imports.push("use serde::Serialize".to_string());
+        // }
 
-        // TODO: deal with attribute *internal* includes - there's one in registry_key.json
-        event.attributes.iter_mut().for_each(|(_key, attrib)| {
-            if let Some(include_filename) = attrib.include.clone() {
-                info!("need to include {} in {}", include_filename, &filename);
-                // because we haven't dealt with them yet!
-                if !include_filename.starts_with("enums/") {
-                    panic!(
-                        "Attribute in {filename} trying to include {include_filename} and it's not an enum!"
-                    );
-                }
-                let include_file =
-                    read_file_to_value(&format!("{}{}", paths.schema_path, include_filename)).unwrap();
+        // // if let Some(extends_category) = event.extends {
+        // //     // info!("Loading {} as a base for {}", extends_category, filename);
+        // //     // grab a copy of the base module
+        // //     let base = load_base_module(paths, extends_category).unwrap();
+        // //     let mut base = base.as_object().unwrap().to_owned();
 
-                let enum_name = collapsed_title_case(include_filename.replace(".json", "").split('/').last().unwrap());
+        // //     // get a copy of the event so we can overlay the event def on the base
+        // //     let orig_event = event_value.clone();
+        // //     let orig_event = orig_event.as_object().unwrap();
 
-                match
-                enum_from_value(
-                    paths,
-                    root_module,
-                     include_file,
-                     enum_name.clone(),
-                     ) {
-                        Ok(val) => root_module.enums.push(val),
-                        Err(err) => debug!("Tried to add {}: {}", enum_name, err),
-                     };
-            };
-        });
+        // //     orig_event.iter().for_each(|(key,value)| {
+        // //         if key != "uid" {
+        // //             base.insert(key.to_owned(), value.to_owned());
+        // //         }
+        // //     });
 
-        let struct_doc = format!("{}\n\nSourced from: `events/{}`", &event.description, stripped_file);
+        let struct_doc = format!("{}\n\nSourced from: `events/{}`", &event.description, filename);
         let mut module_struct = Struct::new(&collapsed_title_case(&event.name));
         module_struct
-        .doc(&struct_doc)
-        .vis("pub")
-        .derive("Deserialize")
-        .derive("Serialize");
+            .doc(&struct_doc)
+            .vis("pub")
+            .derive("serde::Deserialize")
+            .derive("serde::Serialize");
 
-
-        event.attributes.iter().for_each(|(attr_name, attr)| {
-            debug!("asdf attr name: {attr_name}");
-
-            let name = match attr_name == "type" {
-                true => "type_field".to_string(),
-                false => attr_name.to_string()
+        // yes, we're sorting struct fields.
+        event.attributes.iter()
+        .sorted_by(|a, b| Ord::cmp(a.0, b.0))
+        .for_each(|(attr_name, attr)| {
+            if attr_name == "$include" {
+                return
+                error!("need to handle attribute $include {attr:#?}");
+                //TODO: need to parse attributes
+            } else {
+                debug!("attr name: {attr_name}");
+            }
+            let attr_name = match attr_name == "type" {
+                true => "type_name",
+                false => attr_name,
             };
 
             let field_requirement_template: &'static str  = match &attr.requirement {
@@ -411,14 +485,13 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
                 None => "Option<{}>",
             };
 
-            debug!("{} {:#?}", name, attr);
-
-            let mut attr_field = Field::new(&name, field_requirement_template.replace("{}", "String"));
-
+            let mut attr_field = Field::new(attr_name, field_requirement_template.replace("{}", &attr.enum_name));
+            attr_field.vis("pub");
             // documentation is always nice
             if let Some(description) = &attr.description {
                 attr_field.doc(fix_docstring(description.to_owned(), None));
             }
+
             if attr_name == "type" {
                 // because when we serialize it out, it needs the right name
                 attr_field.annotation("#[serde(alias=\"type\")]");
@@ -427,72 +500,29 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
             module_struct.push_field(attr_field);
         });
 
-        let mut scope = Scope::new();
-        scope.push_struct(module_struct.clone());
+        let mut module_impl = Impl::new(&collapsed_title_case(&event.name));
 
-
-
-        let events_module = root_module.children.get_mut("events").unwrap();
-
-        let target_module = match res.len() > 1 {
-            true => {
-
-                // we're in a nested module
-
-                let splitmodule: Vec<&str> = module_name.split('/').collect();
-                if splitmodule.len() > 2 {
-                    panic!("can't handle events modules with multiple levels of nesting...?");
-                };
-
-                // TODO: need to support finding the child module for this event
-                // todo!("Can't handle {} yet", module_name);
-
-                // first we get the events module
-                let base_module = root_module.children.get_mut("events").expect("Couldn't get events module from root?");
-
-                let parent_module_name = module_name.split('/').next().unwrap();
-
-                if !base_module.has_child(parent_module_name) {
-                    base_module.add_child(parent_module_name.to_owned());
-                }
-
-                base_module.children.get_mut(parent_module_name).unwrap()
+        let mut uid = event.uid.unwrap_or(0);
+        if let Some(category) = event.category.clone() {
+            // panic!("category: {}", category);
+            if categories.contains_key(&category) {
+                uid += 1000 * categories[&category].uid;
+                debug!("Set UID to {uid}");
             }
-            false => {
-                // we can add to the base module
-                if !events_module.has_child(module_name)
-                {
-                    events_module.add_child(module_name.to_string());
-                }
-                events_module.children.get_mut(module_name).unwrap()
-            }
-        };
-        target_module.scope.push_struct(module_struct);
-
-        if !target_module.imports.iter().any(|x| x=="use serde::{Deserialize, Serialize}") {
-            target_module.imports.push("use serde::{Deserialize, Serialize}".to_string());
         }
 
-        debug!("Scope code output:\n{}", scope.to_string());
+        let uid_func = Function::new("uid")
+            .vis("pub")
+            .doc(&format!("Returns the UID of the event type ({})", uid))
+            .ret("u16")
+            .line(&format!("{} // UID value of event {}", uid, uid))
+            .to_owned();
 
-        // account.json has an enum in it
-        // registry_key.json has an included enum in it
-        // if filename == "account.json" {
-        //     // debug!("{} -> {}", filename, serde_json::to_string_pretty(&event)?);
-        //     debug!("Done with registry_key.json");
-        //     return Ok(());
-        // }
+        module_impl.push_fn(uid_func);
+        target_module.scope.push_struct(module_struct);
 
+        target_module.scope.push_impl(module_impl);
 
-        // add random things
-        root_module
-            .children
-            .get_mut("events")
-            .expect("Couldn't find events module in the crate?")
-            .scope
-            .raw(&format!("// kilroy was here {filename}"));
-
-        // debug!("Module filename: {module_filename}");
     }
 
 

@@ -124,7 +124,7 @@ pub fn get_new_scope_with_comment(first_line: Option<String>) -> Scope {
 
 /// uses serde_json to try and parse a given file
 pub fn read_file_to_value(filename: &str) -> Result<Value, Box<dyn Error>> {
-    trace!("read_file_to_value {filename}");
+    debug!("read_file_to_value {filename}");
     let file = File::open(filename)?;
     let reader = BufReader::new(file);
 
@@ -156,6 +156,9 @@ fn write_modules(
     enums.sort();
     let _ = enums_mod.write("\n".as_bytes())?;
     enums.iter().for_each(|e| {
+        if e.is_empty() {
+            panic!("Empty module name?");
+        }
         enums_mod.write_fmt(format_args!("pub mod {e};\n")).unwrap();
     });
 
@@ -173,6 +176,9 @@ fn write_modules(
     let _ = events_mod.write("\n".as_bytes())?;
 
     events.iter().for_each(|e| {
+        if e.is_empty() {
+            panic!("Empty module name?");
+        }
         events_mod
             .write_fmt(format_args!("pub mod {e};\n"))
             .unwrap();

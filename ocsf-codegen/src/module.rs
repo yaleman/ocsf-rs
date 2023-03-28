@@ -39,7 +39,7 @@ impl ModuleEnumWithU8 {
 
     pub fn add_to_scope(&self, scope: &mut Scope) {
         let mut new_enum = Enum::new(&self.name);
-        new_enum.vis("pub");
+        new_enum.vis("pub").derive("serde::Serialize").derive("serde::Deserialize");
 
         let mut enum_to_u8 = Function::new("from");
         enum_to_u8.arg("input", &self.name).ret("u8");
@@ -199,6 +199,9 @@ impl Module {
         info!("Child modules: {child_keys:#?}");
 
         child_keys.iter().for_each(|key| {
+            if key.is_empty() {
+                panic!("Empty module name?");
+            }
             self.scope.raw(&format!("pub mod {};", key));
         });
 
