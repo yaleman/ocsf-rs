@@ -1,34 +1,34 @@
-/// HTTP Activity events report HTTP connection and traffic information.
+/// Network Activity events report network connection and traffic activity.
 ///
-/// Sourced from: `events/events/network/http.json`
+/// Sourced from: `events/events/network/network.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct HttpActivity;
-
-impl HttpActivity {
-    pub const UID: u16 = 2;
+pub struct NetworkActivity {
+    pub activity_id: Option<crate::NetworkActivity>,
 }
 
-/// DNS Activity events report DNS queries and answers as seen on the network.
-///
-/// Sourced from: `events/events/network/dns.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct DnsActivity {
-    pub activity_id: Option<crate::DnsActivity>,
-    pub answers: Option<String>,
-    pub connection_info: Option<String>,
-    pub proxy: Option<String>,
-    pub query: Option<String>,
-    pub query_time: Option<String>,
-    /// The DNS server response code, as defined by the event source.
-    pub rcode: Option<String>,
-    /// The normalized identifier of the DNS server response code. See <a target='_blank' href='https://datatracker.ietf.org/doc/html/rfc6895'>RFC-6895</a>.
-    pub rcode_id: Option<String>,
-    pub response_time: Option<String>,
-    pub traffic: Option<String>,
+impl NetworkActivity {
+    pub const UID: u16 = 4001;
 }
 
-impl DnsActivity {
-    pub const UID: u16 = 3;
+/// DHCP Activity events report MAC to IP assignment via DHCP from a client or server.
+///
+/// Sourced from: `events/events/network/dhcp.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct DhcpActivity {
+    pub activity_id: String,
+    /// The responder (server) of the DHCP connection.
+    pub dst_endpoint: Option<String>,
+    pub is_renewal: Option<String>,
+    pub lease_dur: Option<String>,
+    pub relay: Option<String>,
+    /// The initiator (client) of the DHCP connection.
+    pub src_endpoint: Option<String>,
+    /// The unique identifier of the transaction. This is typically a random number generated from the client to associate a dhcp request/response pair.
+    pub transaction_uid: Option<String>,
+}
+
+impl DhcpActivity {
+    pub const UID: u16 = 4004;
 }
 
 /// Email events report activities of emails.
@@ -85,40 +85,14 @@ impl SmbActivity {
     pub const UID: u16 = 6;
 }
 
-/// DHCP Activity events report MAC to IP assignment via DHCP from a client or server.
+/// HTTP Activity events report HTTP connection and traffic information.
 ///
-/// Sourced from: `events/events/network/dhcp.json`
+/// Sourced from: `events/events/network/http.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct DhcpActivity {
-    pub activity_id: String,
-    /// The responder (server) of the DHCP connection.
-    pub dst_endpoint: Option<String>,
-    pub is_renewal: Option<String>,
-    pub lease_dur: Option<String>,
-    pub relay: Option<String>,
-    /// The initiator (client) of the DHCP connection.
-    pub src_endpoint: Option<String>,
-    /// The unique identifier of the transaction. This is typically a random number generated from the client to associate a dhcp request/response pair.
-    pub transaction_uid: Option<String>,
-}
+pub struct HttpActivity;
 
-impl DhcpActivity {
-    pub const UID: u16 = 4004;
-}
-
-/// SSH Activity events report remote client connections to a server using the Secure Shell (SSH) Protocol.
-///
-/// Sourced from: `events/events/network/ssh.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct SshActivity {
-    pub client_hassh: Option<String>,
-    /// The Secure Shell Protocol version.
-    pub protocol_ver: Option<String>,
-    pub server_hassh: Option<String>,
-}
-
-impl SshActivity {
-    pub const UID: u16 = 7;
+impl HttpActivity {
+    pub const UID: u16 = 2;
 }
 
 /// Remote Desktop Protocol (RDP) Activity events report remote client connections to a server as seen on the network.
@@ -146,16 +120,27 @@ impl RdpActivity {
     pub const UID: u16 = 5;
 }
 
-/// Network Activity events report network connection and traffic activity.
+/// DNS Activity events report DNS queries and answers as seen on the network.
 ///
-/// Sourced from: `events/events/network/network.json`
+/// Sourced from: `events/events/network/dns.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct NetworkActivity {
-    pub activity_id: Option<crate::NetworkActivity>,
+pub struct DnsActivity {
+    pub activity_id: Option<crate::DnsActivity>,
+    pub answers: Option<String>,
+    pub connection_info: Option<String>,
+    pub proxy: Option<String>,
+    pub query: Option<String>,
+    pub query_time: Option<String>,
+    /// The DNS server response code, as defined by the event source.
+    pub rcode: Option<String>,
+    /// The normalized identifier of the DNS server response code. See <a target='_blank' href='https://datatracker.ietf.org/doc/html/rfc6895'>RFC-6895</a>.
+    pub rcode_id: Option<String>,
+    pub response_time: Option<String>,
+    pub traffic: Option<String>,
 }
 
-impl NetworkActivity {
-    pub const UID: u16 = 4001;
+impl DnsActivity {
+    pub const UID: u16 = 3;
 }
 
 /// File Transfer Protocol (FTP) Activity events report file transfers between a server and a client as seen on the network.
@@ -182,4 +167,19 @@ impl FtpActivity {
     pub const UID: u16 = 8;
 }
 
-// This file was automatically generated by ocsf-codegen at 2023-03-28T11:36:12+00:00 branch: "yaleman/issue8" link: <https://github.com/yaleman/ocsf-rs/commit/c035bcbabbea474b72d2dfc1b4a316ad45549a19>
+/// SSH Activity events report remote client connections to a server using the Secure Shell (SSH) Protocol.
+///
+/// Sourced from: `events/events/network/ssh.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct SshActivity {
+    pub client_hassh: Option<String>,
+    /// The Secure Shell Protocol version.
+    pub protocol_ver: Option<String>,
+    pub server_hassh: Option<String>,
+}
+
+impl SshActivity {
+    pub const UID: u16 = 7;
+}
+
+// This file was automatically generated by ocsf-codegen at 2023-03-28T12:22:45+00:00 branch: "yaleman/issue9" link: <https://github.com/yaleman/ocsf-rs/commit/f3541d74751677f4bb36aff1c977d9dc0b9ef4d6>

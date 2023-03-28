@@ -33,11 +33,11 @@ pub fn generate_categories(
         .unwrap()
         .to_string();
 
-    categories_module.scope.writeln("//! OCSF Category data");
-    categories_module.scope.writeln("//!".to_string());
+    categories_module.scope.raw(r#"//! OCSF Category data"#);
+    categories_module.scope.raw("//!".to_string());
     categories_module
         .scope
-        .writeln(format!("//! {categories_description}"));
+        .raw(format!("//! {categories_description}"));
 
     categories_module.scope.add_generation_timestamp_comment();
 
@@ -71,7 +71,7 @@ pub fn generate_categories(
                 let variant_docstring = vec![
                     format!("/// {}", category.description),
                     "///".to_string(),
-                    format!("/// `uid={}`", category.uid),
+                    format!("/// `uid={}000`", category.uid),
                 ];
 
                 let variant = Variant::new(&variant_name)

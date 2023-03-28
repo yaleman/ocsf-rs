@@ -198,14 +198,14 @@ impl Module {
 
         info!("Child modules: {child_keys:#?}");
 
-        child_keys.iter().for_each(|key| {
+        child_keys.iter().sorted().for_each(|key| {
             if key.is_empty() {
                 panic!("Empty module name?");
             }
             self.scope.raw(&format!("pub mod {};", key));
         });
 
-        child_keys.iter().for_each(|key| {
+        child_keys.iter().sorted().for_each(|key| {
 
             let child_path = match self.is_root {
                 true => parent_dirname.clone(),
