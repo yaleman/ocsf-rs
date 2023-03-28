@@ -13,10 +13,47 @@ pub struct EntityManagement {
 }
 
 impl EntityManagement {
-    /// Returns the UID of the event type (4)
-    pub fn uid() -> u16 {
-        4 // UID value of event 4
-    }
+    pub const UID: u16 = 4;
+}
+
+/// Access activity events describe successful/failed attempts to access an application.
+///
+/// Sourced from: `events/events/audit/access_activity.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct AccessActivity {
+    pub activity_id: Option<String>,
+    pub actor: Option<String>,
+    pub http_request: String,
+    pub http_response: String,
+    /// Details about the proxy if available.
+    pub proxy: Option<String>,
+    /// Details about the source endpoint of the connection.
+    pub src_endpoint: Option<String>,
+    pub tls: Option<String>,
+}
+
+impl AccessActivity {
+    pub const UID: u16 = 3006;
+}
+
+/// Account Change events report when specific user account management tasks are performed, such as a user/role being created, changed, deleted, renamed, disabled, enabled, locked out or unlocked.
+///
+/// Sourced from: `events/events/audit/account.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct AccountChange {
+    pub activity_id: Option<String>,
+    pub actor: String,
+    /// Details about the underlying http request.
+    pub http_request: Option<String>,
+    /// Details about the source of the activity.
+    pub src_endpoint: Option<String>,
+    /// The user that was a target of an activity.
+    pub user: Option<String>,
+    pub user_result: Option<String>,
+}
+
+impl AccountChange {
+    pub const UID: u16 = 1;
 }
 
 /// Authentication events report authentication session activities such as user attempts a logon or logoff, successfully or otherwise.
@@ -50,10 +87,37 @@ pub struct Authentication {
 }
 
 impl Authentication {
-    /// Returns the UID of the event type (2)
-    pub fn uid() -> u16 {
-        2 // UID value of event 2
-    }
+    pub const UID: u16 = 2;
+}
+
+/// The Audit Activity event is a generic event that defines a set of attributes available in the audit events. As a generic event, it could be used to log events that are not otherwise defined by the Audit Activity category.
+///
+/// Sourced from: `events/events/audit/audit.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct Audit;
+
+impl Audit {
+    pub const UID: u16 = 3000;
+}
+
+/// Authorization events report special privileges or groups assigned to a session.
+///
+/// Sourced from: `events/events/audit/authorization.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct Authorization {
+    pub activity_id: Option<crate::Authorization>,
+    /// The Endpoint for which the authentication was targeted.
+    pub dst_endpoint: String,
+    /// The list of sensitive privileges, assigned to the new user session.
+    pub privileges: String,
+    /// The modified user session.
+    pub session: Option<String>,
+    /// The user to which new privileges were assigned.
+    pub user: String,
+}
+
+impl Authorization {
+    pub const UID: u16 = 3;
 }
 
 /// API events describe general CRUD (Create, Read, Update, Delete) API activities, e.g. (AWS Cloudtrail)
@@ -74,92 +138,7 @@ pub struct ApiActivity {
 }
 
 impl ApiActivity {
-    /// Returns the UID of the event type (3005)
-    pub fn uid() -> u16 {
-        3005 // UID value of event 3005
-    }
+    pub const UID: u16 = 3005;
 }
 
-/// Account Change events report when specific user account management tasks are performed, such as a user/role being created, changed, deleted, renamed, disabled, enabled, locked out or unlocked.
-///
-/// Sourced from: `events/events/audit/account.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct AccountChange {
-    pub activity_id: Option<String>,
-    pub actor: String,
-    /// Details about the underlying http request.
-    pub http_request: Option<String>,
-    /// Details about the source of the activity.
-    pub src_endpoint: Option<String>,
-    /// The user that was a target of an activity.
-    pub user: Option<String>,
-    pub user_result: Option<String>,
-}
-
-impl AccountChange {
-    /// Returns the UID of the event type (1)
-    pub fn uid() -> u16 {
-        1 // UID value of event 1
-    }
-}
-
-/// Access activity events describe successful/failed attempts to access an application.
-///
-/// Sourced from: `events/events/audit/access_activity.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct AccessActivity {
-    pub activity_id: Option<String>,
-    pub actor: Option<String>,
-    pub http_request: String,
-    pub http_response: String,
-    /// Details about the proxy if available.
-    pub proxy: Option<String>,
-    /// Details about the source endpoint of the connection.
-    pub src_endpoint: Option<String>,
-    pub tls: Option<String>,
-}
-
-impl AccessActivity {
-    /// Returns the UID of the event type (3006)
-    pub fn uid() -> u16 {
-        3006 // UID value of event 3006
-    }
-}
-
-/// Authorization events report special privileges or groups assigned to a session.
-///
-/// Sourced from: `events/events/audit/authorization.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct Authorization {
-    pub activity_id: Option<crate::Authorization>,
-    /// The Endpoint for which the authentication was targeted.
-    pub dst_endpoint: String,
-    /// The list of sensitive privileges, assigned to the new user session.
-    pub privileges: String,
-    /// The modified user session.
-    pub session: Option<String>,
-    /// The user to which new privileges were assigned.
-    pub user: String,
-}
-
-impl Authorization {
-    /// Returns the UID of the event type (3)
-    pub fn uid() -> u16 {
-        3 // UID value of event 3
-    }
-}
-
-/// The Audit Activity event is a generic event that defines a set of attributes available in the audit events. As a generic event, it could be used to log events that are not otherwise defined by the Audit Activity category.
-///
-/// Sourced from: `events/events/audit/audit.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct Audit;
-
-impl Audit {
-    /// Returns the UID of the event type (3000)
-    pub fn uid() -> u16 {
-        3000 // UID value of event 3000
-    }
-}
-
-// This file was automatically generated by ocsf-codegen at 2023-03-28T11:14:40+00:00 branch: "yaleman/issue8" link: <https://github.com/yaleman/ocsf-rs/commit/9d78df7466f9ac2dd533f1a5efdb53c8ce479741>
+// This file was automatically generated by ocsf-codegen at 2023-03-28T11:36:12+00:00 branch: "yaleman/issue8" link: <https://github.com/yaleman/ocsf-rs/commit/c035bcbabbea474b72d2dfc1b4a316ad45549a19>

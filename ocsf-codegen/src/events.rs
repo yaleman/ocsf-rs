@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use codegen::{Struct, Field, Impl, Function};
+use codegen::{Struct, Field, Impl};
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Map;
 
@@ -504,21 +504,16 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
 
         let mut uid = event.uid.unwrap_or(0);
         if let Some(category) = event.category.clone() {
-            // panic!("category: {}", category);
             if categories.contains_key(&category) {
                 uid += 1000 * categories[&category].uid;
                 debug!("Set UID to {uid}");
             }
         }
 
-        let uid_func = Function::new("uid")
-            .vis("pub")
-            .doc(&format!("Returns the UID of the event type ({})", uid))
-            .ret("u16")
-            .line(&format!("{} // UID value of event {}", uid, uid))
-            .to_owned();
+        if uid != 0 {
+            module_impl.associate_const("UID", "u16", format!("{}", uid), "pub");
+        }
 
-        module_impl.push_fn(uid_func);
         target_module.scope.push_struct(module_struct);
 
         target_module.scope.push_impl(module_impl);
