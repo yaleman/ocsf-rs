@@ -14,4 +14,8 @@ documentation = "https://github.com/yaleman/ocsf-rs/"
 members = [
     "ocsf-codegen",
     "ocsf",
+    "examples",
 ]
+
+[workspace.dependencies]
+serde_json = "1.0.94"

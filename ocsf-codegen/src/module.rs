@@ -41,6 +41,7 @@ impl ModuleEnumWithU8 {
         let mut new_enum = Enum::new(&self.name);
         new_enum
             .vis("pub")
+            .derive("Debug")
             .derive("serde::Serialize")
             .derive("serde::Deserialize");
 

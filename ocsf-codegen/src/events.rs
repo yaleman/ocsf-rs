@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use codegen::{Field, Impl, Struct};
+use codegen::{Field, Impl, Struct, Function};
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Map;
 
@@ -295,7 +295,10 @@ fn load_all_event_files(paths: &DirPaths) -> HashMap<String, EventDef> {
         debug!("Reading {file:?} into EventDef");
         let file_value =
             read_file_to_value(file.clone().into_path().as_os_str().to_str().unwrap()).unwrap();
-        let file_event: EventDef = serde_json::from_value(file_value).unwrap();
+        let mut file_event: EventDef = serde_json::from_value(file_value).unwrap();
+        // stripping out the include value, because by this point we should have handled it!
+        file_event.attributes.remove("$include");
+
         result.insert(
             file.into_path()
                 .as_os_str()
@@ -358,31 +361,8 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
 
         trace!("Target module: {:#?}", target_module);
 
-        // if !target_module.imports.iter().any(|e| e == "use serde::Deserialise") {
-        //     target_module.imports.push("use serde::Deserialize".to_string());
-        // }
-        // if !target_module.imports.iter().any(|e| e == "use serde::Serialize") {
-        //     target_module.imports.push("use serde::Serialize".to_string());
-        // }
-
-        // // if let Some(extends_category) = event.extends {
-        // //     // info!("Loading {} as a base for {}", extends_category, filename);
-        // //     // grab a copy of the base module
-        // //     let base = load_base_module(paths, extends_category).unwrap();
-        // //     let mut base = base.as_object().unwrap().to_owned();
-
-        // //     // get a copy of the event so we can overlay the event def on the base
-        // //     let orig_event = event_value.clone();
-        // //     let orig_event = orig_event.as_object().unwrap();
-
-        // //     orig_event.iter().for_each(|(key,value)| {
-        // //         if key != "uid" {
-        // //             base.insert(key.to_owned(), value.to_owned());
-        // //         }
-        // //     });
-
         let struct_doc = format!(
-            "{}\n\nSourced from: `events/{}`",
+            "{}\n\nSourced from: `{}`",
             &event.description, filename
         );
         let mut module_struct = Struct::new(&collapsed_title_case(&event.name));
@@ -390,7 +370,20 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
             .doc(&struct_doc)
             .vis("pub")
             .derive("serde::Deserialize")
-            .derive("serde::Serialize");
+            .derive("serde::Serialize")
+            .derive("Default")
+            .derive("Debug");
+
+
+
+        let mut func_new = Function::new("new");
+        func_new.vis("pub")
+            .ret("Self");
+
+        func_new.line("Self {");
+
+        let mut module_impl = Impl::new(&collapsed_title_case(&event.name));
+
 
         // yes, we're sorting struct fields.
         event
@@ -403,7 +396,7 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
                         "need to handle attribute $include {:#?}",
                         attr.just_includes
                     );
-                    //TODO: need to parse attributes
+                    //TODO: need to handle  attribute includes
                 } else {
                     trace!("attr name: {attr_name}");
                 }
@@ -431,15 +424,50 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
                     attr_field.doc(fix_docstring(description.to_owned(), None));
                 }
 
-                if attr_name == "type" {
+                let mut serde_annotations: Vec<&str> = vec![];
+                if attr_name == "type_name" {
                     // because when we serialize it out, it needs the right name
-                    attr_field.annotation("#[serde(alias=\"type\")]");
+                    serde_annotations.push("alias=\"type\"");
                 }
+                // add the attributes to the new() function
+                if attr.requirement.is_some() && attr.requirement == Some(Requirement::Required) {
+                    func_new.arg(attr_name, &attr.enum_name);
+                    func_new.line(format!("{attr_name},"));
+                } else {
+
+                    func_new.line(format!("{attr_name}: None,"));
+                    let mut with_func = Function::new(format!("with_{attr_name}"));
+
+                    with_func.vis("pub")
+                        .doc(format!("Set the value of {}", attr_name))
+                        .arg_self()
+                        .arg(attr_name, &attr.enum_name)
+                        .ret("Self");
+
+                    with_func.line(format!("Self {{ {attr_name}: Some({attr_name}),"));
+                    if event.attributes.len() > 1 {
+                        with_func.line("..self  ");
+                    }
+                    with_func.line("}");
+
+                    module_impl.push_fn(with_func);
+
+                    // if it's optional, then we need to tell serde to ignore it on serialization
+                    serde_annotations.push("skip_serializing_if = \"Option::is_none\"");
+                }
+
+                if !serde_annotations.is_empty() {
+                    attr_field.annotation(&format!("#[serde({})]", serde_annotations.join(",")));
+                }
+
+                // add builders for the not-required fields
+
 
                 module_struct.push_field(attr_field);
             });
 
-        let mut module_impl = Impl::new(&collapsed_title_case(&event.name));
+        // this is the end of the Self::new() function
+        func_new.line("}");
 
         let mut uid = event.uid.unwrap_or(0);
         if let Some(category) = event.category.clone() {
@@ -448,13 +476,14 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
                 trace!("Set UID to {uid}");
             }
         }
-
         if uid != 0 {
             module_impl.associate_const("UID", "u16", format!("{}", uid), "pub");
         }
 
-        target_module.scope.push_struct(module_struct);
 
+        module_impl.push_fn(func_new);
+
+        target_module.scope.push_struct(module_struct);
         target_module.scope.push_impl(module_impl);
     }
 

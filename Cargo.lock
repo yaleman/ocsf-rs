@@ -513,6 +513,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "ocsf-examples"
+version = "0.0.1-alpha1"
+dependencies = [
+ "ocsf",
+ "serde_json",
+]
+
+[[package]]
 name = "once_cell"
 version = "1.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
