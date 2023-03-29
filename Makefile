@@ -36,7 +36,7 @@ schema_pull: ## Update the schema git submodule based on the SCHEMA_BRANCH argum
 .PHONY: doc
 doc:
 doc: ## Generate the rust documentation for the OCSF module and also an index.html that redirects to it from the parent dir.
-	cargo doc -p ocsf --no-deps --all-features
+	cargo doc -p ocsf -p ocsf-codegen --no-deps --all-features
 	@echo "Recreating index redirector file..."
 	@echo "<meta http-equiv=\"refresh\" content=\"0; url=ocsf\">" > target/doc/index.html
 
@@ -44,13 +44,13 @@ doc: ## Generate the rust documentation for the OCSF module and also an index.ht
 .PHONY: doc/open
 doc/open: ## Generate the documentation and then open it.
 doc/open:
-	cargo doc -p ocsf --no-deps --all-features --open
+	cargo doc -p ocsf -p ocsf-codegen --no-deps --all-features --open
 
 
 .PHONY: watch/doc
 watch/doc: ## Use cargo watch to generate the documentation for the OCSF package, and regenerate when the source changes.
 watch/doc:
-	cargo watch -w ocsf --no-restart -s 'make doc'
+	cargo watch -w ocsf -w ocsf-codegen  --no-restart -s 'make doc'
 
 .PHONY: watch/build
 watch/build: ## Use cargo watch to build the OCSF package as the codegen source changes.

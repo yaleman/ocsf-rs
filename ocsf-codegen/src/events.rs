@@ -1,3 +1,6 @@
+//! Parses the events/\*.json file data, results go into `ocsf::events`.
+//!
+
 use std::error::Error;
 
 use codegen::{Field, Function, Impl, Struct};

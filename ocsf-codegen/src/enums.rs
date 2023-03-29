@@ -1,3 +1,6 @@
+//! Parses the enums/\*.json file data.
+//!
+
 use crate::module::{Module, ModuleEnumWithU8};
 use crate::*;
 // use codegen::{Enum, Function, Variant};

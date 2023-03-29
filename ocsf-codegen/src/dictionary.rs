@@ -1,14 +1,16 @@
+//! Parses the dictionary.json file data.
+//!
 use std::fmt::Debug;
 
 use crate::module::Module;
 
 use super::*;
 use codegen::{Field, Variant};
-// use regex::Regex;
 use serde::{Deserialize, Deserializer, Serialize};
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Deserialization target for attributes of an item from dictionary.json
 pub struct DictAttribute {
     caption: String,
     default: Option<i32>,
@@ -23,6 +25,7 @@ pub struct DictAttribute {
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Deserialization target for an item from dictionary.json
 pub struct DictType {
     caption: String,
     description: Option<String>,
@@ -35,6 +38,7 @@ pub struct DictType {
     values: Option<String>,
 }
 
+/// Main generation function
 pub fn generate_dictionary_entries(
     paths: &DirPaths,
     root_module: &mut Module,

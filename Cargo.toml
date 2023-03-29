@@ -1,5 +1,12 @@
+[workspace]
+members = [
+    "ocsf-codegen",
+    "ocsf",
+    "examples",
+]
+
 [workspace.package]
-version = "0.0.1-alpha1"
+version = "0.0.1-alpha2"
 authors = [
     "James Hodgkinson <james@terminaloutcomes.com>",
     ]
@@ -10,12 +17,6 @@ homepage = "https://yaleman.github.io/ocsf-rs/"
 repository = "https://github.com/yaleman/ocsf-rs/"
 documentation = "https://github.com/yaleman/ocsf-rs/"
 
-[workspace]
-members = [
-    "ocsf-codegen",
-    "ocsf",
-    "examples",
-]
 
 [workspace.dependencies]
 serde_json = "1.0.94"

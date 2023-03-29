@@ -1,3 +1,5 @@
+//! Generator of things from the `objects/\*.json` files
+//!
 use serde::{Deserialize, Serialize};
 
 use crate::module::Module;

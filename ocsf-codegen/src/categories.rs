@@ -1,17 +1,21 @@
+//! Parses the categories.json items.
+//!
+
 use crate::module::Module;
 use crate::*;
 use codegen::{Function, Variant};
 use serde::Deserialize;
 
-// TODO: categories from the categories file
 
 #[derive(Debug, Deserialize)]
+/// Allows one to deserialize the categories.json file from its HashMap value.
 pub struct Category {
     pub caption: String,
     pub description: String,
     pub uid: u32,
 }
 
+/// Generates the category data
 pub fn generate_categories(
     paths: &DirPaths,
     root_module: &mut Module,

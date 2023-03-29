@@ -1,3 +1,6 @@
+//! Handles module things.
+//!
+
 use std::collections::HashMap;
 use std::fs::create_dir_all;
 use std::path::PathBuf;
@@ -12,8 +15,11 @@ use crate::{
 };
 
 #[derive(Debug)]
+/// Allows you to specify an `enum` with the variants having values that are `u8`'s.
 pub struct ModuleEnumWithU8 {
+    /// enum name
     name: String,
+    /// Variants, in value/data.
     pub variants: HashMap<u8, EnumData>,
 }
 
@@ -88,8 +94,11 @@ impl ModuleEnumWithU8 {
 }
 
 #[derive(Debug)]
+/// Internal representation of a struct that'll end up in a module
 pub struct ModuleStruct {
-    name: String,
+    /// The struct's name - ie `foo` becomes `struct Foo`
+    pub name: String,
+    /// The `codegen::Scope` object
     pub scope: Scope,
 }
 
@@ -103,6 +112,8 @@ impl ModuleStruct {
 }
 
 #[derive(Debug)]
+
+/// Internal representation of a module
 pub struct Module {
     name: String,
     pub children: HashMap<String, Module>,

@@ -1,12 +1,19 @@
-use serde::Deserialize;
+//! It's not the junk drawer, I swear.
+//!
 
+
+use serde::Deserialize;
 use crate::*;
 
 #[derive(Deserialize)]
+/// Deserialization target for `version.json`
 struct VersionFile {
+    /// Version value
     version: String,
 }
 
+
+/// Add a version tag to a given `codegen::Scope` object, to tag files with build/commit data.
 pub fn add_version_element(
     paths: &DirPaths,
     output_scope: &mut codegen::Scope,
@@ -26,19 +33,3 @@ pub fn add_version_element(
 
     Ok(())
 }
-
-// pub fn generate_other(paths: &DirPaths) -> Result<(), Box<dyn Error>> {
-//     let mut output_scope = codegen::Scope::new();
-
-//     output_scope.writeln(
-//         "//* I'm not saying it's the junk drawer, but it's also *not* *not* the junk drawer.",
-//     );
-//     output_scope.add_generation_timestamp_comment();
-
-//     add_version_element(paths, &mut output_scope)?;
-
-//     write_source_file(
-//         &format!("{}src/other.rs", paths.destination_path),
-//         &output_scope.to_string(),
-//     )
-// }

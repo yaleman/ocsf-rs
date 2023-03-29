@@ -1,3 +1,6 @@
+//! Runs the codegen process
+//!
+
 #[macro_use]
 extern crate log;
 

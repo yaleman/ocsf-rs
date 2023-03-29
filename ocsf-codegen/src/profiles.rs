@@ -1,3 +1,6 @@
+//! Parse and handle `profiles/\*.json`
+//!
+
 use crate::module::Module;
 use crate::*;
 

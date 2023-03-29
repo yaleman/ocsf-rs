@@ -1,3 +1,6 @@
+//! This is the codegen crate for the [ocsf](https://docs.rs/ocsf/) library.
+//!
+
 #[macro_use]
 extern crate lazy_static;
 
@@ -37,21 +40,7 @@ lazy_static! {
     static ref URL_FINDER: Regex = Regex::new(r#"(?P<url>\w+://[^<\s]+)"#).unwrap();
 }
 
-#[allow(dead_code)]
-type ClassesHashMap = HashMap<&'static str, HashMap<String, ClassType>>;
 
-#[derive(Debug)]
-pub enum ClassType {
-    Event { value: EventDef },
-    Enum { value: EnumDef },
-}
-
-#[derive(Debug)]
-pub enum ClassPath {
-    Enums { class_path: String },
-    Event { class_path: String },
-    Unknown,
-}
 pub fn find_files(schema_path: &str) -> Vec<String> {
     debug!("looking for schema files in {schema_path}");
     let files: Vec<DirEntry> = WalkDir::new(schema_path)
@@ -68,19 +57,14 @@ pub fn find_files(schema_path: &str) -> Vec<String> {
         .collect()
 }
 
-pub fn filename_to_classpath(schema_base_path: &str, filename: &str) -> ClassPath {
-    let fname = filename.to_owned().replace(schema_base_path, "");
-    if fname.starts_with("enums/") {
-        let class_path = fname.replace("enums/", "").replace(".json", "");
-        return ClassPath::Enums { class_path };
-    } else if fname.starts_with("events/") {
-        let class_path = fname.replace("event/", "").replace(".json", "");
-        return ClassPath::Event { class_path };
-    }
-    ClassPath::Unknown
-}
-
-fn collapsed_title_case(input: impl std::fmt::Display) -> String {
+/// Turns a filename into a class name
+/// ```
+/// use ocsf_codegen::collapsed_title_case;
+///
+/// assert_eq!(collapsed_title_case("enums/foo.json"), "Foo");
+/// assert_eq!(collapsed_title_case("hello_world.json"), "HelloWorld");
+///```
+pub fn collapsed_title_case(input: impl std::fmt::Display) -> String {
     let res = input.to_string();
     string_morph::to_title_case(
         &res.replace("enums/", "")

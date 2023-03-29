@@ -1,6 +1,10 @@
+//! Custom errors for the code generator.
+//!
+
 use std::error::Error;
 
 #[derive(Debug)]
+/// Custom errors for the code generator.
 pub struct OcsfCodegenError {
     pub errortext: String,
 }
