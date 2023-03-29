@@ -1,0 +1,13 @@
+[package]
+name = "ocsf-examples"
+description = "OCSF examples"
+documentation = {workspace = true}
+edition = {workspace = true}
+license = {workspace = true}
+repository = {workspace = true}
+rust-version = {workspace = true}
+version = {workspace=true}
+
+[dependencies]
+ocsf = { path = "../ocsf/"}
+serde_json = { workspace = true }
