@@ -1,160 +1,3 @@
-/// Scheduled Job Activity events report activities related to scheduled jobs or tasks.
-///
-/// Sourced from: `events/system/scheduled_job.json`
-#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct ScheduledJobActivity {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub actor: Option<String>,
-    pub job: String,
-}
-
-impl ScheduledJobActivity {
-    pub const UID: u16 = 6;
-    /// Set the value of activity_id
-    pub fn with_activity_id(self, activity_id: String) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-            ..self
-        }
-    }
-
-    /// Set the value of actor
-    pub fn with_actor(self, actor: String) -> Self {
-        Self {
-            actor: Some(actor),
-            ..self
-        }
-    }
-
-    pub fn new(job: String) -> Self {
-        Self {
-            activity_id: None,
-            actor: None,
-            job,
-        }
-    }
-}
-
-/// Kernel Extension events report when a driver/extension is loaded or unloaded into the kernel
-///
-/// Sourced from: `events/system/kernel_extension.json`
-#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct KernelExtension {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity_id: Option<crate::KernelExtensionActivity>,
-    pub actor: String,
-    pub driver: String,
-}
-
-impl KernelExtension {
-    pub const UID: u16 = 2;
-    /// Set the value of activity_id
-    pub fn with_activity_id(self, activity_id: crate::KernelExtensionActivity) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-            ..self
-        }
-    }
-
-    pub fn new(actor: String, driver: String) -> Self {
-        Self {
-            activity_id: None,
-            actor,
-            driver,
-        }
-    }
-}
-
-/// Memory Activity events report when a process has memory allocated, read/modified, or other manipulation activities - such as a buffer overflow or turning off data execution protection (DEP).
-///
-/// Sourced from: `events/system/memory.json`
-#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct MemoryActivity {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity_id: Option<crate::MemoryActivity>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub actual_permissions: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub base_address: Option<String>,
-    pub process: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub requested_permissions: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub size: Option<String>,
-}
-
-impl MemoryActivity {
-    pub const UID: u16 = 4;
-    /// Set the value of activity_id
-    pub fn with_activity_id(self, activity_id: crate::MemoryActivity) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-            ..self
-        }
-    }
-
-    /// Set the value of actual_permissions
-    pub fn with_actual_permissions(self, actual_permissions: String) -> Self {
-        Self {
-            actual_permissions: Some(actual_permissions),
-            ..self
-        }
-    }
-
-    /// Set the value of base_address
-    pub fn with_base_address(self, base_address: String) -> Self {
-        Self {
-            base_address: Some(base_address),
-            ..self
-        }
-    }
-
-    /// Set the value of requested_permissions
-    pub fn with_requested_permissions(self, requested_permissions: String) -> Self {
-        Self {
-            requested_permissions: Some(requested_permissions),
-            ..self
-        }
-    }
-
-    /// Set the value of size
-    pub fn with_size(self, size: String) -> Self {
-        Self {
-            size: Some(size),
-            ..self
-        }
-    }
-
-    pub fn new(process: String) -> Self {
-        Self {
-            activity_id: None,
-            actual_permissions: None,
-            base_address: None,
-            process,
-            requested_permissions: None,
-            size: None,
-        }
-    }
-}
-
-/// The System Activity event is a generic event that defines a set of attributes available in the system activity events. As a generic event, it could be used to log events that are not otherwise defined by the System Acivity category.
-///
-/// Sourced from: `events/system/system.json`
-#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct System {
-    pub actor: String,
-    pub device: String,
-}
-
-impl System {
-    pub const UID: u16 = 1000;
-    pub fn new(actor: String, device: String) -> Self {
-        Self { actor, device }
-    }
-}
-
 /// File System Activity events report when a process performs an action on a file or folder.
 ///
 /// Sourced from: `events/system/filesystem.json`
@@ -279,6 +122,138 @@ impl KernelActivity {
     }
 }
 
+/// Kernel Extension events report when a driver/extension is loaded or unloaded into the kernel
+///
+/// Sourced from: `events/system/kernel_extension.json`
+#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
+pub struct KernelExtension {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub activity_id: Option<crate::KernelExtensionActivity>,
+    pub actor: String,
+    pub driver: String,
+}
+
+impl KernelExtension {
+    pub const UID: u16 = 2;
+    /// Set the value of activity_id
+    pub fn with_activity_id(self, activity_id: crate::KernelExtensionActivity) -> Self {
+        Self {
+            activity_id: Some(activity_id),
+            ..self
+        }
+    }
+
+    pub fn new(actor: String, driver: String) -> Self {
+        Self {
+            activity_id: None,
+            actor,
+            driver,
+        }
+    }
+}
+
+/// Memory Activity events report when a process has memory allocated, read/modified, or other manipulation activities - such as a buffer overflow or turning off data execution protection (DEP).
+///
+/// Sourced from: `events/system/memory.json`
+#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
+pub struct MemoryActivity {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub activity_id: Option<crate::MemoryActivity>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub actual_permissions: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub base_address: Option<String>,
+    pub process: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub requested_permissions: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub size: Option<String>,
+}
+
+impl MemoryActivity {
+    pub const UID: u16 = 4;
+    /// Set the value of activity_id
+    pub fn with_activity_id(self, activity_id: crate::MemoryActivity) -> Self {
+        Self {
+            activity_id: Some(activity_id),
+            ..self
+        }
+    }
+
+    /// Set the value of actual_permissions
+    pub fn with_actual_permissions(self, actual_permissions: String) -> Self {
+        Self {
+            actual_permissions: Some(actual_permissions),
+            ..self
+        }
+    }
+
+    /// Set the value of base_address
+    pub fn with_base_address(self, base_address: String) -> Self {
+        Self {
+            base_address: Some(base_address),
+            ..self
+        }
+    }
+
+    /// Set the value of requested_permissions
+    pub fn with_requested_permissions(self, requested_permissions: String) -> Self {
+        Self {
+            requested_permissions: Some(requested_permissions),
+            ..self
+        }
+    }
+
+    /// Set the value of size
+    pub fn with_size(self, size: String) -> Self {
+        Self {
+            size: Some(size),
+            ..self
+        }
+    }
+
+    pub fn new(process: String) -> Self {
+        Self {
+            activity_id: None,
+            actual_permissions: None,
+            base_address: None,
+            process,
+            requested_permissions: None,
+            size: None,
+        }
+    }
+}
+
+/// Module  Activity events report when a process loads or unloads the <code>module</code>.
+///
+/// Sourced from: `events/system/module.json`
+#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
+pub struct ModuleActivity {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub activity_id: Option<crate::ModuleActivity>,
+    pub actor: String,
+    pub module: String,
+}
+
+impl ModuleActivity {
+    pub const UID: u16 = 5;
+    /// Set the value of activity_id
+    pub fn with_activity_id(self, activity_id: crate::ModuleActivity) -> Self {
+        Self {
+            activity_id: Some(activity_id),
+            ..self
+        }
+    }
+
+    pub fn new(actor: String, module: String) -> Self {
+        Self {
+            activity_id: None,
+            actor,
+            module,
+        }
+    }
+}
+
 /// Process Activity events report when a process launches, injects, opens or terminates another process, successful or otherwise.
 ///
 /// Sourced from: `events/system/process.json`
@@ -384,36 +359,61 @@ impl ProcessActivity {
     }
 }
 
-/// Module  Activity events report when a process loads or unloads the <code>module</code>.
+/// Scheduled Job Activity events report activities related to scheduled jobs or tasks.
 ///
-/// Sourced from: `events/system/module.json`
+/// Sourced from: `events/system/scheduled_job.json`
 #[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct ModuleActivity {
+pub struct ScheduledJobActivity {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity_id: Option<crate::ModuleActivity>,
-    pub actor: String,
-    pub module: String,
+    pub activity_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub actor: Option<String>,
+    pub job: String,
 }
 
-impl ModuleActivity {
-    pub const UID: u16 = 5;
+impl ScheduledJobActivity {
+    pub const UID: u16 = 6;
     /// Set the value of activity_id
-    pub fn with_activity_id(self, activity_id: crate::ModuleActivity) -> Self {
+    pub fn with_activity_id(self, activity_id: String) -> Self {
         Self {
             activity_id: Some(activity_id),
             ..self
         }
     }
 
-    pub fn new(actor: String, module: String) -> Self {
+    /// Set the value of actor
+    pub fn with_actor(self, actor: String) -> Self {
+        Self {
+            actor: Some(actor),
+            ..self
+        }
+    }
+
+    pub fn new(job: String) -> Self {
         Self {
             activity_id: None,
-            actor,
-            module,
+            actor: None,
+            job,
         }
+    }
+}
+
+/// The System Activity event is a generic event that defines a set of attributes available in the system activity events. As a generic event, it could be used to log events that are not otherwise defined by the System Acivity category.
+///
+/// Sourced from: `events/system/system.json`
+#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
+pub struct System {
+    pub actor: String,
+    pub device: String,
+}
+
+impl System {
+    pub const UID: u16 = 1000;
+    pub fn new(actor: String, device: String) -> Self {
+        Self { actor, device }
     }
 }
 
 pub mod windows;
 
-// This file was automatically generated by ocsf-codegen at 2023-03-29T12:27:22+00:00 branch: "yaleman/issue9" link: <https://github.com/yaleman/ocsf-rs/commit/60c657dc0c6103bdda104ca3be2ccbb778bd1c1a>
+// This file was automatically generated by ocsf-codegen at 2023-03-29T23:19:53+00:00 branch: "yaleman/issue9" link: <https://github.com/yaleman/ocsf-rs/commit/23c75ddd98fcb28b7dc81dd488385e97fab90381>

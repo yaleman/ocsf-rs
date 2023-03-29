@@ -1,3 +1,227 @@
+/// Access activity events describe successful/failed attempts to access an application.
+///
+/// Sourced from: `events/audit/access_activity.json`
+#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
+pub struct AccessActivity {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub activity_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub actor: Option<String>,
+    pub http_request: String,
+    pub http_response: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub proxy: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub src_endpoint: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tls: Option<String>,
+}
+
+impl AccessActivity {
+    pub const UID: u16 = 3006;
+    /// Set the value of activity_id
+    pub fn with_activity_id(self, activity_id: String) -> Self {
+        Self {
+            activity_id: Some(activity_id),
+            ..self
+        }
+    }
+
+    /// Set the value of actor
+    pub fn with_actor(self, actor: String) -> Self {
+        Self {
+            actor: Some(actor),
+            ..self
+        }
+    }
+
+    /// Set the value of proxy
+    pub fn with_proxy(self, proxy: String) -> Self {
+        Self {
+            proxy: Some(proxy),
+            ..self
+        }
+    }
+
+    /// Set the value of src_endpoint
+    pub fn with_src_endpoint(self, src_endpoint: String) -> Self {
+        Self {
+            src_endpoint: Some(src_endpoint),
+            ..self
+        }
+    }
+
+    /// Set the value of tls
+    pub fn with_tls(self, tls: String) -> Self {
+        Self {
+            tls: Some(tls),
+            ..self
+        }
+    }
+
+    pub fn new(http_request: String, http_response: String) -> Self {
+        Self {
+            activity_id: None,
+            actor: None,
+            http_request,
+            http_response,
+            proxy: None,
+            src_endpoint: None,
+            tls: None,
+        }
+    }
+}
+
+/// Account Change events report when specific user account management tasks are performed, such as a user/role being created, changed, deleted, renamed, disabled, enabled, locked out or unlocked.
+///
+/// Sourced from: `events/audit/account.json`
+#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
+pub struct AccountChange {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub activity_id: Option<String>,
+    pub actor: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub http_request: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub src_endpoint: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_result: Option<String>,
+}
+
+impl AccountChange {
+    pub const UID: u16 = 1;
+    /// Set the value of activity_id
+    pub fn with_activity_id(self, activity_id: String) -> Self {
+        Self {
+            activity_id: Some(activity_id),
+            ..self
+        }
+    }
+
+    /// Set the value of http_request
+    pub fn with_http_request(self, http_request: String) -> Self {
+        Self {
+            http_request: Some(http_request),
+            ..self
+        }
+    }
+
+    /// Set the value of src_endpoint
+    pub fn with_src_endpoint(self, src_endpoint: String) -> Self {
+        Self {
+            src_endpoint: Some(src_endpoint),
+            ..self
+        }
+    }
+
+    /// Set the value of user
+    pub fn with_user(self, user: String) -> Self {
+        Self {
+            user: Some(user),
+            ..self
+        }
+    }
+
+    /// Set the value of user_result
+    pub fn with_user_result(self, user_result: String) -> Self {
+        Self {
+            user_result: Some(user_result),
+            ..self
+        }
+    }
+
+    pub fn new(actor: String) -> Self {
+        Self {
+            activity_id: None,
+            actor,
+            http_request: None,
+            src_endpoint: None,
+            user: None,
+            user_result: None,
+        }
+    }
+}
+
+/// API events describe general CRUD (Create, Read, Update, Delete) API activities, e.g. (AWS Cloudtrail)
+///
+/// Sourced from: `events/audit/api.json`
+#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
+pub struct ApiActivity {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub activity_id: Option<String>,
+    pub actor: String,
+    pub api: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dst_endpoint: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub http_request: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resources: Option<String>,
+    pub src_endpoint: String,
+}
+
+impl ApiActivity {
+    pub const UID: u16 = 3005;
+    /// Set the value of activity_id
+    pub fn with_activity_id(self, activity_id: String) -> Self {
+        Self {
+            activity_id: Some(activity_id),
+            ..self
+        }
+    }
+
+    /// Set the value of dst_endpoint
+    pub fn with_dst_endpoint(self, dst_endpoint: String) -> Self {
+        Self {
+            dst_endpoint: Some(dst_endpoint),
+            ..self
+        }
+    }
+
+    /// Set the value of http_request
+    pub fn with_http_request(self, http_request: String) -> Self {
+        Self {
+            http_request: Some(http_request),
+            ..self
+        }
+    }
+
+    /// Set the value of resources
+    pub fn with_resources(self, resources: String) -> Self {
+        Self {
+            resources: Some(resources),
+            ..self
+        }
+    }
+
+    pub fn new(actor: String, api: String, src_endpoint: String) -> Self {
+        Self {
+            activity_id: None,
+            actor,
+            api,
+            dst_endpoint: None,
+            http_request: None,
+            resources: None,
+            src_endpoint,
+        }
+    }
+}
+
+/// The Audit Activity event is a generic event that defines a set of attributes available in the audit events. As a generic event, it could be used to log events that are not otherwise defined by the Audit Activity category.
+///
+/// Sourced from: `events/audit/audit.json`
+#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
+pub struct Audit;
+
+impl Audit {
+    pub const UID: u16 = 3000;
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 /// Authentication events report authentication session activities such as user attempts a logon or logoff, successfully or otherwise.
 ///
 /// Sourced from: `events/audit/authentication.json`
@@ -214,230 +438,6 @@ impl Authorization {
     }
 }
 
-/// Account Change events report when specific user account management tasks are performed, such as a user/role being created, changed, deleted, renamed, disabled, enabled, locked out or unlocked.
-///
-/// Sourced from: `events/audit/account.json`
-#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct AccountChange {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity_id: Option<String>,
-    pub actor: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub http_request: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub src_endpoint: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub user: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub user_result: Option<String>,
-}
-
-impl AccountChange {
-    pub const UID: u16 = 1;
-    /// Set the value of activity_id
-    pub fn with_activity_id(self, activity_id: String) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-            ..self
-        }
-    }
-
-    /// Set the value of http_request
-    pub fn with_http_request(self, http_request: String) -> Self {
-        Self {
-            http_request: Some(http_request),
-            ..self
-        }
-    }
-
-    /// Set the value of src_endpoint
-    pub fn with_src_endpoint(self, src_endpoint: String) -> Self {
-        Self {
-            src_endpoint: Some(src_endpoint),
-            ..self
-        }
-    }
-
-    /// Set the value of user
-    pub fn with_user(self, user: String) -> Self {
-        Self {
-            user: Some(user),
-            ..self
-        }
-    }
-
-    /// Set the value of user_result
-    pub fn with_user_result(self, user_result: String) -> Self {
-        Self {
-            user_result: Some(user_result),
-            ..self
-        }
-    }
-
-    pub fn new(actor: String) -> Self {
-        Self {
-            activity_id: None,
-            actor,
-            http_request: None,
-            src_endpoint: None,
-            user: None,
-            user_result: None,
-        }
-    }
-}
-
-/// The Audit Activity event is a generic event that defines a set of attributes available in the audit events. As a generic event, it could be used to log events that are not otherwise defined by the Audit Activity category.
-///
-/// Sourced from: `events/audit/audit.json`
-#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct Audit;
-
-impl Audit {
-    pub const UID: u16 = 3000;
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-/// API events describe general CRUD (Create, Read, Update, Delete) API activities, e.g. (AWS Cloudtrail)
-///
-/// Sourced from: `events/audit/api.json`
-#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct ApiActivity {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity_id: Option<String>,
-    pub actor: String,
-    pub api: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub dst_endpoint: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub http_request: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub resources: Option<String>,
-    pub src_endpoint: String,
-}
-
-impl ApiActivity {
-    pub const UID: u16 = 3005;
-    /// Set the value of activity_id
-    pub fn with_activity_id(self, activity_id: String) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-            ..self
-        }
-    }
-
-    /// Set the value of dst_endpoint
-    pub fn with_dst_endpoint(self, dst_endpoint: String) -> Self {
-        Self {
-            dst_endpoint: Some(dst_endpoint),
-            ..self
-        }
-    }
-
-    /// Set the value of http_request
-    pub fn with_http_request(self, http_request: String) -> Self {
-        Self {
-            http_request: Some(http_request),
-            ..self
-        }
-    }
-
-    /// Set the value of resources
-    pub fn with_resources(self, resources: String) -> Self {
-        Self {
-            resources: Some(resources),
-            ..self
-        }
-    }
-
-    pub fn new(actor: String, api: String, src_endpoint: String) -> Self {
-        Self {
-            activity_id: None,
-            actor,
-            api,
-            dst_endpoint: None,
-            http_request: None,
-            resources: None,
-            src_endpoint,
-        }
-    }
-}
-
-/// Access activity events describe successful/failed attempts to access an application.
-///
-/// Sourced from: `events/audit/access_activity.json`
-#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct AccessActivity {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub actor: Option<String>,
-    pub http_request: String,
-    pub http_response: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub proxy: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub src_endpoint: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub tls: Option<String>,
-}
-
-impl AccessActivity {
-    pub const UID: u16 = 3006;
-    /// Set the value of activity_id
-    pub fn with_activity_id(self, activity_id: String) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-            ..self
-        }
-    }
-
-    /// Set the value of actor
-    pub fn with_actor(self, actor: String) -> Self {
-        Self {
-            actor: Some(actor),
-            ..self
-        }
-    }
-
-    /// Set the value of proxy
-    pub fn with_proxy(self, proxy: String) -> Self {
-        Self {
-            proxy: Some(proxy),
-            ..self
-        }
-    }
-
-    /// Set the value of src_endpoint
-    pub fn with_src_endpoint(self, src_endpoint: String) -> Self {
-        Self {
-            src_endpoint: Some(src_endpoint),
-            ..self
-        }
-    }
-
-    /// Set the value of tls
-    pub fn with_tls(self, tls: String) -> Self {
-        Self {
-            tls: Some(tls),
-            ..self
-        }
-    }
-
-    pub fn new(http_request: String, http_response: String) -> Self {
-        Self {
-            activity_id: None,
-            actor: None,
-            http_request,
-            http_response,
-            proxy: None,
-            src_endpoint: None,
-            tls: None,
-        }
-    }
-}
-
 /// Entity Management events report activity by a managed client, a micro service, or a user at a management console. The activity can be a create, read, update, and delete operation on a managed entity.
 ///
 /// Sourced from: `events/audit/entity.json`
@@ -499,4 +499,4 @@ impl EntityManagement {
     }
 }
 
-// This file was automatically generated by ocsf-codegen at 2023-03-29T12:27:22+00:00 branch: "yaleman/issue9" link: <https://github.com/yaleman/ocsf-rs/commit/60c657dc0c6103bdda104ca3be2ccbb778bd1c1a>
+// This file was automatically generated by ocsf-codegen at 2023-03-29T23:19:53+00:00 branch: "yaleman/issue9" link: <https://github.com/yaleman/ocsf-rs/commit/23c75ddd98fcb28b7dc81dd488385e97fab90381>

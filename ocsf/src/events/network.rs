@@ -1,146 +1,191 @@
-/// SSH Activity events report remote client connections to a server using the Secure Shell (SSH) Protocol.
+/// DHCP Activity events report MAC to IP assignment via DHCP from a client or server.
 ///
-/// Sourced from: `events/network/ssh.json`
+/// Sourced from: `events/network/dhcp.json`
 #[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct SshActivity {
+pub struct DhcpActivity {
+    pub activity_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub client_hassh: Option<String>,
+    pub dst_endpoint: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub protocol_ver: Option<String>,
+    pub is_renewal: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub server_hassh: Option<String>,
+    pub lease_dur: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub relay: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub src_endpoint: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transaction_uid: Option<String>,
 }
 
-impl SshActivity {
-    pub const UID: u16 = 7;
-    /// Set the value of client_hassh
-    pub fn with_client_hassh(self, client_hassh: String) -> Self {
+impl DhcpActivity {
+    pub const UID: u16 = 4004;
+    /// Set the value of dst_endpoint
+    pub fn with_dst_endpoint(self, dst_endpoint: String) -> Self {
         Self {
-            client_hassh: Some(client_hassh),
+            dst_endpoint: Some(dst_endpoint),
             ..self
         }
     }
 
-    /// Set the value of protocol_ver
-    pub fn with_protocol_ver(self, protocol_ver: String) -> Self {
+    /// Set the value of is_renewal
+    pub fn with_is_renewal(self, is_renewal: String) -> Self {
         Self {
-            protocol_ver: Some(protocol_ver),
+            is_renewal: Some(is_renewal),
             ..self
         }
     }
 
-    /// Set the value of server_hassh
-    pub fn with_server_hassh(self, server_hassh: String) -> Self {
+    /// Set the value of lease_dur
+    pub fn with_lease_dur(self, lease_dur: String) -> Self {
         Self {
-            server_hassh: Some(server_hassh),
+            lease_dur: Some(lease_dur),
             ..self
         }
     }
 
-    pub fn new() -> Self {
+    /// Set the value of relay
+    pub fn with_relay(self, relay: String) -> Self {
         Self {
-            client_hassh: None,
-            protocol_ver: None,
-            server_hassh: None,
+            relay: Some(relay),
+            ..self
+        }
+    }
+
+    /// Set the value of src_endpoint
+    pub fn with_src_endpoint(self, src_endpoint: String) -> Self {
+        Self {
+            src_endpoint: Some(src_endpoint),
+            ..self
+        }
+    }
+
+    /// Set the value of transaction_uid
+    pub fn with_transaction_uid(self, transaction_uid: String) -> Self {
+        Self {
+            transaction_uid: Some(transaction_uid),
+            ..self
+        }
+    }
+
+    pub fn new(activity_id: String) -> Self {
+        Self {
+            activity_id,
+            dst_endpoint: None,
+            is_renewal: None,
+            lease_dur: None,
+            relay: None,
+            src_endpoint: None,
+            transaction_uid: None,
         }
     }
 }
 
-/// Remote Desktop Protocol (RDP) Activity events report remote client connections to a server as seen on the network.
+/// DNS Activity events report DNS queries and answers as seen on the network.
 ///
-/// Sourced from: `events/network/rdp.json`
+/// Sourced from: `events/network/dns.json`
 #[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct RdpActivity {
+pub struct DnsActivity {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity_id: Option<String>,
+    pub activity_id: Option<crate::DnsActivity>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub capabilities: Option<String>,
+    pub answers: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub certificate_chain: Option<String>,
+    pub connection_info: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub device: Option<String>,
+    pub proxy: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub identifier_cookie: Option<String>,
+    pub query: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub protocol_ver: Option<String>,
+    pub query_time: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub remote_display: Option<String>,
+    pub rcode: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub request: Option<String>,
+    pub rcode_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub response: Option<String>,
+    pub response_time: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub traffic: Option<String>,
 }
 
-impl RdpActivity {
-    pub const UID: u16 = 5;
+impl DnsActivity {
+    pub const UID: u16 = 3;
     /// Set the value of activity_id
-    pub fn with_activity_id(self, activity_id: String) -> Self {
+    pub fn with_activity_id(self, activity_id: crate::DnsActivity) -> Self {
         Self {
             activity_id: Some(activity_id),
             ..self
         }
     }
 
-    /// Set the value of capabilities
-    pub fn with_capabilities(self, capabilities: String) -> Self {
+    /// Set the value of answers
+    pub fn with_answers(self, answers: String) -> Self {
         Self {
-            capabilities: Some(capabilities),
+            answers: Some(answers),
             ..self
         }
     }
 
-    /// Set the value of certificate_chain
-    pub fn with_certificate_chain(self, certificate_chain: String) -> Self {
+    /// Set the value of connection_info
+    pub fn with_connection_info(self, connection_info: String) -> Self {
         Self {
-            certificate_chain: Some(certificate_chain),
+            connection_info: Some(connection_info),
             ..self
         }
     }
 
-    /// Set the value of device
-    pub fn with_device(self, device: String) -> Self {
+    /// Set the value of proxy
+    pub fn with_proxy(self, proxy: String) -> Self {
         Self {
-            device: Some(device),
+            proxy: Some(proxy),
             ..self
         }
     }
 
-    /// Set the value of identifier_cookie
-    pub fn with_identifier_cookie(self, identifier_cookie: String) -> Self {
+    /// Set the value of query
+    pub fn with_query(self, query: String) -> Self {
         Self {
-            identifier_cookie: Some(identifier_cookie),
+            query: Some(query),
             ..self
         }
     }
 
-    /// Set the value of protocol_ver
-    pub fn with_protocol_ver(self, protocol_ver: String) -> Self {
+    /// Set the value of query_time
+    pub fn with_query_time(self, query_time: String) -> Self {
         Self {
-            protocol_ver: Some(protocol_ver),
+            query_time: Some(query_time),
             ..self
         }
     }
 
-    /// Set the value of remote_display
-    pub fn with_remote_display(self, remote_display: String) -> Self {
+    /// Set the value of rcode
+    pub fn with_rcode(self, rcode: String) -> Self {
         Self {
-            remote_display: Some(remote_display),
+            rcode: Some(rcode),
             ..self
         }
     }
 
-    /// Set the value of request
-    pub fn with_request(self, request: String) -> Self {
+    /// Set the value of rcode_id
+    pub fn with_rcode_id(self, rcode_id: String) -> Self {
         Self {
-            request: Some(request),
+            rcode_id: Some(rcode_id),
             ..self
         }
     }
 
-    /// Set the value of response
-    pub fn with_response(self, response: String) -> Self {
+    /// Set the value of response_time
+    pub fn with_response_time(self, response_time: String) -> Self {
         Self {
-            response: Some(response),
+            response_time: Some(response_time),
+            ..self
+        }
+    }
+
+    /// Set the value of traffic
+    pub fn with_traffic(self, traffic: String) -> Self {
+        Self {
+            traffic: Some(traffic),
             ..self
         }
     }
@@ -148,38 +193,16 @@ impl RdpActivity {
     pub fn new() -> Self {
         Self {
             activity_id: None,
-            capabilities: None,
-            certificate_chain: None,
-            device: None,
-            identifier_cookie: None,
-            protocol_ver: None,
-            remote_display: None,
-            request: None,
-            response: None,
+            answers: None,
+            connection_info: None,
+            proxy: None,
+            query: None,
+            query_time: None,
+            rcode: None,
+            rcode_id: None,
+            response_time: None,
+            traffic: None,
         }
-    }
-}
-
-/// Network Activity events report network connection and traffic activity.
-///
-/// Sourced from: `events/network/network.json`
-#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct NetworkActivity {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity_id: Option<crate::NetworkActivity>,
-}
-
-impl NetworkActivity {
-    pub const UID: u16 = 4001;
-    /// Set the value of activity_id
-    pub fn with_activity_id(self, activity_id: crate::NetworkActivity) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-        }
-    }
-
-    pub fn new() -> Self {
-        Self { activity_id: None }
     }
 }
 
@@ -395,6 +418,143 @@ impl HttpActivity {
     }
 }
 
+/// Network Activity events report network connection and traffic activity.
+///
+/// Sourced from: `events/network/network.json`
+#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
+pub struct NetworkActivity {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub activity_id: Option<crate::NetworkActivity>,
+}
+
+impl NetworkActivity {
+    pub const UID: u16 = 4001;
+    /// Set the value of activity_id
+    pub fn with_activity_id(self, activity_id: crate::NetworkActivity) -> Self {
+        Self {
+            activity_id: Some(activity_id),
+        }
+    }
+
+    pub fn new() -> Self {
+        Self { activity_id: None }
+    }
+}
+
+/// Remote Desktop Protocol (RDP) Activity events report remote client connections to a server as seen on the network.
+///
+/// Sourced from: `events/network/rdp.json`
+#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
+pub struct RdpActivity {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub activity_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub capabilities: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub certificate_chain: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub device: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub identifier_cookie: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub protocol_ver: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub remote_display: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub request: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub response: Option<String>,
+}
+
+impl RdpActivity {
+    pub const UID: u16 = 5;
+    /// Set the value of activity_id
+    pub fn with_activity_id(self, activity_id: String) -> Self {
+        Self {
+            activity_id: Some(activity_id),
+            ..self
+        }
+    }
+
+    /// Set the value of capabilities
+    pub fn with_capabilities(self, capabilities: String) -> Self {
+        Self {
+            capabilities: Some(capabilities),
+            ..self
+        }
+    }
+
+    /// Set the value of certificate_chain
+    pub fn with_certificate_chain(self, certificate_chain: String) -> Self {
+        Self {
+            certificate_chain: Some(certificate_chain),
+            ..self
+        }
+    }
+
+    /// Set the value of device
+    pub fn with_device(self, device: String) -> Self {
+        Self {
+            device: Some(device),
+            ..self
+        }
+    }
+
+    /// Set the value of identifier_cookie
+    pub fn with_identifier_cookie(self, identifier_cookie: String) -> Self {
+        Self {
+            identifier_cookie: Some(identifier_cookie),
+            ..self
+        }
+    }
+
+    /// Set the value of protocol_ver
+    pub fn with_protocol_ver(self, protocol_ver: String) -> Self {
+        Self {
+            protocol_ver: Some(protocol_ver),
+            ..self
+        }
+    }
+
+    /// Set the value of remote_display
+    pub fn with_remote_display(self, remote_display: String) -> Self {
+        Self {
+            remote_display: Some(remote_display),
+            ..self
+        }
+    }
+
+    /// Set the value of request
+    pub fn with_request(self, request: String) -> Self {
+        Self {
+            request: Some(request),
+            ..self
+        }
+    }
+
+    /// Set the value of response
+    pub fn with_response(self, response: String) -> Self {
+        Self {
+            response: Some(response),
+            ..self
+        }
+    }
+
+    pub fn new() -> Self {
+        Self {
+            activity_id: None,
+            capabilities: None,
+            certificate_chain: None,
+            device: None,
+            identifier_cookie: None,
+            protocol_ver: None,
+            remote_display: None,
+            request: None,
+            response: None,
+        }
+    }
+}
+
 /// Server Message Block (SMB) Protocol Activity events report client/server connections sharing resources within the network.
 ///
 /// Sourced from: `events/network/smb.json`
@@ -531,212 +691,52 @@ impl SmbActivity {
     }
 }
 
-/// DHCP Activity events report MAC to IP assignment via DHCP from a client or server.
+/// SSH Activity events report remote client connections to a server using the Secure Shell (SSH) Protocol.
 ///
-/// Sourced from: `events/network/dhcp.json`
+/// Sourced from: `events/network/ssh.json`
 #[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct DhcpActivity {
-    pub activity_id: String,
+pub struct SshActivity {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub dst_endpoint: Option<String>,
+    pub client_hassh: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub is_renewal: Option<String>,
+    pub protocol_ver: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub lease_dur: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub relay: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub src_endpoint: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub transaction_uid: Option<String>,
+    pub server_hassh: Option<String>,
 }
 
-impl DhcpActivity {
-    pub const UID: u16 = 4004;
-    /// Set the value of dst_endpoint
-    pub fn with_dst_endpoint(self, dst_endpoint: String) -> Self {
+impl SshActivity {
+    pub const UID: u16 = 7;
+    /// Set the value of client_hassh
+    pub fn with_client_hassh(self, client_hassh: String) -> Self {
         Self {
-            dst_endpoint: Some(dst_endpoint),
+            client_hassh: Some(client_hassh),
             ..self
         }
     }
 
-    /// Set the value of is_renewal
-    pub fn with_is_renewal(self, is_renewal: String) -> Self {
+    /// Set the value of protocol_ver
+    pub fn with_protocol_ver(self, protocol_ver: String) -> Self {
         Self {
-            is_renewal: Some(is_renewal),
+            protocol_ver: Some(protocol_ver),
             ..self
         }
     }
 
-    /// Set the value of lease_dur
-    pub fn with_lease_dur(self, lease_dur: String) -> Self {
+    /// Set the value of server_hassh
+    pub fn with_server_hassh(self, server_hassh: String) -> Self {
         Self {
-            lease_dur: Some(lease_dur),
-            ..self
-        }
-    }
-
-    /// Set the value of relay
-    pub fn with_relay(self, relay: String) -> Self {
-        Self {
-            relay: Some(relay),
-            ..self
-        }
-    }
-
-    /// Set the value of src_endpoint
-    pub fn with_src_endpoint(self, src_endpoint: String) -> Self {
-        Self {
-            src_endpoint: Some(src_endpoint),
-            ..self
-        }
-    }
-
-    /// Set the value of transaction_uid
-    pub fn with_transaction_uid(self, transaction_uid: String) -> Self {
-        Self {
-            transaction_uid: Some(transaction_uid),
-            ..self
-        }
-    }
-
-    pub fn new(activity_id: String) -> Self {
-        Self {
-            activity_id,
-            dst_endpoint: None,
-            is_renewal: None,
-            lease_dur: None,
-            relay: None,
-            src_endpoint: None,
-            transaction_uid: None,
-        }
-    }
-}
-
-/// DNS Activity events report DNS queries and answers as seen on the network.
-///
-/// Sourced from: `events/network/dns.json`
-#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct DnsActivity {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity_id: Option<crate::DnsActivity>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub answers: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub connection_info: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub proxy: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub query: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub query_time: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rcode: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rcode_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub response_time: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub traffic: Option<String>,
-}
-
-impl DnsActivity {
-    pub const UID: u16 = 3;
-    /// Set the value of activity_id
-    pub fn with_activity_id(self, activity_id: crate::DnsActivity) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-            ..self
-        }
-    }
-
-    /// Set the value of answers
-    pub fn with_answers(self, answers: String) -> Self {
-        Self {
-            answers: Some(answers),
-            ..self
-        }
-    }
-
-    /// Set the value of connection_info
-    pub fn with_connection_info(self, connection_info: String) -> Self {
-        Self {
-            connection_info: Some(connection_info),
-            ..self
-        }
-    }
-
-    /// Set the value of proxy
-    pub fn with_proxy(self, proxy: String) -> Self {
-        Self {
-            proxy: Some(proxy),
-            ..self
-        }
-    }
-
-    /// Set the value of query
-    pub fn with_query(self, query: String) -> Self {
-        Self {
-            query: Some(query),
-            ..self
-        }
-    }
-
-    /// Set the value of query_time
-    pub fn with_query_time(self, query_time: String) -> Self {
-        Self {
-            query_time: Some(query_time),
-            ..self
-        }
-    }
-
-    /// Set the value of rcode
-    pub fn with_rcode(self, rcode: String) -> Self {
-        Self {
-            rcode: Some(rcode),
-            ..self
-        }
-    }
-
-    /// Set the value of rcode_id
-    pub fn with_rcode_id(self, rcode_id: String) -> Self {
-        Self {
-            rcode_id: Some(rcode_id),
-            ..self
-        }
-    }
-
-    /// Set the value of response_time
-    pub fn with_response_time(self, response_time: String) -> Self {
-        Self {
-            response_time: Some(response_time),
-            ..self
-        }
-    }
-
-    /// Set the value of traffic
-    pub fn with_traffic(self, traffic: String) -> Self {
-        Self {
-            traffic: Some(traffic),
+            server_hassh: Some(server_hassh),
             ..self
         }
     }
 
     pub fn new() -> Self {
         Self {
-            activity_id: None,
-            answers: None,
-            connection_info: None,
-            proxy: None,
-            query: None,
-            query_time: None,
-            rcode: None,
-            rcode_id: None,
-            response_time: None,
-            traffic: None,
+            client_hassh: None,
+            protocol_ver: None,
+            server_hassh: None,
         }
     }
 }
 
-// This file was automatically generated by ocsf-codegen at 2023-03-29T12:27:22+00:00 branch: "yaleman/issue9" link: <https://github.com/yaleman/ocsf-rs/commit/60c657dc0c6103bdda104ca3be2ccbb778bd1c1a>
+// This file was automatically generated by ocsf-codegen at 2023-03-29T23:19:53+00:00 branch: "yaleman/issue9" link: <https://github.com/yaleman/ocsf-rs/commit/23c75ddd98fcb28b7dc81dd488385e97fab90381>

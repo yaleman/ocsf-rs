@@ -10,7 +10,7 @@ use serde_json::Map;
 use crate::module::Module;
 use crate::*;
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq)]
 /// Deserialization target for `events/\*.json` files.
 pub struct EventDef {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -329,8 +329,11 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
 
     let mut all_events = load_all_event_files(paths);
 
-    for (filename, event) in all_events.iter_mut() {
-        if filename.len() <= 1 {
+    for (filename, event) in all_events
+        .iter_mut()
+        .sorted_by_key(|(_k, v)| v.name.clone())
+        {
+    if filename.len() <= 1 {
             warn!("Can't handle file {}", filename);
             continue;
         }
