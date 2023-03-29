@@ -8,6 +8,9 @@ repository = {workspace = true}
 rust-version = {workspace = true}
 version = {workspace=true}
 
+[badges]
+maintenance = { status = "experimental" }
+
 
 [dependencies]
 chrono = "0.4.24"

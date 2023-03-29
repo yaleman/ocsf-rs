@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use codegen::{Field, Impl, Struct, Function};
+use codegen::{Field, Function, Impl, Struct};
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Map;
 
@@ -361,10 +361,7 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
 
         trace!("Target module: {:#?}", target_module);
 
-        let struct_doc = format!(
-            "{}\n\nSourced from: `{}`",
-            &event.description, filename
-        );
+        let struct_doc = format!("{}\n\nSourced from: `{}`", &event.description, filename);
         let mut module_struct = Struct::new(&collapsed_title_case(&event.name));
         module_struct
             .doc(&struct_doc)
@@ -374,16 +371,12 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
             .derive("Default")
             .derive("Debug");
 
-
-
         let mut func_new = Function::new("new");
-        func_new.vis("pub")
-            .ret("Self");
+        func_new.vis("pub").ret("Self");
 
         func_new.line("Self {");
 
         let mut module_impl = Impl::new(&collapsed_title_case(&event.name));
-
 
         // yes, we're sorting struct fields.
         event
@@ -434,11 +427,11 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
                     func_new.arg(attr_name, &attr.enum_name);
                     func_new.line(format!("{attr_name},"));
                 } else {
-
                     func_new.line(format!("{attr_name}: None,"));
                     let mut with_func = Function::new(format!("with_{attr_name}"));
 
-                    with_func.vis("pub")
+                    with_func
+                        .vis("pub")
                         .doc(format!("Set the value of {}", attr_name))
                         .arg_self()
                         .arg(attr_name, &attr.enum_name)
@@ -462,7 +455,6 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
 
                 // add builders for the not-required fields
 
-
                 module_struct.push_field(attr_field);
             });
 
@@ -479,7 +471,6 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
         if uid != 0 {
             module_impl.associate_const("UID", "u16", format!("{}", uid), "pub");
         }
-
 
         module_impl.push_fn(func_new);
 
