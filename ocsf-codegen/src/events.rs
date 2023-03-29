@@ -11,6 +11,7 @@ use crate::module::Module;
 use crate::*;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+/// Deserialization target for `events/\*.json` files.
 pub struct EventDef {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub uid: Option<u32>,
@@ -30,6 +31,7 @@ pub struct EventDef {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+/// Deserialization elper
 pub enum Group {
     Classification,
     Context,
@@ -71,6 +73,7 @@ impl From<Group> for &'static str {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+/// Deserialization helper for the "requirement" field, used all over the place.
 pub enum Requirement {
     Optional,
     Recommended,
@@ -315,9 +318,8 @@ fn load_all_event_files(paths: &DirPaths) -> HashMap<String, EventDef> {
     result
 }
 
+/// Generates the events structs. Here be 🐉
 pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(), Box<dyn Error>> {
-    // let event_schema_path = format!("{}events/", paths.schema_path);
-    // let filenames = find_files(&event_schema_path);
 
     let categories_file = read_file_to_value(&format!("{}categories.json", paths.schema_path))?;
     let categories_file = categories_file
@@ -382,6 +384,7 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
         let mut module_impl = Impl::new(&collapsed_title_case(&event.name));
 
         // yes, we're sorting struct fields.
+        // here we handle all the attributes...
         event
             .attributes
             .iter()
@@ -416,10 +419,15 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
                 );
                 attr_field.vis("pub");
                 // documentation is always nice
+                let mut attr_docstring = String::new();
                 if let Some(description) = &attr.description {
-                    attr_field.doc(fix_docstring(description.to_owned(), None));
+                    attr_docstring += &fix_docstring(description.to_owned(), None);
                 }
 
+                if let Some(requirement) = attr.requirement.clone() {
+                    let req: &str = requirement.into();
+                    attr_docstring += &format!(" - {}", req);
+                }
                 let mut serde_annotations: Vec<&str> = vec![];
                 if attr_name == "type_name" {
                     // because when we serialize it out, it needs the right name

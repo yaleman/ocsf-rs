@@ -1,154 +1,3 @@
-/// Account Change events report when specific user account management tasks are performed, such as a user/role being created, changed, deleted, renamed, disabled, enabled, locked out or unlocked.
-///
-/// Sourced from: `events/audit/account.json`
-#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct AccountChange {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity_id: Option<String>,
-    pub actor: String,
-    /// Details about the underlying http request.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub http_request: Option<String>,
-    /// Details about the source of the activity.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub src_endpoint: Option<String>,
-    /// The user that was a target of an activity.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub user: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub user_result: Option<String>,
-}
-
-impl AccountChange {
-    pub const UID: u16 = 1;
-    /// Set the value of activity_id
-    pub fn with_activity_id(self, activity_id: String) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-            ..self
-        }
-    }
-
-    /// Set the value of http_request
-    pub fn with_http_request(self, http_request: String) -> Self {
-        Self {
-            http_request: Some(http_request),
-            ..self
-        }
-    }
-
-    /// Set the value of src_endpoint
-    pub fn with_src_endpoint(self, src_endpoint: String) -> Self {
-        Self {
-            src_endpoint: Some(src_endpoint),
-            ..self
-        }
-    }
-
-    /// Set the value of user
-    pub fn with_user(self, user: String) -> Self {
-        Self {
-            user: Some(user),
-            ..self
-        }
-    }
-
-    /// Set the value of user_result
-    pub fn with_user_result(self, user_result: String) -> Self {
-        Self {
-            user_result: Some(user_result),
-            ..self
-        }
-    }
-
-    pub fn new(actor: String) -> Self {
-        Self {
-            activity_id: None,
-            actor,
-            http_request: None,
-            src_endpoint: None,
-            user: None,
-            user_result: None,
-        }
-    }
-}
-
-/// Access activity events describe successful/failed attempts to access an application.
-///
-/// Sourced from: `events/audit/access_activity.json`
-#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct AccessActivity {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub actor: Option<String>,
-    pub http_request: String,
-    pub http_response: String,
-    /// Details about the proxy if available.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub proxy: Option<String>,
-    /// Details about the source endpoint of the connection.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub src_endpoint: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub tls: Option<String>,
-}
-
-impl AccessActivity {
-    pub const UID: u16 = 3006;
-    /// Set the value of activity_id
-    pub fn with_activity_id(self, activity_id: String) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-            ..self
-        }
-    }
-
-    /// Set the value of actor
-    pub fn with_actor(self, actor: String) -> Self {
-        Self {
-            actor: Some(actor),
-            ..self
-        }
-    }
-
-    /// Set the value of proxy
-    pub fn with_proxy(self, proxy: String) -> Self {
-        Self {
-            proxy: Some(proxy),
-            ..self
-        }
-    }
-
-    /// Set the value of src_endpoint
-    pub fn with_src_endpoint(self, src_endpoint: String) -> Self {
-        Self {
-            src_endpoint: Some(src_endpoint),
-            ..self
-        }
-    }
-
-    /// Set the value of tls
-    pub fn with_tls(self, tls: String) -> Self {
-        Self {
-            tls: Some(tls),
-            ..self
-        }
-    }
-
-    pub fn new(http_request: String, http_response: String) -> Self {
-        Self {
-            activity_id: None,
-            actor: None,
-            http_request,
-            http_response,
-            proxy: None,
-            src_endpoint: None,
-            tls: None,
-        }
-    }
-}
-
 /// Authentication events report authentication session activities such as user attempts a logon or logoff, successfully or otherwise.
 ///
 /// Sourced from: `events/audit/authentication.json`
@@ -156,16 +5,13 @@ impl AccessActivity {
 pub struct Authentication {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub activity_id: Option<String>,
-    /// The actor that requested the authentication.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub actor: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub auth_protocol: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub auth_protocol_id: Option<String>,
-    /// The Endpoint for which the authentication was targeted.
     pub dst_endpoint: String,
-    /// Details about the underlying http request.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub http_request: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -180,16 +26,12 @@ pub struct Authentication {
     pub logon_type_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mfa: Option<String>,
-    /// The new session of the authenticated user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub session: Option<String>,
-    /// The Endpoint from which the authentication was requested.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub src_endpoint: Option<String>,
-    /// The details about the authentication request. For example, possible details for Windows logon or logoff events are:<ul><li>Success</li><ul><li>LOGOFF_USER_INITIATED</li><li>LOGOFF_OTHER</li></ul><li>Failure</li><ul><li>USER_DOES_NOT_EXIST</li><li>INVALID_CREDENTIALS</li><li>ACCOUNT_DISABLED</li><li>ACCOUNT_LOCKED_OUT</li><li>PASSWORD_EXPIRED</li></ul></ul>
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status_detail: Option<String>,
-    /// The target identity (user/role) to authenticate.
     pub user: String,
 }
 
@@ -329,6 +171,121 @@ impl Authentication {
     }
 }
 
+/// Authorization events report special privileges or groups assigned to a session.
+///
+/// Sourced from: `events/audit/authorization.json`
+#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
+pub struct Authorization {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub activity_id: Option<crate::Authorization>,
+    pub dst_endpoint: String,
+    pub privileges: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub session: Option<String>,
+    pub user: String,
+}
+
+impl Authorization {
+    pub const UID: u16 = 3;
+    /// Set the value of activity_id
+    pub fn with_activity_id(self, activity_id: crate::Authorization) -> Self {
+        Self {
+            activity_id: Some(activity_id),
+            ..self
+        }
+    }
+
+    /// Set the value of session
+    pub fn with_session(self, session: String) -> Self {
+        Self {
+            session: Some(session),
+            ..self
+        }
+    }
+
+    pub fn new(dst_endpoint: String, privileges: String, user: String) -> Self {
+        Self {
+            activity_id: None,
+            dst_endpoint,
+            privileges,
+            session: None,
+            user,
+        }
+    }
+}
+
+/// Account Change events report when specific user account management tasks are performed, such as a user/role being created, changed, deleted, renamed, disabled, enabled, locked out or unlocked.
+///
+/// Sourced from: `events/audit/account.json`
+#[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
+pub struct AccountChange {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub activity_id: Option<String>,
+    pub actor: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub http_request: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub src_endpoint: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_result: Option<String>,
+}
+
+impl AccountChange {
+    pub const UID: u16 = 1;
+    /// Set the value of activity_id
+    pub fn with_activity_id(self, activity_id: String) -> Self {
+        Self {
+            activity_id: Some(activity_id),
+            ..self
+        }
+    }
+
+    /// Set the value of http_request
+    pub fn with_http_request(self, http_request: String) -> Self {
+        Self {
+            http_request: Some(http_request),
+            ..self
+        }
+    }
+
+    /// Set the value of src_endpoint
+    pub fn with_src_endpoint(self, src_endpoint: String) -> Self {
+        Self {
+            src_endpoint: Some(src_endpoint),
+            ..self
+        }
+    }
+
+    /// Set the value of user
+    pub fn with_user(self, user: String) -> Self {
+        Self {
+            user: Some(user),
+            ..self
+        }
+    }
+
+    /// Set the value of user_result
+    pub fn with_user_result(self, user_result: String) -> Self {
+        Self {
+            user_result: Some(user_result),
+            ..self
+        }
+    }
+
+    pub fn new(actor: String) -> Self {
+        Self {
+            activity_id: None,
+            actor,
+            http_request: None,
+            src_endpoint: None,
+            user: None,
+            user_result: None,
+        }
+    }
+}
+
 /// The Audit Activity event is a generic event that defines a set of attributes available in the audit events. As a generic event, it could be used to log events that are not otherwise defined by the Audit Activity category.
 ///
 /// Sourced from: `events/audit/audit.json`
@@ -353,13 +310,10 @@ pub struct ApiActivity {
     pub api: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dst_endpoint: Option<String>,
-    /// Details about the underlying http request.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub http_request: Option<String>,
-    /// Details about resources that were affected by the activity/event.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resources: Option<String>,
-    /// Details about the source of the activity.
     pub src_endpoint: String,
 }
 
@@ -410,49 +364,76 @@ impl ApiActivity {
     }
 }
 
-/// Authorization events report special privileges or groups assigned to a session.
+/// Access activity events describe successful/failed attempts to access an application.
 ///
-/// Sourced from: `events/audit/authorization.json`
+/// Sourced from: `events/audit/access_activity.json`
 #[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
-pub struct Authorization {
+pub struct AccessActivity {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub activity_id: Option<crate::Authorization>,
-    /// The Endpoint for which the authentication was targeted.
-    pub dst_endpoint: String,
-    /// The list of sensitive privileges, assigned to the new user session.
-    pub privileges: String,
-    /// The modified user session.
+    pub activity_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub session: Option<String>,
-    /// The user to which new privileges were assigned.
-    pub user: String,
+    pub actor: Option<String>,
+    pub http_request: String,
+    pub http_response: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub proxy: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub src_endpoint: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tls: Option<String>,
 }
 
-impl Authorization {
-    pub const UID: u16 = 3;
+impl AccessActivity {
+    pub const UID: u16 = 3006;
     /// Set the value of activity_id
-    pub fn with_activity_id(self, activity_id: crate::Authorization) -> Self {
+    pub fn with_activity_id(self, activity_id: String) -> Self {
         Self {
             activity_id: Some(activity_id),
             ..self
         }
     }
 
-    /// Set the value of session
-    pub fn with_session(self, session: String) -> Self {
+    /// Set the value of actor
+    pub fn with_actor(self, actor: String) -> Self {
         Self {
-            session: Some(session),
+            actor: Some(actor),
             ..self
         }
     }
 
-    pub fn new(dst_endpoint: String, privileges: String, user: String) -> Self {
+    /// Set the value of proxy
+    pub fn with_proxy(self, proxy: String) -> Self {
+        Self {
+            proxy: Some(proxy),
+            ..self
+        }
+    }
+
+    /// Set the value of src_endpoint
+    pub fn with_src_endpoint(self, src_endpoint: String) -> Self {
+        Self {
+            src_endpoint: Some(src_endpoint),
+            ..self
+        }
+    }
+
+    /// Set the value of tls
+    pub fn with_tls(self, tls: String) -> Self {
+        Self {
+            tls: Some(tls),
+            ..self
+        }
+    }
+
+    pub fn new(http_request: String, http_response: String) -> Self {
         Self {
             activity_id: None,
-            dst_endpoint,
-            privileges,
-            session: None,
-            user,
+            actor: None,
+            http_request,
+            http_response,
+            proxy: None,
+            src_endpoint: None,
+            tls: None,
         }
     }
 }
@@ -464,10 +445,8 @@ impl Authorization {
 pub struct EntityManagement {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub activity_id: Option<String>,
-    /// Use for when the entity acting upon another entity is a process or user.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub actor: Option<String>,
-    /// The user provided comment about why the entity was changed.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub comment: Option<String>,
     pub entity: String,
@@ -520,4 +499,4 @@ impl EntityManagement {
     }
 }
 
-// This file was automatically generated by ocsf-codegen at 2023-03-29T11:20:42+00:00 branch: "yaleman/issue9" link: <https://github.com/yaleman/ocsf-rs/commit/e3cab7448ca160ea1e324c46692c5096b4c5b3fa>
+// This file was automatically generated by ocsf-codegen at 2023-03-29T12:27:22+00:00 branch: "yaleman/issue9" link: <https://github.com/yaleman/ocsf-rs/commit/60c657dc0c6103bdda104ca3be2ccbb778bd1c1a>

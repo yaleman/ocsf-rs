@@ -1,3 +1,5 @@
+#![deny(rustdoc::broken_intra_doc_links)]
+
 //! This is the codegen crate for the [ocsf](https://docs.rs/ocsf/) library.
 //!
 
@@ -302,7 +304,10 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
 
     let mut root_module = module::Module::new("lib".to_string(), true);
 
+
     root_module.scope = Scope::new();
+    #[cfg(feature="warn_undocumented")]
+    root_module.scope.raw("#![warn(missing_docs)]");
     root_module
         .scope
         .raw("//! OCSF crate, does Open Cyber Security Framework things.");

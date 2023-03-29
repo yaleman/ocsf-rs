@@ -11,6 +11,8 @@ version = {workspace=true}
 [badges]
 maintenance = { status = "experimental" }
 
+[features]
+warn_undocumented = []
 
 [dependencies]
 chrono = "0.4.24"
