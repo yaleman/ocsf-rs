@@ -11,7 +11,7 @@ help:
 
 .PHONY: codegen
 codegen: ## generate the ocsf crate, run cargo fmt on it and test it actually builds
-	cargo run -p ocsf-codegen -- -d ./
+	cargo run -p ocsf-codegen --
 	cargo fmt -p ocsf
 	cargo build -p ocsf
 
@@ -57,3 +57,7 @@ watch/build: ## Use cargo watch to build the OCSF package as the codegen source 
 watch/build:
 	cargo watch -w ocsf-codegen --no-restart -s 'make'
 
+.PHONY: docs/coverage
+docs/coverage: ## Generate the documentation coverage report
+docs/coverage:
+	@./cargo-docs-coverage.sh

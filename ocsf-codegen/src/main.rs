@@ -27,7 +27,7 @@ pub fn main() {
 
     let base_path = match cli.dirpath {
         Some(val) => val,
-        None => String::from("../"),
+        None => String::from("./"),
     };
 
     if let Err(err) = generate_source_code(&base_path) {

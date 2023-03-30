@@ -21,53 +21,49 @@ impl AccessActivity {
     pub const UID: u16 = 3006;
     /// Set the value of activity_id
     pub fn with_activity_id(self, activity_id: String) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-            ..self
+        Self { activity_id: Some(activity_id),
+        ..self  
         }
     }
 
     /// Set the value of actor
     pub fn with_actor(self, actor: String) -> Self {
-        Self {
-            actor: Some(actor),
-            ..self
+        Self { actor: Some(actor),
+        ..self  
         }
     }
 
     /// Set the value of proxy
     pub fn with_proxy(self, proxy: String) -> Self {
-        Self {
-            proxy: Some(proxy),
-            ..self
+        Self { proxy: Some(proxy),
+        ..self  
         }
     }
 
     /// Set the value of src_endpoint
     pub fn with_src_endpoint(self, src_endpoint: String) -> Self {
-        Self {
-            src_endpoint: Some(src_endpoint),
-            ..self
+        Self { src_endpoint: Some(src_endpoint),
+        ..self  
         }
     }
 
     /// Set the value of tls
     pub fn with_tls(self, tls: String) -> Self {
-        Self {
-            tls: Some(tls),
-            ..self
+        Self { tls: Some(tls),
+        ..self  
         }
     }
 
+    /// No description available. - optional
     pub fn new(http_request: String, http_response: String) -> Self {
         Self {
-            activity_id: None,
-            actor: None,
-            http_request,
-            http_response,
-            proxy: None,
-            src_endpoint: None,
-            tls: None,
+        activity_id: None,
+        actor: None,
+        http_request,
+        http_response,
+        proxy: None,
+        src_endpoint: None,
+        tls: None,
         }
     }
 }
@@ -94,52 +90,48 @@ impl AccountChange {
     pub const UID: u16 = 1;
     /// Set the value of activity_id
     pub fn with_activity_id(self, activity_id: String) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-            ..self
+        Self { activity_id: Some(activity_id),
+        ..self  
         }
     }
 
     /// Set the value of http_request
     pub fn with_http_request(self, http_request: String) -> Self {
-        Self {
-            http_request: Some(http_request),
-            ..self
+        Self { http_request: Some(http_request),
+        ..self  
         }
     }
 
     /// Set the value of src_endpoint
     pub fn with_src_endpoint(self, src_endpoint: String) -> Self {
-        Self {
-            src_endpoint: Some(src_endpoint),
-            ..self
+        Self { src_endpoint: Some(src_endpoint),
+        ..self  
         }
     }
 
     /// Set the value of user
     pub fn with_user(self, user: String) -> Self {
-        Self {
-            user: Some(user),
-            ..self
+        Self { user: Some(user),
+        ..self  
         }
     }
 
     /// Set the value of user_result
     pub fn with_user_result(self, user_result: String) -> Self {
-        Self {
-            user_result: Some(user_result),
-            ..self
+        Self { user_result: Some(user_result),
+        ..self  
         }
     }
 
+    /// No description available. - optional
     pub fn new(actor: String) -> Self {
         Self {
-            activity_id: None,
-            actor,
-            http_request: None,
-            src_endpoint: None,
-            user: None,
-            user_result: None,
+        activity_id: None,
+        actor,
+        http_request: None,
+        src_endpoint: None,
+        user: None,
+        user_result: None,
         }
     }
 }
@@ -166,45 +158,42 @@ impl ApiActivity {
     pub const UID: u16 = 3005;
     /// Set the value of activity_id
     pub fn with_activity_id(self, activity_id: String) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-            ..self
+        Self { activity_id: Some(activity_id),
+        ..self  
         }
     }
 
     /// Set the value of dst_endpoint
     pub fn with_dst_endpoint(self, dst_endpoint: String) -> Self {
-        Self {
-            dst_endpoint: Some(dst_endpoint),
-            ..self
+        Self { dst_endpoint: Some(dst_endpoint),
+        ..self  
         }
     }
 
     /// Set the value of http_request
     pub fn with_http_request(self, http_request: String) -> Self {
-        Self {
-            http_request: Some(http_request),
-            ..self
+        Self { http_request: Some(http_request),
+        ..self  
         }
     }
 
     /// Set the value of resources
     pub fn with_resources(self, resources: String) -> Self {
-        Self {
-            resources: Some(resources),
-            ..self
+        Self { resources: Some(resources),
+        ..self  
         }
     }
 
+    /// Details about the source of the activity. - required
     pub fn new(actor: String, api: String, src_endpoint: String) -> Self {
         Self {
-            activity_id: None,
-            actor,
-            api,
-            dst_endpoint: None,
-            http_request: None,
-            resources: None,
-            src_endpoint,
+        activity_id: None,
+        actor,
+        api,
+        dst_endpoint: None,
+        http_request: None,
+        resources: None,
+        src_endpoint,
         }
     }
 }
@@ -217,8 +206,10 @@ pub struct Audit;
 
 impl Audit {
     pub const UID: u16 = 3000;
+    /// Create a new instance of this event.
     pub fn new() -> Self {
-        Self {}
+        Self {
+        }
     }
 }
 
@@ -263,134 +254,121 @@ impl Authentication {
     pub const UID: u16 = 2;
     /// Set the value of activity_id
     pub fn with_activity_id(self, activity_id: String) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-            ..self
+        Self { activity_id: Some(activity_id),
+        ..self  
         }
     }
 
     /// Set the value of actor
     pub fn with_actor(self, actor: String) -> Self {
-        Self {
-            actor: Some(actor),
-            ..self
+        Self { actor: Some(actor),
+        ..self  
         }
     }
 
     /// Set the value of auth_protocol
     pub fn with_auth_protocol(self, auth_protocol: String) -> Self {
-        Self {
-            auth_protocol: Some(auth_protocol),
-            ..self
+        Self { auth_protocol: Some(auth_protocol),
+        ..self  
         }
     }
 
     /// Set the value of auth_protocol_id
     pub fn with_auth_protocol_id(self, auth_protocol_id: String) -> Self {
-        Self {
-            auth_protocol_id: Some(auth_protocol_id),
-            ..self
+        Self { auth_protocol_id: Some(auth_protocol_id),
+        ..self  
         }
     }
 
     /// Set the value of http_request
     pub fn with_http_request(self, http_request: String) -> Self {
-        Self {
-            http_request: Some(http_request),
-            ..self
+        Self { http_request: Some(http_request),
+        ..self  
         }
     }
 
     /// Set the value of is_cleartext
     pub fn with_is_cleartext(self, is_cleartext: String) -> Self {
-        Self {
-            is_cleartext: Some(is_cleartext),
-            ..self
+        Self { is_cleartext: Some(is_cleartext),
+        ..self  
         }
     }
 
     /// Set the value of is_remote
     pub fn with_is_remote(self, is_remote: String) -> Self {
-        Self {
-            is_remote: Some(is_remote),
-            ..self
+        Self { is_remote: Some(is_remote),
+        ..self  
         }
     }
 
     /// Set the value of logon_process
     pub fn with_logon_process(self, logon_process: String) -> Self {
-        Self {
-            logon_process: Some(logon_process),
-            ..self
+        Self { logon_process: Some(logon_process),
+        ..self  
         }
     }
 
     /// Set the value of logon_type
     pub fn with_logon_type(self, logon_type: String) -> Self {
-        Self {
-            logon_type: Some(logon_type),
-            ..self
+        Self { logon_type: Some(logon_type),
+        ..self  
         }
     }
 
     /// Set the value of logon_type_id
     pub fn with_logon_type_id(self, logon_type_id: String) -> Self {
-        Self {
-            logon_type_id: Some(logon_type_id),
-            ..self
+        Self { logon_type_id: Some(logon_type_id),
+        ..self  
         }
     }
 
     /// Set the value of mfa
     pub fn with_mfa(self, mfa: String) -> Self {
-        Self {
-            mfa: Some(mfa),
-            ..self
+        Self { mfa: Some(mfa),
+        ..self  
         }
     }
 
     /// Set the value of session
     pub fn with_session(self, session: String) -> Self {
-        Self {
-            session: Some(session),
-            ..self
+        Self { session: Some(session),
+        ..self  
         }
     }
 
     /// Set the value of src_endpoint
     pub fn with_src_endpoint(self, src_endpoint: String) -> Self {
-        Self {
-            src_endpoint: Some(src_endpoint),
-            ..self
+        Self { src_endpoint: Some(src_endpoint),
+        ..self  
         }
     }
 
     /// Set the value of status_detail
     pub fn with_status_detail(self, status_detail: String) -> Self {
-        Self {
-            status_detail: Some(status_detail),
-            ..self
+        Self { status_detail: Some(status_detail),
+        ..self  
         }
     }
 
+    /// The target identity (user/role) to authenticate. - required
     pub fn new(dst_endpoint: String, user: String) -> Self {
         Self {
-            activity_id: None,
-            actor: None,
-            auth_protocol: None,
-            auth_protocol_id: None,
-            dst_endpoint,
-            http_request: None,
-            is_cleartext: None,
-            is_remote: None,
-            logon_process: None,
-            logon_type: None,
-            logon_type_id: None,
-            mfa: None,
-            session: None,
-            src_endpoint: None,
-            status_detail: None,
-            user,
+        activity_id: None,
+        actor: None,
+        auth_protocol: None,
+        auth_protocol_id: None,
+        dst_endpoint,
+        http_request: None,
+        is_cleartext: None,
+        is_remote: None,
+        logon_process: None,
+        logon_type: None,
+        logon_type_id: None,
+        mfa: None,
+        session: None,
+        src_endpoint: None,
+        status_detail: None,
+        user,
         }
     }
 }
@@ -413,27 +391,26 @@ impl Authorization {
     pub const UID: u16 = 3;
     /// Set the value of activity_id
     pub fn with_activity_id(self, activity_id: crate::Authorization) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-            ..self
+        Self { activity_id: Some(activity_id),
+        ..self  
         }
     }
 
     /// Set the value of session
     pub fn with_session(self, session: String) -> Self {
-        Self {
-            session: Some(session),
-            ..self
+        Self { session: Some(session),
+        ..self  
         }
     }
 
+    /// The user to which new privileges were assigned. - required
     pub fn new(dst_endpoint: String, privileges: String, user: String) -> Self {
         Self {
-            activity_id: None,
-            dst_endpoint,
-            privileges,
-            session: None,
-            user,
+        activity_id: None,
+        dst_endpoint,
+        privileges,
+        session: None,
+        user,
         }
     }
 }
@@ -458,45 +435,42 @@ impl EntityManagement {
     pub const UID: u16 = 4;
     /// Set the value of activity_id
     pub fn with_activity_id(self, activity_id: String) -> Self {
-        Self {
-            activity_id: Some(activity_id),
-            ..self
+        Self { activity_id: Some(activity_id),
+        ..self  
         }
     }
 
     /// Set the value of actor
     pub fn with_actor(self, actor: String) -> Self {
-        Self {
-            actor: Some(actor),
-            ..self
+        Self { actor: Some(actor),
+        ..self  
         }
     }
 
     /// Set the value of comment
     pub fn with_comment(self, comment: String) -> Self {
-        Self {
-            comment: Some(comment),
-            ..self
+        Self { comment: Some(comment),
+        ..self  
         }
     }
 
     /// Set the value of entity_result
     pub fn with_entity_result(self, entity_result: String) -> Self {
-        Self {
-            entity_result: Some(entity_result),
-            ..self
+        Self { entity_result: Some(entity_result),
+        ..self  
         }
     }
 
+    /// No description available. - optional
     pub fn new(entity: String) -> Self {
         Self {
-            activity_id: None,
-            actor: None,
-            comment: None,
-            entity,
-            entity_result: None,
+        activity_id: None,
+        actor: None,
+        comment: None,
+        entity,
+        entity_result: None,
         }
     }
 }
 
-// This file was automatically generated by ocsf-codegen at 2023-03-29T23:19:53+00:00 branch: "yaleman/issue9" link: <https://github.com/yaleman/ocsf-rs/commit/23c75ddd98fcb28b7dc81dd488385e97fab90381>
+// This file was automatically generated by ocsf-codegen at 2023-03-30T03:12:52+00:00 branch: "yaleman/issue9" link: <https://github.com/yaleman/ocsf-rs/commit/00a0691f50bd821d30564ef988d661aecca0227c>

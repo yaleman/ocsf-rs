@@ -380,7 +380,9 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
             .derive("Debug");
 
         let mut func_new = Function::new("new");
-        func_new.vis("pub").ret("Self");
+        func_new.vis("pub")
+            .ret("Self")
+            .doc("Create a new instance of this event.");
 
         func_new.line("Self {");
 
@@ -425,6 +427,10 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
                 let mut attr_docstring = String::new();
                 if let Some(description) = &attr.description {
                     attr_docstring += &fix_docstring(description.to_owned(), None);
+                } else if let Some(caption) = &attr.caption {
+                    attr_docstring += &fix_docstring(caption.to_owned(), None);
+                } else {
+                    attr_docstring += "No description available."
                 }
 
                 if let Some(requirement) = attr.requirement.clone() {
@@ -436,6 +442,7 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
                     // because when we serialize it out, it needs the right name
                     serde_annotations.push("alias=\"type\"");
                 }
+                func_new.doc(attr_docstring);
                 // add the attributes to the new() function
                 if attr.requirement.is_some() && attr.requirement == Some(Requirement::Required) {
                     func_new.arg(attr_name, &attr.enum_name);
