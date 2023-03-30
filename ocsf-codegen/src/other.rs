@@ -1,9 +1,8 @@
 //! It's not the junk drawer, I swear.
 //!
 
-
-use serde::Deserialize;
 use crate::*;
+use serde::Deserialize;
 
 #[derive(Deserialize)]
 /// Deserialization target for `version.json`
@@ -11,7 +10,6 @@ struct VersionFile {
     /// Version value
     version: String,
 }
-
 
 /// Add a version tag to a given `codegen::Scope` object, to tag files with build/commit data.
 pub fn add_version_element(

@@ -42,7 +42,6 @@ lazy_static! {
     static ref URL_FINDER: Regex = Regex::new(r#"(?P<url>\w+://[^<\s]+)"#).unwrap();
 }
 
-
 pub fn find_files(schema_path: &str) -> Vec<String> {
     debug!("looking for schema files in {schema_path}");
     let files: Vec<DirEntry> = WalkDir::new(schema_path)
@@ -304,13 +303,17 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
 
     let mut root_module = module::Module::new("lib".to_string(), true);
 
-    root_module.scope.raw("#![error(rustdoc::invalid_html_tags)]");
+    root_module
+        .scope
+        .raw("#![error(rustdoc::invalid_html_tags)]");
 
     root_module.scope = Scope::new();
-    #[cfg(feature="warn_undocumented")]
+    #[cfg(feature = "warn_undocumented")]
     {
         root_module.scope.raw("#![warn(missing_docs)]");
-        root_module.scope.raw("#![warn(rustdoc::missing_crate_level_docs)]");
+        root_module
+            .scope
+            .raw("#![warn(rustdoc::missing_crate_level_docs)]");
     }
     root_module
         .scope
@@ -343,9 +346,7 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
     add_version_element(&paths, &mut root_module.scope)?;
 
     generate_enums(&paths, &mut root_module)?;
-
     generate_dictionary_entries(&paths, &mut root_module)?;
-    generate_profiles(&paths, &mut root_module)?;
     generate_categories(&paths, &mut root_module)?;
     generate_objects(&paths, &mut root_module)?;
     generate_events(&paths, &mut root_module)?;

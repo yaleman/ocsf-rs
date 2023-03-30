@@ -6,7 +6,6 @@ use crate::*;
 use codegen::{Function, Variant};
 use serde::Deserialize;
 
-
 #[derive(Debug, Deserialize)]
 /// Allows one to deserialize the categories.json file from its HashMap value.
 pub struct Category {

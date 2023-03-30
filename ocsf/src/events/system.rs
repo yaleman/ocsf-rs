@@ -25,65 +25,72 @@ impl FileActivity {
     pub const UID: u16 = 1;
     /// Set the value of access_mask
     pub fn with_access_mask(self, access_mask: String) -> Self {
-        Self { access_mask: Some(access_mask),
-        ..self  
+        Self {
+            access_mask: Some(access_mask),
+            ..self
         }
     }
 
     /// Set the value of activity_id
     pub fn with_activity_id(self, activity_id: crate::FileActivity) -> Self {
-        Self { activity_id: Some(activity_id),
-        ..self  
+        Self {
+            activity_id: Some(activity_id),
+            ..self
         }
     }
 
     /// Set the value of component
     pub fn with_component(self, component: String) -> Self {
-        Self { component: Some(component),
-        ..self  
+        Self {
+            component: Some(component),
+            ..self
         }
     }
 
     /// Set the value of connection_uid
     pub fn with_connection_uid(self, connection_uid: String) -> Self {
-        Self { connection_uid: Some(connection_uid),
-        ..self  
+        Self {
+            connection_uid: Some(connection_uid),
+            ..self
         }
     }
 
     /// Set the value of create_mask
     pub fn with_create_mask(self, create_mask: String) -> Self {
-        Self { create_mask: Some(create_mask),
-        ..self  
+        Self {
+            create_mask: Some(create_mask),
+            ..self
         }
     }
 
     /// Set the value of file_diff
     pub fn with_file_diff(self, file_diff: String) -> Self {
-        Self { file_diff: Some(file_diff),
-        ..self  
+        Self {
+            file_diff: Some(file_diff),
+            ..self
         }
     }
 
     /// Set the value of file_result
     pub fn with_file_result(self, file_result: String) -> Self {
-        Self { file_result: Some(file_result),
-        ..self  
+        Self {
+            file_result: Some(file_result),
+            ..self
         }
     }
 
     /// The resulting file object when the activity was allowed and successful. - optional
     pub fn new(actor: String, file: String) -> Self {
         Self {
-        access_mask: None,
-        activity_id: None,
-        actor,
-        component: None,
-        connection_uid: None,
-        create_mask: None,
-        file,
-        file_diff: None,
-        file_result: None,
+            access_mask: None,
+            activity_id: None,
+            actor,
+            component: None,
+            connection_uid: None,
+            create_mask: None,
+            file,
+            file_diff: None,
+            file_result: None,
         }
     }
 }
@@ -102,16 +109,17 @@ impl KernelActivity {
     pub const UID: u16 = 3;
     /// Set the value of activity_id
     pub fn with_activity_id(self, activity_id: crate::KernelActivity) -> Self {
-        Self { activity_id: Some(activity_id),
-        ..self  
+        Self {
+            activity_id: Some(activity_id),
+            ..self
         }
     }
 
     /// The target kernel resource. - required
     pub fn new(kernel: String) -> Self {
         Self {
-        activity_id: None,
-        kernel,
+            activity_id: None,
+            kernel,
         }
     }
 }
@@ -131,17 +139,18 @@ impl KernelExtension {
     pub const UID: u16 = 2;
     /// Set the value of activity_id
     pub fn with_activity_id(self, activity_id: crate::KernelExtensionActivity) -> Self {
-        Self { activity_id: Some(activity_id),
-        ..self  
+        Self {
+            activity_id: Some(activity_id),
+            ..self
         }
     }
 
     /// No description available. - required
     pub fn new(actor: String, driver: String) -> Self {
         Self {
-        activity_id: None,
-        actor,
-        driver,
+            activity_id: None,
+            actor,
+            driver,
         }
     }
 }
@@ -168,48 +177,53 @@ impl MemoryActivity {
     pub const UID: u16 = 4;
     /// Set the value of activity_id
     pub fn with_activity_id(self, activity_id: crate::MemoryActivity) -> Self {
-        Self { activity_id: Some(activity_id),
-        ..self  
+        Self {
+            activity_id: Some(activity_id),
+            ..self
         }
     }
 
     /// Set the value of actual_permissions
     pub fn with_actual_permissions(self, actual_permissions: String) -> Self {
-        Self { actual_permissions: Some(actual_permissions),
-        ..self  
+        Self {
+            actual_permissions: Some(actual_permissions),
+            ..self
         }
     }
 
     /// Set the value of base_address
     pub fn with_base_address(self, base_address: String) -> Self {
-        Self { base_address: Some(base_address),
-        ..self  
+        Self {
+            base_address: Some(base_address),
+            ..self
         }
     }
 
     /// Set the value of requested_permissions
     pub fn with_requested_permissions(self, requested_permissions: String) -> Self {
-        Self { requested_permissions: Some(requested_permissions),
-        ..self  
+        Self {
+            requested_permissions: Some(requested_permissions),
+            ..self
         }
     }
 
     /// Set the value of size
     pub fn with_size(self, size: String) -> Self {
-        Self { size: Some(size),
-        ..self  
+        Self {
+            size: Some(size),
+            ..self
         }
     }
 
     /// The memory size that was access or requested.
     pub fn new(process: String) -> Self {
         Self {
-        activity_id: None,
-        actual_permissions: None,
-        base_address: None,
-        process,
-        requested_permissions: None,
-        size: None,
+            activity_id: None,
+            actual_permissions: None,
+            base_address: None,
+            process,
+            requested_permissions: None,
+            size: None,
         }
     }
 }
@@ -229,17 +243,18 @@ impl ModuleActivity {
     pub const UID: u16 = 5;
     /// Set the value of activity_id
     pub fn with_activity_id(self, activity_id: crate::ModuleActivity) -> Self {
-        Self { activity_id: Some(activity_id),
-        ..self  
+        Self {
+            activity_id: Some(activity_id),
+            ..self
         }
     }
 
     /// The module that was loaded or unloaded. - required
     pub fn new(actor: String, module: String) -> Self {
         Self {
-        activity_id: None,
-        actor,
-        module,
+            activity_id: None,
+            actor,
+            module,
         }
     }
 }
@@ -272,72 +287,80 @@ impl ProcessActivity {
     pub const UID: u16 = 7;
     /// Set the value of activity_id
     pub fn with_activity_id(self, activity_id: crate::ProcessActivity) -> Self {
-        Self { activity_id: Some(activity_id),
-        ..self  
+        Self {
+            activity_id: Some(activity_id),
+            ..self
         }
     }
 
     /// Set the value of actor
     pub fn with_actor(self, actor: String) -> Self {
-        Self { actor: Some(actor),
-        ..self  
+        Self {
+            actor: Some(actor),
+            ..self
         }
     }
 
     /// Set the value of actual_permissions
     pub fn with_actual_permissions(self, actual_permissions: String) -> Self {
-        Self { actual_permissions: Some(actual_permissions),
-        ..self  
+        Self {
+            actual_permissions: Some(actual_permissions),
+            ..self
         }
     }
 
     /// Set the value of exit_code
     pub fn with_exit_code(self, exit_code: String) -> Self {
-        Self { exit_code: Some(exit_code),
-        ..self  
+        Self {
+            exit_code: Some(exit_code),
+            ..self
         }
     }
 
     /// Set the value of injection_type
     pub fn with_injection_type(self, injection_type: String) -> Self {
-        Self { injection_type: Some(injection_type),
-        ..self  
+        Self {
+            injection_type: Some(injection_type),
+            ..self
         }
     }
 
     /// Set the value of injection_type_id
     pub fn with_injection_type_id(self, injection_type_id: String) -> Self {
-        Self { injection_type_id: Some(injection_type_id),
-        ..self  
+        Self {
+            injection_type_id: Some(injection_type_id),
+            ..self
         }
     }
 
     /// Set the value of module
     pub fn with_module(self, module: String) -> Self {
-        Self { module: Some(module),
-        ..self  
+        Self {
+            module: Some(module),
+            ..self
         }
     }
 
     /// Set the value of requested_permissions
     pub fn with_requested_permissions(self, requested_permissions: String) -> Self {
-        Self { requested_permissions: Some(requested_permissions),
-        ..self  
+        Self {
+            requested_permissions: Some(requested_permissions),
+            ..self
         }
     }
 
     /// No description available. - optional
     pub fn new(process: String) -> Self {
         Self {
-        activity_id: None,
-        actor: None,
-        actual_permissions: None,
-        exit_code: None,
-        injection_type: None,
-        injection_type_id: None,
-        module: None,
-        process,
-        requested_permissions: None,
+            activity_id: None,
+            actor: None,
+            actual_permissions: None,
+            exit_code: None,
+            injection_type: None,
+            injection_type_id: None,
+            module: None,
+            process,
+            requested_permissions: None,
         }
     }
 }
@@ -358,24 +381,26 @@ impl ScheduledJobActivity {
     pub const UID: u16 = 6;
     /// Set the value of activity_id
     pub fn with_activity_id(self, activity_id: String) -> Self {
-        Self { activity_id: Some(activity_id),
-        ..self  
+        Self {
+            activity_id: Some(activity_id),
+            ..self
         }
     }
 
     /// Set the value of actor
     pub fn with_actor(self, actor: String) -> Self {
-        Self { actor: Some(actor),
-        ..self  
+        Self {
+            actor: Some(actor),
+            ..self
         }
     }
 
     /// No description available. - required
     pub fn new(job: String) -> Self {
         Self {
-        activity_id: None,
-        actor: None,
-        job,
+            activity_id: None,
+            actor: None,
+            job,
         }
     }
 }
@@ -386,20 +411,55 @@ impl ScheduledJobActivity {
 #[derive(serde::Deserialize, serde::Serialize, Default, Debug)]
 pub struct System {
     pub actor: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub attacks: Option<String>,
     pub device: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub disposition: Option<String>,
+    pub disposition_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub malware: Option<String>,
 }
 
 impl System {
     pub const UID: u16 = 1000;
-    /// No description available. - required
-    pub fn new(actor: String, device: String) -> Self {
+    /// Set the value of attacks
+    pub fn with_attacks(self, attacks: String) -> Self {
         Self {
-        actor,
-        device,
+            attacks: Some(attacks),
+            ..self
+        }
+    }
+
+    /// Set the value of disposition
+    pub fn with_disposition(self, disposition: String) -> Self {
+        Self {
+            disposition: Some(disposition),
+            ..self
+        }
+    }
+
+    /// Set the value of malware
+    pub fn with_malware(self, malware: String) -> Self {
+        Self {
+            malware: Some(malware),
+            ..self
+        }
+    }
+
+    /// No description available. - optional
+    pub fn new(actor: String, device: String, disposition_id: String) -> Self {
+        Self {
+            actor,
+            attacks: None,
+            device,
+            disposition: None,
+            disposition_id,
+            malware: None,
         }
     }
 }
 
 pub mod windows;
 
-// This file was automatically generated by ocsf-codegen at 2023-03-30T03:12:52+00:00 branch: "yaleman/issue9" link: <https://github.com/yaleman/ocsf-rs/commit/00a0691f50bd821d30564ef988d661aecca0227c>
+// This file was automatically generated by ocsf-codegen at 2023-03-30T12:52:14+00:00 branch: "yaleman/issue9" link: <https://github.com/yaleman/ocsf-rs/commit/08bc45b0dda1acfa1bed0034f0784684b63c3635>

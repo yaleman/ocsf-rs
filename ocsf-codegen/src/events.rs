@@ -320,11 +320,12 @@ fn load_all_event_files(paths: &DirPaths) -> HashMap<String, EventDef> {
 
 /// Generates the events structs. Here be 🐉
 pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(), Box<dyn Error>> {
-
     let categories_file = read_file_to_value(&format!("{}categories.json", paths.schema_path))?;
     let categories_file = categories_file
         .get("attributes")
         .expect("Coudln't get categories file attributes");
+
+    let profiles = generate_profiles(paths, root_module)?;
     let categories: HashMap<String, Category> = serde_json::from_value(categories_file.to_owned())?;
 
     let mut all_events = load_all_event_files(paths);
@@ -332,10 +333,42 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
     for (filename, event) in all_events
         .iter_mut()
         .sorted_by_key(|(_k, v)| v.name.clone())
-        {
-    if filename.len() <= 1 {
-            warn!("Can't handle file {}", filename);
-            continue;
+    {
+        if let Some(event_profiles) = event.profiles.clone() {
+            event_profiles
+                .into_iter()
+                .sorted()
+                .for_each(|profile_name| {
+                    // take the profile name and get it from the pre-loaded profiles
+                    let event_profile = profiles
+                        .get(&profile_name)
+                        .unwrap_or_else(|| panic!("Can't find {profile_name} in profiles"));
+
+                    // TODO: #11 - work out what profile annotations do?
+                    if let Some(annotations) = event_profile.annotations.clone() {
+                        annotations.iter().for_each(|(annot_name, annot)| {
+                            debug!("Annotation {annot_name} -> {annot:?}");
+                        });
+                    }
+
+                    // process the attributes
+                    event_profile
+                        .attributes
+                        .iter()
+                        .sorted_by(|a, b| Ord::cmp(&a.0, &b.0))
+                        .for_each(|(attr_name, attr)| {
+                            // trace!("Attribute {attr_name} -> {attr:?}");
+                            if event.attributes.contains_key(attr_name.as_str()) {
+                                debug!("new attr: {attr:?}");
+                                debug!("existing: {:?}", event.attributes.get(attr_name.as_str()));
+                                error!("duplicate attribute name: {attr_name}")
+                            } else {
+                                event
+                                    .attributes
+                                    .insert(attr_name.to_owned(), attr.to_owned());
+                            }
+                        });
+                })
         }
 
         let struct_name = event.name.to_owned();
@@ -347,7 +380,7 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
             .to_str()
             .unwrap()
             .to_owned();
-        debug!("Putting it into module: {}", target_module_path);
+        trace!("Putting struct '{struct_name}' into module: {target_module_path}",);
 
         let mut target_module = root_module
             .children
@@ -380,7 +413,8 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
             .derive("Debug");
 
         let mut func_new = Function::new("new");
-        func_new.vis("pub")
+        func_new
+            .vis("pub")
             .ret("Self")
             .doc("Create a new instance of this event.");
 
