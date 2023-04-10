@@ -12,7 +12,7 @@ use crate::*;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq)]
 /// Deserialization target for `events/\*.json` files.
-pub struct EventDef {
+pub struct Event {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub uid: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -28,6 +28,36 @@ pub struct EventDef {
     pub profiles: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     extends: Option<String>,
+}
+impl Event {
+    /// extend an event using a profile
+    pub fn with_profile(&mut self, profile: &Profile) -> Self {
+        // TODO: #11 - work out what profile annotations do?
+        if let Some(annotations) = profile.annotations.clone() {
+            annotations.iter().for_each(|(annot_name, annot)| {
+                debug!("Annotation {annot_name} -> {annot:?}");
+            });
+        }
+
+         // process the attributes
+        profile
+         .attributes
+         .iter()
+         .sorted_by(|a, b| Ord::cmp(&a.0, &b.0))
+         .for_each(|(attr_name, attr)| {
+             // trace!("Attribute {attr_name} -> {attr:?}");
+             if self.attributes.contains_key(attr_name.as_str()) {
+                 debug!("new attr: {attr:?}");
+                 debug!("existing: {:?}", self.attributes.get(attr_name.as_str()));
+                 error!("duplicate attribute name: {attr_name}")
+             } else {
+                 self
+                     .attributes
+                     .insert(attr_name.to_owned(), attr.to_owned());
+             }
+         });
+        self.to_owned()
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
@@ -125,7 +155,6 @@ fn test_from_str_invalid_requirement() {
     let _ = Requirement::from("requiasdfasdfred");
 }
 
-// #[allow(dead_code)]
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub struct EventAttribute {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -280,11 +309,11 @@ impl Default for EventAttribute {
     }
 }
 
-fn load_all_event_files(paths: &DirPaths) -> HashMap<String, EventDef> {
+fn load_all_event_files(paths: &DirPaths) -> HashMap<String, Event> {
     let target_path = format!("{}events/", paths.schema_path);
     info!("loading all event files from {}", target_path);
 
-    let mut result: HashMap<String, EventDef> = HashMap::new();
+    let mut result: HashMap<String, Event> = HashMap::new();
 
     for file in WalkDir::new(&target_path) {
         let file = match file {
@@ -301,7 +330,7 @@ fn load_all_event_files(paths: &DirPaths) -> HashMap<String, EventDef> {
         debug!("Reading {file:?} into EventDef");
         let file_value =
             read_file_to_value(file.clone().into_path().as_os_str().to_str().unwrap()).unwrap();
-        let mut file_event: EventDef = serde_json::from_value(file_value).unwrap();
+        let mut file_event: Event = serde_json::from_value(file_value).unwrap();
         // stripping out the include value, because by this point we should have handled it!
         file_event.attributes.remove("$include");
 
@@ -318,6 +347,8 @@ fn load_all_event_files(paths: &DirPaths) -> HashMap<String, EventDef> {
     result
 }
 
+
+
 /// Generates the events structs. Here be 🐉
 pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(), Box<dyn Error>> {
     let categories_file = read_file_to_value(&format!("{}categories.json", paths.schema_path))?;
@@ -325,7 +356,6 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
         .get("attributes")
         .expect("Coudln't get categories file attributes");
 
-    let profiles = generate_profiles(paths, root_module)?;
     let categories: HashMap<String, Category> = serde_json::from_value(categories_file.to_owned())?;
 
     let mut all_events = load_all_event_files(paths);
@@ -340,34 +370,10 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
                 .sorted()
                 .for_each(|profile_name| {
                     // take the profile name and get it from the pre-loaded profiles
-                    let event_profile = profiles
+                    let event_profile = root_module.profiles
                         .get(&profile_name)
                         .unwrap_or_else(|| panic!("Can't find {profile_name} in profiles"));
-
-                    // TODO: #11 - work out what profile annotations do?
-                    if let Some(annotations) = event_profile.annotations.clone() {
-                        annotations.iter().for_each(|(annot_name, annot)| {
-                            debug!("Annotation {annot_name} -> {annot:?}");
-                        });
-                    }
-
-                    // process the attributes
-                    event_profile
-                        .attributes
-                        .iter()
-                        .sorted_by(|a, b| Ord::cmp(&a.0, &b.0))
-                        .for_each(|(attr_name, attr)| {
-                            // trace!("Attribute {attr_name} -> {attr:?}");
-                            if event.attributes.contains_key(attr_name.as_str()) {
-                                debug!("new attr: {attr:?}");
-                                debug!("existing: {:?}", event.attributes.get(attr_name.as_str()));
-                                error!("duplicate attribute name: {attr_name}")
-                            } else {
-                                event
-                                    .attributes
-                                    .insert(attr_name.to_owned(), attr.to_owned());
-                            }
-                        });
+                    event.with_profile(event_profile);
                 })
         }
 

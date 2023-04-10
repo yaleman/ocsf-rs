@@ -10,6 +10,7 @@ use itertools::{any, Itertools};
 use log::{debug, error, info, trace};
 
 use crate::enums::EnumData;
+use crate::profiles::Profile;
 use crate::{
     collapsed_title_case, read_file_to_value, write_source_file, CustomScopeThings, DirPaths,
 };
@@ -122,6 +123,7 @@ pub struct Module {
     pub is_root: bool,
     pub scope: codegen::Scope,
     pub imports: Vec<String>,
+    pub profiles: HashMap<String, Profile>
 }
 
 impl Default for Module {
@@ -134,6 +136,7 @@ impl Default for Module {
             is_root: false,
             scope: codegen::Scope::new(),
             imports: vec![],
+            profiles: HashMap::new(),
         }
     }
 }
@@ -158,6 +161,7 @@ impl Module {
         self.structs.push(ModuleStruct::new(name));
     }
 
+    // do we have this enum already?
     pub fn has_enum(&self, name: &str) -> bool {
         if !self.is_root {
             panic!("Only check for enums from the root module please!");
@@ -165,12 +169,19 @@ impl Module {
         any(self.enums.iter(), |f| f.name == name)
     }
 
+    // do we have this struct object already?
     pub fn has_struct(&self, name: &str) -> bool {
         any(self.structs.iter(), |f| f.name == name)
     }
 
+    // do we have this child module already?
     pub fn has_child(&self, name: &str) -> bool {
         self.children.contains_key(name)
+    }
+
+    // do we have this profile already?
+    pub fn has_profile(&self, name: &str) -> bool {
+        self.profiles.contains_key(name)
     }
 
     /// add an enum to the module, only do it to the root module though!
@@ -246,6 +257,11 @@ impl Module {
         self.enums.iter().for_each(|object| {
             debug!("adding enum to scope {:?}", object.name);
             object.add_to_scope(&mut self.scope)
+        });
+
+        self.profiles.iter().for_each(|(profile_name, profile)| {
+            debug!("adding profile to scope {:?}", profile_name);
+            profile.add_to_scope(&mut self.scope).unwrap();
         });
 
         if !self.scope.to_string().contains("automatically generated") {

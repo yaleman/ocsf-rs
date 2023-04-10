@@ -1,6 +1,7 @@
 //! Parse and handle `profiles/\*.json`
 //!
 
+use codegen::Struct;
 use serde::{Deserialize, Serialize};
 
 use crate::module::Module;
@@ -26,16 +27,45 @@ pub struct Profile {
 }
 
 impl Profile {
+    // return the filename for this profile
     pub fn filename(&self) -> String {
         format!("profiles/{}.json", self.name)
     }
+
+    /// add this profile to a given codegen Scope
+    pub fn add_to_scope(&self, scope: &mut Scope) -> Result<(), String> {
+
+        let mut profile_struct = Struct::new(&self.name);
+
+        let mut profile_docstring = String::new();
+        if self.description.trim() != "" {
+            profile_docstring.push_str(&self.description);
+        }
+
+        profile_struct.doc(&profile_docstring)
+            .vis("pub")
+            .derive("Debug")
+            .derive("serde::Deserialize")
+            .derive("serde::Serialize")
+            ;
+
+        profile_struct.field("name", &format!("String"));
+        profile_struct.field("caption", &format!("String"));
+        profile_struct.field("description", &format!("String"));
+        profile_struct.field("annotations", &format!("Option<HashMap<String, Value>>"));
+        profile_struct.field("attributes", &format!("HashMap<String, EventAttribute>"));
+
+
+        scope.push_struct(profile_struct);
+        Ok(())
+    }
 }
+
 
 pub fn generate_profiles(
     paths: &DirPaths,
-    _root_module: &mut Module,
-) -> Result<HashMap<String, Profile>, Box<dyn Error>> {
-    let mut results: HashMap<String, Profile> = HashMap::new();
+    root_module: &mut Module,
+) -> Result<(), Box<dyn Error>> {
 
     for filename in WalkDir::new(format!("{}profiles", paths.schema_path)) {
         if let Ok(filename) = filename {
@@ -49,18 +79,13 @@ pub fn generate_profiles(
             debug!("Processing profile filename {filename:?}");
 
             let profile: Profile = serde_json::from_value(file_contents)?;
-            results.insert(profile.name.clone(), profile.to_owned());
 
-            trace!(
-                "comp {}, {}, {}",
-                &profile.name,
-                filename_str.replace(&paths.schema_path, ""),
-                profile.filename(),
-            );
+            root_module.profiles.insert(profile.name.clone(), profile.clone());
+
         } else {
             error!("Failed to handle {filename:?}");
         }
     }
 
-    Ok(results)
+    Ok(())
 }

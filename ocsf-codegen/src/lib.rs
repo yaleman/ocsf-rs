@@ -345,6 +345,8 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
 
     add_version_element(&paths, &mut root_module.scope)?;
 
+    generate_profiles(&paths, &mut root_module)?;
+
     generate_enums(&paths, &mut root_module)?;
     generate_dictionary_entries(&paths, &mut root_module)?;
     generate_categories(&paths, &mut root_module)?;
