@@ -15,7 +15,7 @@ maintenance = { status = "experimental" }
 warn_undocumented = []
 
 [dependencies]
-chrono = "0.4.24"
+chrono = { version = "0.4.24", default-features = false }
 clap = { version = "4.1.11", features = ["derive"] }
 codegen = "0.2.0"
 env_logger = "0.10.0"
