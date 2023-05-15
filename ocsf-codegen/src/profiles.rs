@@ -3,6 +3,7 @@
 
 use codegen::Struct;
 use serde::{Deserialize, Serialize};
+use string_morph::Morph;
 
 use crate::module::Module;
 use crate::*;
@@ -35,7 +36,7 @@ impl Profile {
     /// add this profile to a given codegen Scope
     pub fn add_to_scope(&self, scope: &mut Scope) -> Result<(), String> {
 
-        let mut profile_struct = Struct::new(&self.name);
+        let mut profile_struct = Struct::new(&self.name.to_camel_case().to_upper_first());
 
         let mut profile_docstring = String::new();
         if self.description.trim() != "" {
@@ -52,8 +53,8 @@ impl Profile {
         profile_struct.field("name", &format!("String"));
         profile_struct.field("caption", &format!("String"));
         profile_struct.field("description", &format!("String"));
-        profile_struct.field("annotations", &format!("Option<HashMap<String, Value>>"));
-        profile_struct.field("attributes", &format!("HashMap<String, EventAttribute>"));
+        profile_struct.field("annotations", &format!("Option<std::collections::HashMap<String, serde_json::Value>>"));
+        profile_struct.field("attributes", &format!("std::collections::HashMap<String, crate::EventAttribute>"));
 
 
         scope.push_struct(profile_struct);

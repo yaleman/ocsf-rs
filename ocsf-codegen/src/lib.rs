@@ -328,6 +328,32 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
         .raw("//! The base schema is available at <https://ocsf.io>.");
     root_module.scope.add_generation_timestamp_comment();
 
+    root_module.scope.raw(r#"
+use serde::{Deserialize,Serialize};
+
+
+    #[derive(Clone, Debug, Eq, PartialEq, Deserialize,Serialize)]
+pub struct EventAttribute {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    profile: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    caption: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    requirement: Option<Requirement>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    group: Option<Group>,
+    #[serde(alias = "$include", skip)]
+    include: Option<String>,
+    /// This is the string name of the type, not the enum value
+    enum_name: String,
+    just_includes: Vec<String>,
+}
+"#);
+
     let modules = vec![
         "categories",
         "dictionary",
