@@ -39,29 +39,28 @@ impl Event {
             });
         }
 
-         // process the attributes
+        // process the attributes
         profile
-         .attributes
-         .iter()
-         .sorted_by(|a, b| Ord::cmp(&a.0, &b.0))
-         .for_each(|(attr_name, attr)| {
-             // trace!("Attribute {attr_name} -> {attr:?}");
-             if self.attributes.contains_key(attr_name.as_str()) {
-                 debug!("new attr: {attr:?}");
-                 debug!("existing: {:?}", self.attributes.get(attr_name.as_str()));
-                 error!("duplicate attribute name: {attr_name}")
-             } else {
-                 self
-                     .attributes
-                     .insert(attr_name.to_owned(), attr.to_owned());
-             }
-         });
+            .attributes
+            .iter()
+            .sorted_by(|a, b| Ord::cmp(&a.0, &b.0))
+            .for_each(|(attr_name, attr)| {
+                // trace!("Attribute {attr_name} -> {attr:?}");
+                if self.attributes.contains_key(attr_name.as_str()) {
+                    debug!("new attr: {attr:?}");
+                    debug!("existing: {:?}", self.attributes.get(attr_name.as_str()));
+                    error!("duplicate attribute name: {attr_name}")
+                } else {
+                    self.attributes
+                        .insert(attr_name.to_owned(), attr.to_owned());
+                }
+            });
         self.to_owned()
     }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-/// Deserialization elper
+/// Deserialization helper
 pub enum Group {
     Classification,
     Context,
@@ -347,8 +346,6 @@ fn load_all_event_files(paths: &DirPaths) -> HashMap<String, Event> {
     result
 }
 
-
-
 /// Generates the events structs. Here be 🐉
 pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(), Box<dyn Error>> {
     let categories_file = read_file_to_value(&format!("{}categories.json", paths.schema_path))?;
@@ -370,7 +367,8 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
                 .sorted()
                 .for_each(|profile_name| {
                     // take the profile name and get it from the pre-loaded profiles
-                    let event_profile = root_module.profiles
+                    let event_profile = root_module
+                        .profiles
                         .get(&profile_name)
                         .unwrap_or_else(|| panic!("Can't find {profile_name} in profiles"));
                     event.with_profile(event_profile);

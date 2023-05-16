@@ -35,7 +35,6 @@ impl Profile {
 
     /// add this profile to a given codegen Scope
     pub fn add_to_scope(&self, scope: &mut Scope) -> Result<(), String> {
-
         let mut profile_struct = Struct::new(&self.name.to_camel_case().to_upper_first());
 
         let mut profile_docstring = String::new();
@@ -43,31 +42,31 @@ impl Profile {
             profile_docstring.push_str(&self.description);
         }
 
-        profile_struct.doc(&profile_docstring)
+        profile_struct
+            .doc(&profile_docstring)
             .vis("pub")
             .derive("Debug")
             .derive("serde::Deserialize")
-            .derive("serde::Serialize")
-            ;
+            .derive("serde::Serialize");
 
         profile_struct.field("name", &format!("String"));
         profile_struct.field("caption", &format!("String"));
         profile_struct.field("description", &format!("String"));
-        profile_struct.field("annotations", &format!("Option<std::collections::HashMap<String, serde_json::Value>>"));
-        profile_struct.field("attributes", &format!("std::collections::HashMap<String, crate::EventAttribute>"));
-
+        profile_struct.field(
+            "annotations",
+            &format!("Option<std::collections::HashMap<String, serde_json::Value>>"),
+        );
+        profile_struct.field(
+            "attributes",
+            &format!("std::collections::HashMap<String, crate::EventAttribute>"),
+        );
 
         scope.push_struct(profile_struct);
         Ok(())
     }
 }
 
-
-pub fn generate_profiles(
-    paths: &DirPaths,
-    root_module: &mut Module,
-) -> Result<(), Box<dyn Error>> {
-
+pub fn generate_profiles(paths: &DirPaths, root_module: &mut Module) -> Result<(), Box<dyn Error>> {
     for filename in WalkDir::new(format!("{}profiles", paths.schema_path)) {
         if let Ok(filename) = filename {
             if !filename.path().is_file() {
@@ -81,8 +80,9 @@ pub fn generate_profiles(
 
             let profile: Profile = serde_json::from_value(file_contents)?;
 
-            root_module.profiles.insert(profile.name.clone(), profile.clone());
-
+            root_module
+                .profiles
+                .insert(profile.name.clone(), profile.clone());
         } else {
             error!("Failed to handle {filename:?}");
         }

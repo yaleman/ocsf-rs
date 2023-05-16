@@ -328,11 +328,28 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
         .raw("//! The base schema is available at <https://ocsf.io>.");
     root_module.scope.add_generation_timestamp_comment();
 
-    root_module.scope.raw(r#"
+    root_module.scope.raw(
+        r#"
 use serde::{Deserialize,Serialize};
 
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+/// Deserialization helper for the "requirement" field.
+pub enum Requirement {
+    Optional,
+    Recommended,
+    Required,
+}
 
-    #[derive(Clone, Debug, Eq, PartialEq, Deserialize,Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+/// Deserialization helper
+pub enum Group {
+    Classification,
+    Context,
+    Occurrence,
+    Primary,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize,Serialize)]
 pub struct EventAttribute {
     #[serde(skip_serializing_if = "Option::is_none")]
     name: Option<String>,
@@ -352,7 +369,8 @@ pub struct EventAttribute {
     enum_name: String,
     just_includes: Vec<String>,
 }
-"#);
+"#,
+    );
 
     let modules = vec![
         "categories",

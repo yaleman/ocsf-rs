@@ -123,7 +123,7 @@ pub struct Module {
     pub is_root: bool,
     pub scope: codegen::Scope,
     pub imports: Vec<String>,
-    pub profiles: HashMap<String, Profile>
+    pub profiles: HashMap<String, Profile>,
 }
 
 impl Default for Module {
