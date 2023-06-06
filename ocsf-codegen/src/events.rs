@@ -18,7 +18,7 @@ pub struct Event {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub class_name: Option<String>,
     pub name: String,
-    pub description: String,
+    pub description: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub category: Option<String>,
     pub attributes: HashMap<String, EventAttribute>,
@@ -406,7 +406,11 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
 
         trace!("Target module: {:#?}", target_module);
 
-        let struct_doc = format!("{}\n\nSourced from: `{}`", &event.description, filename);
+        let struct_doc = match &event.description {
+            Some(val) => format!("{}\n\nSourced from: `{}`", val, filename),
+            None => "".to_string()
+        };
+
         let mut module_struct = Struct::new(&collapsed_title_case(&event.name));
         module_struct
             .doc(&struct_doc)
