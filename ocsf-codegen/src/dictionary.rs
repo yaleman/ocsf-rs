@@ -55,7 +55,7 @@ pub fn generate_dictionary_entries(
 
     dictionary_module
         .scope
-        .add_generation_timestamp_comment(get_schema_version(&paths)?);
+        .add_generation_timestamp_comment(get_schema_version(paths)?);
     dictionary_module.scope.writeln("use serde::{Serialize};");
 
     dictionary_module

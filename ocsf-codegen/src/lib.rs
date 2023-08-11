@@ -306,23 +306,21 @@ fn check_crate_files(paths: &DirPaths, ok_paths: Vec<String>) -> Result<(), &'st
 }
 
 pub fn generate_template_files(base_path: &str) -> Result<(), Box<dyn Error>> {
-    for file in glob::glob("./ocsf-codegen/templates/*").unwrap() {
-        if let Ok(file) = file {
-            let file_name = file
-                .strip_prefix("ocsf-codegen/templates/")
-                .unwrap()
-                .to_path_buf();
-            println!("{:?}", file_name);
+    for file in glob::glob("./ocsf-codegen/templates/*").unwrap().flatten() {
+        let file_name = file
+            .strip_prefix("ocsf-codegen/templates/")
+            .unwrap()
+            .to_path_buf();
+        println!("{:?}", file_name);
 
-            let destination_filepath = PathBuf::from(base_path).join(file_name);
-            println!("Writing {:?} to {:?}", file, destination_filepath);
+        let destination_filepath = PathBuf::from(base_path).join(file_name);
+        println!("Writing {:?} to {:?}", file, destination_filepath);
 
-            let new_file = File::create(PathBuf::from(destination_filepath))?;
-            let mut new_file = BufWriter::new(new_file);
+        let new_file = File::create(destination_filepath)?;
+        let mut new_file = BufWriter::new(new_file);
 
-            let file_contents = std::fs::read_to_string(&file)?;
-            new_file.write_all(file_contents.as_bytes())?;
-        }
+        let file_contents = std::fs::read_to_string(&file)?;
+        new_file.write_all(file_contents.as_bytes())?;
     }
     Ok(())
 }

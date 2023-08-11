@@ -38,7 +38,7 @@ pub fn generate_categories(
 
     categories_module
         .scope
-        .add_generation_timestamp_comment(get_schema_version(&paths)?);
+        .add_generation_timestamp_comment(get_schema_version(paths)?);
 
     let enum_name = "Category";
 

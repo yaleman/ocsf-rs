@@ -14,7 +14,7 @@ pub fn generate_profiles(paths: &DirPaths, root_module: &mut Module) -> Result<(
     profiles_module.scope.writeln("//* OCSF Profiles");
     profiles_module
         .scope
-        .add_generation_timestamp_comment(get_schema_version(&paths)?);
+        .add_generation_timestamp_comment(get_schema_version(paths)?);
 
     write_source_file(
         &format!("{}src/profiles.rs", paths.destination_path),

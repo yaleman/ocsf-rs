@@ -1,27 +1,3 @@
-/// File Transfer Protocol (FTP) Activity events report file transfers between a server and a client as seen on the network.
-///
-/// Sourced from: `events/events/network/ftp.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct FtpActivity {
-    pub activity_id: Option<String>,
-    /// The list of return codes to the FTP command.
-    pub codes: Option<String>,
-    /// The FTP command.
-    pub command: Option<String>,
-    /// The list of responses to the FTP command.
-    pub command_responses: Option<String>,
-    /// The name of the data affiliated with the command.
-    pub name: Option<String>,
-    /// The dynamic port established for impending data transfers.
-    pub port: Option<String>,
-    /// The type of FTP network connection (e.g. active, passive).
-    pub type_name: Option<String>,
-}
-
-impl FtpActivity {
-    pub const UID: u16 = 8;
-}
-
 /// DHCP Activity events report MAC to IP assignment via DHCP from a client or server.
 ///
 /// Sourced from: `events/events/network/dhcp.json`
@@ -43,74 +19,27 @@ impl DhcpActivity {
     pub const UID: u16 = 4004;
 }
 
-/// Email URL Activity events report URLs within an email.
+/// DNS Activity events report DNS queries and answers as seen on the network.
 ///
-/// Sourced from: `events/events/network/email_url.json`
+/// Sourced from: `events/events/network/dns.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct EmailUrlActivity {
-    pub activity_id: Option<String>,
-    pub email_uid: String,
-    /// The URL included in the email content.
-    pub url: String,
+pub struct DnsActivity {
+    pub activity_id: Option<crate::DnsActivity>,
+    pub answers: Option<String>,
+    pub connection_info: Option<String>,
+    pub proxy: Option<String>,
+    pub query: Option<String>,
+    pub query_time: Option<String>,
+    /// The DNS server response code, normalized to the caption of the rcode_id value. In the case of 'Other', it is defined by the event source.
+    pub rcode: Option<String>,
+    /// The normalized identifier of the DNS server response code. See <a target='_blank' href='https://datatracker.ietf.org/doc/html/rfc6895'>RFC-6895</a>.
+    pub rcode_id: Option<String>,
+    pub response_time: Option<String>,
+    pub traffic: Option<String>,
 }
 
-impl EmailUrlActivity {
-    pub const UID: u16 = 4012;
-}
-
-/// Email File Activity events report files within emails.
-///
-/// Sourced from: `events/events/network/email_file.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct EmailFileActivity {
-    pub activity_id: Option<String>,
-    pub email_uid: String,
-    /// The email file attachment.
-    pub file: String,
-}
-
-impl EmailFileActivity {
-    pub const UID: u16 = 4011;
-}
-
-/// HTTP Activity events report HTTP connection and traffic information.
-///
-/// Sourced from: `events/events/network/http.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct HttpActivity {
-    pub activity_id: Option<crate::HttpActivity>,
-    pub http_request: String,
-    pub http_response: String,
-    pub http_status: Option<String>,
-}
-
-impl HttpActivity {
-    pub const UID: u16 = 4002;
-}
-
-/// Remote Desktop Protocol (RDP) Activity events report remote client connections to a server as seen on the network.
-///
-/// Sourced from: `events/events/network/rdp.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct RdpActivity {
-    pub activity_id: Option<String>,
-    pub capabilities: Option<String>,
-    /// The list of observed certificates in an RDP TLS connection.
-    pub certificate_chain: Option<String>,
-    /// The device instigating the RDP connection.
-    pub device: Option<String>,
-    pub identifier_cookie: Option<String>,
-    /// The Remote Desktop Protocol version.
-    pub protocol_ver: Option<String>,
-    pub remote_display: Option<String>,
-    /// The client request in an RDP network connection.
-    pub request: Option<String>,
-    /// The server response in an RDP network connection.
-    pub response: Option<String>,
-}
-
-impl RdpActivity {
-    pub const UID: u16 = 5;
+impl DnsActivity {
+    pub const UID: u16 = 3;
 }
 
 /// Email events report activities of emails.
@@ -141,65 +70,44 @@ impl EmailActivity {
     pub const UID: u16 = 4009;
 }
 
-/// SSH Activity events report remote client connections to a server using the Secure Shell (SSH) Protocol.
+/// Remote Desktop Protocol (RDP) Activity events report remote client connections to a server as seen on the network.
 ///
-/// Sourced from: `events/events/network/ssh.json`
+/// Sourced from: `events/events/network/rdp.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct SshActivity {
-    pub client_hassh: Option<String>,
-    /// The Secure Shell Protocol version.
-    pub protocol_ver: Option<String>,
-    pub server_hassh: Option<String>,
-}
-
-impl SshActivity {
-    pub const UID: u16 = 7;
-}
-
-/// DNS Activity events report DNS queries and answers as seen on the network.
-///
-/// Sourced from: `events/events/network/dns.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct DnsActivity {
-    pub activity_id: Option<crate::DnsActivity>,
-    pub answers: Option<String>,
-    pub connection_info: Option<String>,
-    pub proxy: Option<String>,
-    pub query: Option<String>,
-    pub query_time: Option<String>,
-    /// The DNS server response code, normalized to the caption of the rcode_id value. In the case of 'Other', it is defined by the event source.
-    pub rcode: Option<String>,
-    /// The normalized identifier of the DNS server response code. See <a target='_blank' href='https://datatracker.ietf.org/doc/html/rfc6895'>RFC-6895</a>.
-    pub rcode_id: Option<String>,
-    pub response_time: Option<String>,
-    pub traffic: Option<String>,
-}
-
-impl DnsActivity {
-    pub const UID: u16 = 3;
-}
-
-/// Network File Activity events report file activities traversing the network, including file storage services such as Box, MS OneDrive, or Google Drive.
-///
-/// Sourced from: `events/events/network/file_activity.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct NetworkFileActivity {
+pub struct RdpActivity {
     pub activity_id: Option<String>,
-    /// The actor that performed the activity on the target file.
-    pub actor: String,
-    pub connection_info: Option<String>,
-    /// The endpoint that received the activity on the target file.
-    pub dst_endpoint: Option<String>,
-    /// The share expiration time.
-    pub expiration_time: Option<String>,
-    /// The file that is the target of the activity.
-    pub file: String,
-    /// The endpoint that performed the activity on the target file.
-    pub src_endpoint: String,
+    pub capabilities: Option<String>,
+    /// The list of observed certificates in an RDP TLS connection.
+    pub certificate_chain: Option<String>,
+    /// The device instigating the RDP connection.
+    pub device: Option<String>,
+    pub identifier_cookie: Option<String>,
+    /// The Remote Desktop Protocol version.
+    pub protocol_ver: Option<String>,
+    pub remote_display: Option<String>,
+    /// The client request in an RDP network connection.
+    pub request: Option<String>,
+    /// The server response in an RDP network connection.
+    pub response: Option<String>,
 }
 
-impl NetworkFileActivity {
-    pub const UID: u16 = 4010;
+impl RdpActivity {
+    pub const UID: u16 = 5;
+}
+
+/// HTTP Activity events report HTTP connection and traffic information.
+///
+/// Sourced from: `events/events/network/http.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct HttpActivity {
+    pub activity_id: Option<crate::HttpActivity>,
+    pub http_request: String,
+    pub http_response: String,
+    pub http_status: Option<String>,
+}
+
+impl HttpActivity {
+    pub const UID: u16 = 4002;
 }
 
 /// Server Message Block (SMB) Protocol Activity events report client/server connections sharing resources within the network.
@@ -241,4 +149,96 @@ impl NetworkActivity {
     pub const UID: u16 = 4001;
 }
 
-// This file was automatically generated by ocsf-codegen at 2023-08-11T23:04:15+00:00 branch: "fixing-build-updating-schema" link: <https://github.com/yaleman/ocsf-rs/commit/c9ee180815729dcae5c937f32da30495d8aecf1a> OCSF Schema version: 1.1.0-dev
+/// Network File Activity events report file activities traversing the network, including file storage services such as Box, MS OneDrive, or Google Drive.
+///
+/// Sourced from: `events/events/network/file_activity.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct NetworkFileActivity {
+    pub activity_id: Option<String>,
+    /// The actor that performed the activity on the target file.
+    pub actor: String,
+    pub connection_info: Option<String>,
+    /// The endpoint that received the activity on the target file.
+    pub dst_endpoint: Option<String>,
+    /// The share expiration time.
+    pub expiration_time: Option<String>,
+    /// The file that is the target of the activity.
+    pub file: String,
+    /// The endpoint that performed the activity on the target file.
+    pub src_endpoint: String,
+}
+
+impl NetworkFileActivity {
+    pub const UID: u16 = 4010;
+}
+
+/// Email URL Activity events report URLs within an email.
+///
+/// Sourced from: `events/events/network/email_url.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct EmailUrlActivity {
+    pub activity_id: Option<String>,
+    pub email_uid: String,
+    /// The URL included in the email content.
+    pub url: String,
+}
+
+impl EmailUrlActivity {
+    pub const UID: u16 = 4012;
+}
+
+/// File Transfer Protocol (FTP) Activity events report file transfers between a server and a client as seen on the network.
+///
+/// Sourced from: `events/events/network/ftp.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct FtpActivity {
+    pub activity_id: Option<String>,
+    /// The list of return codes to the FTP command.
+    pub codes: Option<String>,
+    /// The FTP command.
+    pub command: Option<String>,
+    /// The list of responses to the FTP command.
+    pub command_responses: Option<String>,
+    /// The name of the data affiliated with the command.
+    pub name: Option<String>,
+    /// The dynamic port established for impending data transfers.
+    pub port: Option<String>,
+    /// The type of FTP network connection (e.g. active, passive).
+    pub type_name: Option<String>,
+}
+
+impl FtpActivity {
+    pub const UID: u16 = 8;
+}
+
+/// SSH Activity events report remote client connections to a server using the Secure Shell (SSH) Protocol.
+///
+/// Sourced from: `events/events/network/ssh.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct SshActivity {
+    pub client_hassh: Option<String>,
+    /// The Secure Shell Protocol version.
+    pub protocol_ver: Option<String>,
+    pub server_hassh: Option<String>,
+}
+
+impl SshActivity {
+    pub const UID: u16 = 7;
+}
+
+/// Email File Activity events report files within emails.
+///
+/// Sourced from: `events/events/network/email_file.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct EmailFileActivity {
+    pub activity_id: Option<String>,
+    pub email_uid: String,
+    /// The email file attachment.
+    pub file: String,
+}
+
+impl EmailFileActivity {
+    pub const UID: u16 = 4011;
+}
+
+// This file was automatically generated by ocsf-codegen at 2023-08-11T23:13:26+00:00 branch: "fixing-build-updating-schema" link: <https://github.com/yaleman/ocsf-rs/commit/8eed3271e56a81cc15bffb5bdd8540651315c06b> OCSF Schema version: 1.1.0-dev

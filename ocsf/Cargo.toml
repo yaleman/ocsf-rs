@@ -12,5 +12,5 @@ version = { workspace = true }
 path = "src/lib.rs"
 
 [dependencies]
-lazy_static = "1.4.0"
-serde = { version = "1.0.183", features = ["derive"] }
+lazy_static = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
