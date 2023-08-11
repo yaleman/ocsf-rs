@@ -7,21 +7,27 @@ struct VersionFile {
     version: String,
 }
 
+pub fn get_schema_version(paths: &DirPaths) -> Result<String, Box<dyn Error>> {
+    let version_file = read_file_to_value(&format!("{}version.json", paths.schema_path))?;
+
+    let schema_version: VersionFile = serde_json::from_value(version_file)?;
+    Ok(schema_version.version)
+}
+
 pub fn add_version_element(
     paths: &DirPaths,
     output_scope: &mut codegen::Scope,
 ) -> Result<(), Box<dyn Error>> {
-    let version_file = read_file_to_value(&format!("{}version.json", paths.schema_path))?;
+    let schema_version = get_schema_version(paths)?;
 
-    let schema_version: VersionFile = serde_json::from_value(version_file)?;
-    debug!("OCSF Schema Version: {}", schema_version.version);
+    debug!("OCSF Schema Version: {}", schema_version);
     output_scope.raw(format!(
         "/// This was the schema version that the code was generated from ({}).",
-        &schema_version.version
+        &schema_version
     ));
     output_scope.raw(format!(
         "pub static OCSF_SCHEMA_VERSION: &str = {:?};\n\n",
-        schema_version.version
+        schema_version
     ));
 
     Ok(())

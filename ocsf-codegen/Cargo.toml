@@ -1,12 +1,12 @@
 [package]
 name = "ocsf-codegen"
 description = "Codegen package for the OCSF crate"
-documentation = {workspace = true}
-edition = {workspace = true}
-license = {workspace = true}
-repository = {workspace = true}
-rust-version = {workspace = true}
-version = {workspace=true}
+documentation = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }
+version = { workspace = true }
 
 
 [dependencies]
@@ -22,6 +22,7 @@ log = "0.4.19"
 regex = "1.9.3"
 serde = { version = "1.0.183", features = ["derive", "serde_derive"] }
 serde_json = "1.0.104"
+serde_with = "3.2.0"
 string_morph = "0.1.0"
 walkdir = "2.3.3"
 
