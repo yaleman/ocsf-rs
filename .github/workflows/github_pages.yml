@@ -15,11 +15,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  deploy_book:
+  build_book:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -34,6 +31,29 @@ jobs:
         uses: actions/upload-pages-artifact@v2
         with:
           path: 'target/doc/'
+          name: docs
+  deploy_book:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
+    needs:
+      - build_book
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Download docs artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: docs
+          path: ./docs/
+      - name: Upload pages artifacts
+        uses: actions/upload-pages-artifact@v2
+        with:
+          # Upload entire repository
+          path: 'docs/'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
+        if: ${{ github.ref == 'refs/heads/main' }}
