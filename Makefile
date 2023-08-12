@@ -1,8 +1,8 @@
 DEFAULT: codegen
 
 # SCHEMA_BRANCH ?= "v1.0.0"
-SCHEMA_BRANCH ?= "main"
-SCHEMA_MODULE_NAME ?= "ocsf-schema"
+SCHEMA_BRANCH ?= main
+SCHEMA_MODULE_NAME ?= ocsf-schema
 SCHEMA_PATH ?= ./ocsf-schema
 
 .PHONY: help
@@ -26,8 +26,8 @@ build: codegen doc
 schema_pull:
 schema_pull: ## Update the schema git submodule based on the SCHEMA_BRANCH argument
 	git submodule set-branch --branch $(SCHEMA_BRANCH) $(SCHEMA_MODULE_NAME)
-	@echo "Removing existing schema dir...
-	@rm -rf "$(SCHEMA_PATH)"
+	@echo "Removing existing schema dir..."
+	rm -rf "$(SCHEMA_PATH)"
 	git submodule update --checkout --force
 	@git submodule update --remote $(SCHEMA_MODULE_NAME)
 	@echo "Checking version..."

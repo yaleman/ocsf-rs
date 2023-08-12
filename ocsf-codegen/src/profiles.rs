@@ -12,7 +12,9 @@ pub fn generate_profiles(paths: &DirPaths, root_module: &mut Module) -> Result<(
         .expect("Couldn't find the profiles module in root?");
 
     profiles_module.scope.writeln("//* OCSF Profiles");
-    profiles_module.scope.add_generation_timestamp_comment();
+    profiles_module
+        .scope
+        .add_generation_timestamp_comment(get_schema_version(paths)?);
 
     write_source_file(
         &format!("{}src/profiles.rs", paths.destination_path),

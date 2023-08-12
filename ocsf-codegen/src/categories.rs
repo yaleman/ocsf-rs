@@ -12,9 +12,6 @@ pub struct Category {
     pub uid: u32,
 }
 
-
-
-
 pub fn generate_categories(
     paths: &DirPaths,
     root_module: &mut Module,
@@ -39,7 +36,9 @@ pub fn generate_categories(
         .scope
         .writeln(format!("//! {categories_description}"));
 
-    categories_module.scope.add_generation_timestamp_comment();
+    categories_module
+        .scope
+        .add_generation_timestamp_comment(get_schema_version(paths)?);
 
     let enum_name = "Category";
 

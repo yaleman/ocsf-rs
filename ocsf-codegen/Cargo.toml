@@ -1,29 +1,29 @@
 [package]
 name = "ocsf-codegen"
 description = "Codegen package for the OCSF crate"
-documentation = {workspace = true}
-edition = {workspace = true}
-license = {workspace = true}
-repository = {workspace = true}
-rust-version = {workspace = true}
-version = {workspace=true}
-
+documentation = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+rust-version = { workspace = true }
+version = { workspace = true }
 
 [dependencies]
-chrono = "0.4.26"
-clap = { version = "4.3.21", features = ["derive"] }
-codegen = "0.2.0"
-env_logger = "0.10.0"
-glob = "0.3.1"
-itertools = "0.11.0"
-last-git-commit = "0.2.0"
-lazy_static = "1.4.0"
-log = "0.4.19"
-regex = "1.9.3"
-serde = { version = "1.0.183", features = ["derive", "serde_derive"] }
-serde_json = "1.0.104"
-string_morph = "0.1.0"
-walkdir = "2.3.3"
+clap = { workspace = true, features = ["derive"] }
+serde = { workspace = true, features = ["derive", "serde_derive"] }
+chrono = { workspace = true }
+codegen = { workspace = true }
+env_logger = { workspace = true }
+glob = { workspace = true }
+itertools = { workspace = true }
+last-git-commit = { workspace = true }
+lazy_static = { workspace = true }
+log = { workspace = true }
+regex = { workspace = true }
+serde_json = { workspace = true }
+serde_with = { workspace = true }
+string_morph = { workspace = true }
+walkdir = { workspace = true }
 
 [[bin]]
 name = "ocsf-codegen"
