@@ -14,7 +14,7 @@ members = ["ocsf-codegen", "ocsf"]
 [workspace.dependencies]
 clap = { version = "4.3.22" }
 lazy_static = "1.4.0"
-serde = { version = "1.0.183", features = ["derive"] }
+serde = { version = "1.0.186", features = ["derive"] }
 chrono = "0.4.26"
 codegen = "0.2.0"
 env_logger = "0.10.0"
