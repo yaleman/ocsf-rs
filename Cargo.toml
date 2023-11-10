@@ -17,7 +17,7 @@ lazy_static = "1.4.0"
 serde = { version = "1.0.190", features = ["derive"] }
 chrono = "0.4.31"
 codegen = "0.2.0"
-env_logger = "0.10.0"
+env_logger = "0.10.1"
 glob = "0.3.1"
 itertools = "0.11.0"
 last-git-commit = "0.2.0"
