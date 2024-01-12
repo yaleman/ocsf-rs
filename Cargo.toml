@@ -12,7 +12,7 @@ documentation = "https://github.com/yaleman/ocsf-rs/"
 members = ["ocsf-codegen", "ocsf"]
 
 [workspace.dependencies]
-clap = { version = "4.4.13" }
+clap = { version = "4.4.16" }
 lazy_static = "1.4.0"
 serde = { version = "1.0.195", features = ["derive"] }
 chrono = "0.4.31"
