@@ -15,7 +15,7 @@ members = ["ocsf-codegen", "ocsf"]
 clap = { version = "4.5.1" }
 lazy_static = "1.4.0"
 serde = { version = "1.0.196", features = ["derive"] }
-chrono = "0.4.33"
+chrono = "0.4.34"
 codegen = "0.2.0"
 env_logger = "0.10.2"
 glob = "0.3.1"
