@@ -3,7 +3,7 @@ members = ["ocsf-codegen", "ocsf"]
 resolver = "2"
 
 [workspace.package]
-version = "0.0.1-alpha2"
+version = "0.0.1-alpha3"
 authors = ["James Hodgkinson <james@terminaloutcomes.com>"]
 rust-version = "1.66"
 edition = "2021"

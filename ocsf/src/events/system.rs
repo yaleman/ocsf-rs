@@ -1,24 +1,32 @@
-/// Process Activity events report when a process launches, injects, opens or terminates another process, successful or otherwise.
+/// Module  Activity events report when a process loads or unloads the <code>module</code>.
 ///
-/// Sourced from: `events/events/system/process.json`
+/// Sourced from: `events/events/system/module.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct ProcessActivity {
+pub struct ModuleActivity {
     pub activity_id: Option<String>,
-    /// The actor that performed the activity on the target `process`. For example, the process that started a new process or injected code into another process.
-    pub actor: Option<String>,
-    pub actual_permissions: Option<String>,
-    pub exit_code: Option<String>,
-    pub injection_type: Option<String>,
-    pub injection_type_id: Option<String>,
-    /// The module that was injected by the actor process.
-    pub module: Option<String>,
-    /// The process that was launched, injected into, opened, or terminated.
-    pub process: String,
-    pub requested_permissions: Option<String>,
+    /// The actor that loaded or unloaded the `module`.
+    pub actor: String,
+    /// The module that was loaded or unloaded.
+    pub module: String,
 }
 
-impl ProcessActivity {
-    pub const UID: u16 = 7;
+impl ModuleActivity {
+    pub const UID: u16 = 5;
+}
+
+/// Scheduled Job Activity events report activities related to scheduled jobs or tasks.
+///
+/// Sourced from: `events/events/system/scheduled_job.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct ScheduledJobActivity {
+    pub activity_id: Option<String>,
+    /// The actor that performed the activity on the `job` object.
+    pub actor: Option<String>,
+    pub job: String,
+}
+
+impl ScheduledJobActivity {
+    pub const UID: u16 = 6;
 }
 
 /// Kernel Activity events report when an process creates, reads, or deletes a kernel resource.
@@ -35,19 +43,32 @@ impl KernelActivity {
     pub const UID: u16 = 3;
 }
 
-/// Scheduled Job Activity events report activities related to scheduled jobs or tasks.
+/// Kernel Extension events report when a driver/extension is loaded or unloaded into the kernel
 ///
-/// Sourced from: `events/events/system/scheduled_job.json`
+/// Sourced from: `events/events/system/kernel_extension.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct ScheduledJobActivity {
+pub struct KernelExtension {
     pub activity_id: Option<String>,
-    /// The actor that performed the activity on the `job` object.
-    pub actor: Option<String>,
-    pub job: String,
+    /// The actor process that loaded or unloaded the driver/extension.
+    pub actor: String,
+    pub driver: String,
 }
 
-impl ScheduledJobActivity {
-    pub const UID: u16 = 6;
+impl KernelExtension {
+    pub const UID: u16 = 2;
+}
+
+/// The System Activity event is a generic event that defines a set of attributes available in the system activity events. As a generic event, it could be used to log events that are not otherwise defined by the System Activity category.
+///
+/// Sourced from: `events/events/system/system.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct System {
+    pub actor: String,
+    pub device: String,
+}
+
+impl System {
+    pub const UID: u16 = 1000;
 }
 
 /// Memory Activity events report when a process has memory allocated, read/modified, or other manipulation activities - such as a buffer overflow or turning off data execution protection (DEP).
@@ -70,19 +91,27 @@ impl MemoryActivity {
     pub const UID: u16 = 4;
 }
 
-/// Kernel Extension events report when a driver/extension is loaded or unloaded into the kernel
+/// Process Activity events report when a process launches, injects, opens or terminates another process, successful or otherwise.
 ///
-/// Sourced from: `events/events/system/kernel_extension.json`
+/// Sourced from: `events/events/system/process.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct KernelExtension {
+pub struct ProcessActivity {
     pub activity_id: Option<String>,
-    /// The actor process that loaded or unloaded the driver/extension.
-    pub actor: String,
-    pub driver: String,
+    /// The actor that performed the activity on the target `process`. For example, the process that started a new process or injected code into another process.
+    pub actor: Option<String>,
+    pub actual_permissions: Option<String>,
+    pub exit_code: Option<String>,
+    pub injection_type: Option<String>,
+    pub injection_type_id: Option<String>,
+    /// The module that was injected by the actor process.
+    pub module: Option<String>,
+    /// The process that was launched, injected into, opened, or terminated.
+    pub process: String,
+    pub requested_permissions: Option<String>,
 }
 
-impl KernelExtension {
-    pub const UID: u16 = 2;
+impl ProcessActivity {
+    pub const UID: u16 = 7;
 }
 
 /// File System Activity events report when a process performs an action on a file or folder.
@@ -108,33 +137,4 @@ impl FileActivity {
     pub const UID: u16 = 1;
 }
 
-/// Module  Activity events report when a process loads or unloads the <code>module</code>.
-///
-/// Sourced from: `events/events/system/module.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct ModuleActivity {
-    pub activity_id: Option<String>,
-    /// The actor that loaded or unloaded the `module`.
-    pub actor: String,
-    /// The module that was loaded or unloaded.
-    pub module: String,
-}
-
-impl ModuleActivity {
-    pub const UID: u16 = 5;
-}
-
-/// The System Activity event is a generic event that defines a set of attributes available in the system activity events. As a generic event, it could be used to log events that are not otherwise defined by the System Activity category.
-///
-/// Sourced from: `events/events/system/system.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct System {
-    pub actor: String,
-    pub device: String,
-}
-
-impl System {
-    pub const UID: u16 = 1000;
-}
-
-// This file was automatically generated by ocsf-codegen at 2024-02-26T03:11:11+00:00 branch: "main" link: <https://github.com/yaleman/ocsf-rs/commit/cee9b6fcdc93b8937747d894e9586cbc355c3490> OCSF Schema version: 1.1.0
+// This file was automatically generated by ocsf-codegen at 2024-05-08T22:25:02+00:00 branch: "main" link: <https://github.com/yaleman/ocsf-rs/commit/e1a82e9b5299743a0c62bf0756f2eee94b7238a8> OCSF Schema version: 1.2.0

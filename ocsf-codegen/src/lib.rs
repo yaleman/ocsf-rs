@@ -359,7 +359,7 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
         .scope
         .add_generation_timestamp_comment(get_schema_version(&paths).unwrap());
 
-    let modules = vec![
+    let modules = [
         "categories",
         "dictionary",
         // "enums",

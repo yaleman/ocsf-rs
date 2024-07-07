@@ -67,7 +67,7 @@ pub fn generate_categories(
                 // debug!("{key} {category:#?}");
                 let variant_name = collapsed_title_case(key);
 
-                let variant_docstring = vec![
+                let variant_docstring = [
                     format!("/// {}", category.description),
                     "///".to_string(),
                     format!("/// `uid={}`", category.uid),

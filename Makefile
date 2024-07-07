@@ -1,6 +1,6 @@
-DEFAULT: codegen
+DEFAULT: help
 
-SCHEMA_BRANCH ?= "v1.1.0"
+SCHEMA_BRANCH ?= "v1.2.0"
 # SCHEMA_BRANCH ?= main
 SCHEMA_MODULE_NAME ?= ocsf-schema
 SCHEMA_PATH ?= ./ocsf-schema
