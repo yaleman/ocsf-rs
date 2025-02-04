@@ -1,4 +1,4 @@
 [submodule "ocsf-schema"]
 	path = ocsf-schema
 	url = https://github.com/ocsf/ocsf-schema
-	branch = v1.1.0
+	branch = v1.2.0

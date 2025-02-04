@@ -12,5 +12,5 @@ version = { workspace = true }
 path = "src/lib.rs"
 
 [dependencies]
-lazy_static = { workspace = true }
+once_cell = { workspace = true }
 serde = { workspace = true, features = ["derive"] }

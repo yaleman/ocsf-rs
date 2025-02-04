@@ -6,14 +6,13 @@ pub struct Authentication {
     pub activity_id: Option<String>,
     /// The actor that requested the authentication.
     pub actor: Option<String>,
+    pub auth_factors: Option<String>,
     pub auth_protocol: Option<String>,
     pub auth_protocol_id: Option<String>,
     /// The certificate associated with the authentication or pre-authentication (Kerberos).
     pub certificate: Option<String>,
     /// The endpoint to which the authentication was targeted.
     pub dst_endpoint: Option<String>,
-    /// Details about the underlying http request.
-    pub http_request: Option<String>,
     pub is_cleartext: Option<String>,
     pub is_mfa: Option<String>,
     pub is_new_logon: Option<String>,
@@ -25,8 +24,6 @@ pub struct Authentication {
     /// The service or gateway to which the user or process is being authenticated
     pub service: Option<String>,
     pub session: Option<String>,
-    /// The Endpoint from which the authentication was requested.
-    pub src_endpoint: Option<String>,
     /// The details about the authentication request. For example, possible details for Windows logon or logoff events are:<ul><li>Success</li><ul><li>LOGOFF_USER_INITIATED</li><li>LOGOFF_OTHER</li></ul><li>Failure</li><ul><li>USER_DOES_NOT_EXIST</li><li>INVALID_CREDENTIALS</li><li>ACCOUNT_DISABLED</li><li>ACCOUNT_LOCKED_OUT</li><li>PASSWORD_EXPIRED</li></ul></ul>
     pub status_detail: Option<String>,
     /// The subject (user/role or account) to authenticate.
@@ -59,6 +56,59 @@ impl AuthorizeSession {
     pub const UID: u16 = 3;
 }
 
+/// Group Management events report management updates to a group, including updates to membership and permissions.
+///
+/// Sourced from: `events/events/iam/group_management.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct GroupManagement {
+    pub activity_id: Option<String>,
+    /// Group that was the target of the event.
+    pub group: String,
+    /// A list of privileges assigned to the group.
+    pub privileges: Option<String>,
+    /// Resource that the privileges give access to.
+    pub resource: Option<String>,
+    /// A user that was added to or removed from the group.
+    pub user: Option<String>,
+}
+
+impl GroupManagement {
+    pub const UID: u16 = 6;
+}
+
+/// The Identity & Access Management event is a generic event that defines a set of attributes available in the access control events. As a generic event, it could be used to log events that are not otherwise defined by the IAM category.
+///
+/// Sourced from: `events/events/iam/iam.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct Iam {
+    /// Details about the underlying HTTP request.
+    pub http_request: Option<String>,
+    /// Details about the source of the IAM activity.
+    pub src_endpoint: Option<String>,
+}
+
+impl Iam {
+    pub const UID: u16 = 3000;
+}
+
+/// Entity Management events report activity by a managed client, a micro service, or a user at a management console. The activity can be a create, read, update, and delete operation on a managed entity.
+///
+/// Sourced from: `events/events/iam/entity_management.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct EntityManagement {
+    pub activity_id: Option<String>,
+    /// Use for when the entity acting upon another entity is a process or user.
+    pub actor: Option<String>,
+    /// The user provided comment about why the entity was changed.
+    pub comment: Option<String>,
+    pub entity: String,
+    pub entity_result: Option<String>,
+}
+
+impl EntityManagement {
+    pub const UID: u16 = 4;
+}
+
 /// User Access Management events report management updates to a user's privileges.
 ///
 /// Sourced from: `events/events/iam/user_access.json`
@@ -84,12 +134,8 @@ impl UserAccess {
 pub struct AccountChange {
     pub activity_id: Option<String>,
     pub actor: Option<String>,
-    /// Details about the underlying http request.
-    pub http_request: Option<String>,
     /// Details about the IAM policy associated to the Attach/Detach Policy activities.
     pub policy: Option<String>,
-    /// Details about the source of the activity.
-    pub src_endpoint: Option<String>,
     /// The user that was a target of an activity.
     pub user: String,
     pub user_result: Option<String>,
@@ -99,52 +145,4 @@ impl AccountChange {
     pub const UID: u16 = 1;
 }
 
-/// Group Management events report management updates to a group, including updates to membership and permissions.
-///
-/// Sourced from: `events/events/iam/group_management.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct GroupManagement {
-    pub activity_id: Option<String>,
-    /// Group that was the target of the event.
-    pub group: String,
-    /// A list of privileges assigned to the group.
-    pub privileges: Option<String>,
-    /// Resource that the privileges give access to.
-    pub resource: Option<String>,
-    /// A user that was added to or removed from the group.
-    pub user: Option<String>,
-}
-
-impl GroupManagement {
-    pub const UID: u16 = 6;
-}
-
-/// The Identity & Access Management event is a generic event that defines a set of attributes available in the access control events. As a generic event, it could be used to log events that are not otherwise defined by the IAM category.
-///
-/// Sourced from: `events/events/iam/iam.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct Iam;
-
-impl Iam {
-    pub const UID: u16 = 3000;
-}
-
-/// Entity Management events report activity by a managed client, a micro service, or a user at a management console. The activity can be a create, read, update, and delete operation on a managed entity.
-///
-/// Sourced from: `events/events/iam/entity_management.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct EntityManagement {
-    pub activity_id: Option<String>,
-    /// Use for when the entity acting upon another entity is a process or user.
-    pub actor: Option<String>,
-    /// The user provided comment about why the entity was changed.
-    pub comment: Option<String>,
-    pub entity: String,
-    pub entity_result: Option<String>,
-}
-
-impl EntityManagement {
-    pub const UID: u16 = 4;
-}
-
-// This file was automatically generated by ocsf-codegen at 2024-02-26T03:11:12+00:00 branch: "main" link: <https://github.com/yaleman/ocsf-rs/commit/cee9b6fcdc93b8937747d894e9586cbc355c3490> OCSF Schema version: 1.1.0
+// This file was automatically generated by ocsf-codegen at 2024-05-08T22:25:02+00:00 branch: "main" link: <https://github.com/yaleman/ocsf-rs/commit/e1a82e9b5299743a0c62bf0756f2eee94b7238a8> OCSF Schema version: 1.2.0

@@ -26,7 +26,7 @@ git clone --recurse-submodules https://github.com/yaleman/ocsf-rs
 If you forgot to do the recurse-submodules thing, or need to change which schema branch you're basing it off, run `make schema_pull` and it'll do the thing. Set an environment variable of `SCHEMA_BRANCH` and you can change it, ie:
 
 ```shell
-$ SCHEMA_BRANCH=v1.0.0 make schema_pull
+$ SCHEMA_BRANCH=v1.2.0 make schema_pull
 git submodule set-branch --branch v1.0.0 "ocsf-schema"
 rm -rf "./ocsf-schema"
 git submodule update --checkout --force
@@ -51,3 +51,7 @@ make build
 ## Requirements
 
 So far, only rust and `make`. The MSRV's set in `Cargo.toml`.
+
+## Versioning
+
+Note: the version of this library doesn't match the schema version...
