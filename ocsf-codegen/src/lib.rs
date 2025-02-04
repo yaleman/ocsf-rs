@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::{create_dir_all, File};
@@ -11,7 +8,6 @@ use chrono::Utc;
 use codegen::Scope;
 use itertools::Itertools;
 use log::*;
-use regex::Regex;
 use serde_json::{self, Value};
 use walkdir::{DirEntry, WalkDir};
 
@@ -30,12 +26,13 @@ use enums::*;
 pub use errors::*;
 use events::*;
 use objects::*;
+// use once_cell::sync::Lazy;
 use other::*;
 use profiles::*;
 
-lazy_static! {
-    static ref URL_FINDER: Regex = Regex::new(r#"(?P<url>\w+://[^<\s]+)"#).unwrap();
-}
+// #[allow(dead_code)]
+// static URL_FINDER: Lazy<Regex> =
+// Lazy::new(|| Regex::new(r#"(?P<url>\w+://[^<\s]+)"#).expect("Failed to generate URL regex"));
 
 #[allow(dead_code)]
 type ClassesHashMap = HashMap<&'static str, HashMap<String, ClassType>>;
