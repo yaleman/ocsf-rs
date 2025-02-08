@@ -3,9 +3,9 @@ members = ["ocsf-codegen", "ocsf"]
 resolver = "2"
 
 [workspace.package]
-version = "0.0.1-alpha3"
+version = "0.0.1-alpha4"
 authors = ["James Hodgkinson <james@terminaloutcomes.com>"]
-rust-version = "1.66"
+rust-version = "1.80.0"
 edition = "2021"
 license = "MPL-2.0"
 homepage = "https://yaleman.github.io/ocsf-rs/"
@@ -18,9 +18,9 @@ clap = { version = "4.5.28" }
 serde = { version = "1.0.217", features = ["derive"] }
 chrono = "0.4.39"
 codegen = "0.2.0"
-env_logger = "0.10.2"
+env_logger = "0.11.6"
 glob = "0.3.2"
-itertools = "0.11.0"
+itertools = "0.14.0"
 last-git-commit = "0.2.0"
 log = "0.4.25"
 regex = "1.11.1"
