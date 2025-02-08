@@ -1,3 +1,76 @@
+/// The Identity & Access Management event is a generic event that defines a set of attributes available in the access control events. As a generic event, it could be used to log events that are not otherwise defined by the IAM category.
+///
+/// Sourced from: `events/events/iam/iam.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct Iam {
+    /// Details about the underlying HTTP request.
+    pub http_request: Option<String>,
+    /// Details about the source of the IAM activity.
+    pub src_endpoint: Option<String>,
+}
+
+impl Iam {
+    pub const UID: u16 = 3000;
+}
+
+/// Account Change events report when specific user account management tasks are performed, such as a user/role being created, changed, deleted, renamed, disabled, enabled, locked out or unlocked.
+///
+/// Sourced from: `events/events/iam/account_change.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct AccountChange {
+    pub activity_id: Option<String>,
+    pub actor: Option<String>,
+    /// Details about the IAM policy associated to the Attach/Detach Policy activities.
+    pub policy: Option<String>,
+    /// The user that was a target of an activity.
+    pub user: String,
+    pub user_result: Option<String>,
+}
+
+impl AccountChange {
+    pub const UID: u16 = 1;
+}
+
+/// Entity Management events report activity by a managed client, a micro service, or a user at a management console. The activity can be a create, read, update, and delete operation on a managed entity.
+///
+/// Sourced from: `events/events/iam/entity_management.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct EntityManagement {
+    pub activity_id: Option<String>,
+    /// Use for when the entity acting upon another entity is a process or user.
+    pub actor: Option<String>,
+    /// The user provided comment about why the entity was changed.
+    pub comment: Option<String>,
+    pub entity: String,
+    pub entity_result: Option<String>,
+}
+
+impl EntityManagement {
+    pub const UID: u16 = 4;
+}
+
+/// Authorize Session events report privileges or groups assigned to a new user session, usually at login time.
+///
+/// Sourced from: `events/events/iam/authorize_session.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct AuthorizeSession {
+    pub activity_id: Option<String>,
+    /// The Endpoint for which the user session was targeted.
+    pub dst_endpoint: Option<String>,
+    /// Group that was assigned to the new user session.
+    pub group: Option<String>,
+    /// The list of sensitive privileges, assigned to the new user session.
+    pub privileges: Option<String>,
+    /// The user session with the assigned privileges.
+    pub session: Option<String>,
+    /// The user to which new privileges were assigned.
+    pub user: String,
+}
+
+impl AuthorizeSession {
+    pub const UID: u16 = 3;
+}
+
 /// Authentication events report authentication session activities such as user attempts a logon or logoff, successfully or otherwise.
 ///
 /// Sourced from: `events/events/iam/authentication.json`
@@ -24,7 +97,16 @@ pub struct Authentication {
     /// The service or gateway to which the user or process is being authenticated
     pub service: Option<String>,
     pub session: Option<String>,
-    /// The details about the authentication request. For example, possible details for Windows logon or logoff events are:<ul><li>Success</li><ul><li>LOGOFF_USER_INITIATED</li><li>LOGOFF_OTHER</li></ul><li>Failure</li><ul><li>USER_DOES_NOT_EXIST</li><li>INVALID_CREDENTIALS</li><li>ACCOUNT_DISABLED</li><li>ACCOUNT_LOCKED_OUT</li><li>PASSWORD_EXPIRED</li></ul></ul>
+    /// The details about the authentication request. For example, possible details for Windows logon or logoff events are:
+    /// /// * Success</li>
+    /// /// * LOGOFF_USER_INITIATED</li>
+    /// /// * LOGOFF_OTHER</li>
+    /// /// * Failure</li>
+    /// /// * USER_DOES_NOT_EXIST</li>
+    /// /// * INVALID_CREDENTIALS</li>
+    /// /// * ACCOUNT_DISABLED</li>
+    /// /// * ACCOUNT_LOCKED_OUT</li>
+    /// /// * PASSWORD_EXPIRED</li>
     pub status_detail: Option<String>,
     /// The subject (user/role or account) to authenticate.
     pub user: String,
@@ -34,26 +116,22 @@ impl Authentication {
     pub const UID: u16 = 2;
 }
 
-/// Authorize Session events report privileges or groups assigned to a new user session, usually at login time.
+/// User Access Management events report management updates to a user's privileges.
 ///
-/// Sourced from: `events/events/iam/authorize_session.json`
+/// Sourced from: `events/events/iam/user_access.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct AuthorizeSession {
+pub struct UserAccess {
     pub activity_id: Option<String>,
-    /// The Endpoint for which the user session was targeted.
-    pub dst_endpoint: Option<String>,
-    /// Group that was assigned to the new user session.
-    pub group: Option<String>,
-    /// The list of sensitive privileges, assigned to the new user session.
-    pub privileges: Option<String>,
-    /// The user session with the assigned privileges.
-    pub session: Option<String>,
-    /// The user to which new privileges were assigned.
+    /// List of privileges assigned to a user.
+    pub privileges: String,
+    /// Resource that the privileges give access to.
+    pub resource: Option<String>,
+    /// User to which privileges were assigned.
     pub user: String,
 }
 
-impl AuthorizeSession {
-    pub const UID: u16 = 3;
+impl UserAccess {
+    pub const UID: u16 = 5;
 }
 
 /// Group Management events report management updates to a group, including updates to membership and permissions.
@@ -76,73 +154,4 @@ impl GroupManagement {
     pub const UID: u16 = 6;
 }
 
-/// The Identity & Access Management event is a generic event that defines a set of attributes available in the access control events. As a generic event, it could be used to log events that are not otherwise defined by the IAM category.
-///
-/// Sourced from: `events/events/iam/iam.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct Iam {
-    /// Details about the underlying HTTP request.
-    pub http_request: Option<String>,
-    /// Details about the source of the IAM activity.
-    pub src_endpoint: Option<String>,
-}
-
-impl Iam {
-    pub const UID: u16 = 3000;
-}
-
-/// Entity Management events report activity by a managed client, a micro service, or a user at a management console. The activity can be a create, read, update, and delete operation on a managed entity.
-///
-/// Sourced from: `events/events/iam/entity_management.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct EntityManagement {
-    pub activity_id: Option<String>,
-    /// Use for when the entity acting upon another entity is a process or user.
-    pub actor: Option<String>,
-    /// The user provided comment about why the entity was changed.
-    pub comment: Option<String>,
-    pub entity: String,
-    pub entity_result: Option<String>,
-}
-
-impl EntityManagement {
-    pub const UID: u16 = 4;
-}
-
-/// User Access Management events report management updates to a user's privileges.
-///
-/// Sourced from: `events/events/iam/user_access.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct UserAccess {
-    pub activity_id: Option<String>,
-    /// List of privileges assigned to a user.
-    pub privileges: String,
-    /// Resource that the privileges give access to.
-    pub resource: Option<String>,
-    /// User to which privileges were assigned.
-    pub user: String,
-}
-
-impl UserAccess {
-    pub const UID: u16 = 5;
-}
-
-/// Account Change events report when specific user account management tasks are performed, such as a user/role being created, changed, deleted, renamed, disabled, enabled, locked out or unlocked.
-///
-/// Sourced from: `events/events/iam/account_change.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct AccountChange {
-    pub activity_id: Option<String>,
-    pub actor: Option<String>,
-    /// Details about the IAM policy associated to the Attach/Detach Policy activities.
-    pub policy: Option<String>,
-    /// The user that was a target of an activity.
-    pub user: String,
-    pub user_result: Option<String>,
-}
-
-impl AccountChange {
-    pub const UID: u16 = 1;
-}
-
-// This file was automatically generated by ocsf-codegen at 2024-05-08T22:25:02+00:00 branch: "main" link: <https://github.com/yaleman/ocsf-rs/commit/e1a82e9b5299743a0c62bf0756f2eee94b7238a8> OCSF Schema version: 1.2.0
+// This file was automatically generated by ocsf-codegen at 2025-02-08T00:22:36+00:00 branch: "more-fixes" link: <https://github.com/yaleman/ocsf-rs/commit/e3c933d060233d645bbfb4b9ab8f230ab9ba725e> OCSF Schema version: 1.2.0

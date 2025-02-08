@@ -12,5 +12,4 @@ version = { workspace = true }
 path = "src/lib.rs"
 
 [dependencies]
-once_cell = { workspace = true }
 serde = { workspace = true, features = ["derive"] }

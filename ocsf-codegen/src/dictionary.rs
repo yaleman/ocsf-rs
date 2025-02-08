@@ -169,12 +169,15 @@ pub fn generate_dictionary_entries(
                 attribute_name.to_uppercase(),
                 attribute
             );
-            dictionary_module.scope.writeln(&format!(
+            let scope_docstring = format!(
                 "/// {} - {}",
                 attribute.caption,
                 fix_docstring(attribute.description, Some("///"))
-            ));
-            dictionary_module.scope.writeln(&thing_to_push);
+            );
+
+            dictionary_module
+                .scope
+                .writeln(format!("{}\n{}", scope_docstring, thing_to_push));
         });
 
     write_source_file(

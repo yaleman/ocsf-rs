@@ -18,7 +18,6 @@ glob = { workspace = true }
 itertools = { workspace = true }
 last-git-commit = { workspace = true }
 log = { workspace = true }
-once_cell = { workspace = true }
 regex = { workspace = true }
 serde_json = { workspace = true }
 serde_with = { workspace = true }

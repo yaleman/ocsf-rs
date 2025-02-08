@@ -63,7 +63,7 @@ pub struct EnumDef {
 //             .annotation(format!("/// {k} - {variant_name}"))
 //             .to_owned();
 //         scoped_enum.push_variant(this_variant);
-//         enum_tryfrom_u8.line(&format!("{} => {}::{},",
+//         enum_tryfrom_u8.line(format!("{} => {}::{},",
 //             k,
 //             enum_name,
 //             collapsed_title_case(variant_name),
