@@ -1,17 +1,24 @@
-/// Module  Activity events report when a process loads or unloads the <code>module</code>.
+/// Process Activity events report when a process launches, injects, opens or terminates another process, successful or otherwise.
 ///
-/// Sourced from: `events/events/system/module.json`
+/// Sourced from: `events/events/system/process.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct ModuleActivity {
+pub struct ProcessActivity {
     pub activity_id: Option<String>,
-    /// The actor that loaded or unloaded the `module`.
-    pub actor: String,
-    /// The module that was loaded or unloaded.
-    pub module: String,
+    /// The actor that performed the activity on the target `process`. For example, the process that started a new process or injected code into another process.
+    pub actor: Option<String>,
+    pub actual_permissions: Option<String>,
+    pub exit_code: Option<String>,
+    pub injection_type: Option<String>,
+    pub injection_type_id: Option<String>,
+    /// The module that was injected by the actor process.
+    pub module: Option<String>,
+    /// The process that was launched, injected into, opened, or terminated.
+    pub process: String,
+    pub requested_permissions: Option<String>,
 }
 
-impl ModuleActivity {
-    pub const UID: u16 = 5;
+impl ProcessActivity {
+    pub const UID: u16 = 7;
 }
 
 /// Scheduled Job Activity events report activities related to scheduled jobs or tasks.
@@ -29,6 +36,42 @@ impl ScheduledJobActivity {
     pub const UID: u16 = 6;
 }
 
+/// Module  Activity events report when a process loads or unloads the <code>module</code>.
+///
+/// Sourced from: `events/events/system/module.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct ModuleActivity {
+    pub activity_id: Option<String>,
+    /// The actor that loaded or unloaded the `module`.
+    pub actor: String,
+    /// The module that was loaded or unloaded.
+    pub module: String,
+}
+
+impl ModuleActivity {
+    pub const UID: u16 = 5;
+}
+
+/// Memory Activity events report when a process has memory allocated, read/modified, or other manipulation activities - such as a buffer overflow or turning off data execution protection (DEP).
+///
+/// Sourced from: `events/events/system/memory.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct MemoryActivity {
+    pub activity_id: Option<String>,
+    pub actual_permissions: Option<String>,
+    /// The memory address that was access or requested.
+    pub base_address: Option<String>,
+    /// The process that had memory allocated, read/written, or had other manipulation activities performed on it.
+    pub process: String,
+    pub requested_permissions: Option<String>,
+    /// The memory size that was access or requested.
+    pub size: Option<String>,
+}
+
+impl MemoryActivity {
+    pub const UID: u16 = 4;
+}
+
 /// Kernel Activity events report when an process creates, reads, or deletes a kernel resource.
 ///
 /// Sourced from: `events/events/system/kernel.json`
@@ -41,6 +84,29 @@ pub struct KernelActivity {
 
 impl KernelActivity {
     pub const UID: u16 = 3;
+}
+
+/// File System Activity events report when a process performs an action on a file or folder.
+///
+/// Sourced from: `events/events/system/filesystem.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct FileActivity {
+    pub access_mask: Option<String>,
+    pub activity_id: Option<String>,
+    /// The actor that performed the activity on the `file` object
+    pub actor: String,
+    pub component: Option<String>,
+    pub connection_uid: Option<String>,
+    pub create_mask: Option<String>,
+    /// The file that is the target of the activity.
+    pub file: String,
+    pub file_diff: Option<String>,
+    /// The resulting file object when the activity was allowed and successful.
+    pub file_result: Option<String>,
+}
+
+impl FileActivity {
+    pub const UID: u16 = 1;
 }
 
 /// Kernel Extension events report when a driver/extension is loaded or unloaded into the kernel
@@ -71,70 +137,4 @@ impl System {
     pub const UID: u16 = 1000;
 }
 
-/// Memory Activity events report when a process has memory allocated, read/modified, or other manipulation activities - such as a buffer overflow or turning off data execution protection (DEP).
-///
-/// Sourced from: `events/events/system/memory.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct MemoryActivity {
-    pub activity_id: Option<String>,
-    pub actual_permissions: Option<String>,
-    /// The memory address that was access or requested.
-    pub base_address: Option<String>,
-    /// The process that had memory allocated, read/written, or had other manipulation activities performed on it.
-    pub process: String,
-    pub requested_permissions: Option<String>,
-    /// The memory size that was access or requested.
-    pub size: Option<String>,
-}
-
-impl MemoryActivity {
-    pub const UID: u16 = 4;
-}
-
-/// Process Activity events report when a process launches, injects, opens or terminates another process, successful or otherwise.
-///
-/// Sourced from: `events/events/system/process.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct ProcessActivity {
-    pub activity_id: Option<String>,
-    /// The actor that performed the activity on the target `process`. For example, the process that started a new process or injected code into another process.
-    pub actor: Option<String>,
-    pub actual_permissions: Option<String>,
-    pub exit_code: Option<String>,
-    pub injection_type: Option<String>,
-    pub injection_type_id: Option<String>,
-    /// The module that was injected by the actor process.
-    pub module: Option<String>,
-    /// The process that was launched, injected into, opened, or terminated.
-    pub process: String,
-    pub requested_permissions: Option<String>,
-}
-
-impl ProcessActivity {
-    pub const UID: u16 = 7;
-}
-
-/// File System Activity events report when a process performs an action on a file or folder.
-///
-/// Sourced from: `events/events/system/filesystem.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct FileActivity {
-    pub access_mask: Option<String>,
-    pub activity_id: Option<String>,
-    /// The actor that performed the activity on the `file` object
-    pub actor: String,
-    pub component: Option<String>,
-    pub connection_uid: Option<String>,
-    pub create_mask: Option<String>,
-    /// The file that is the target of the activity.
-    pub file: String,
-    pub file_diff: Option<String>,
-    /// The resulting file object when the activity was allowed and successful.
-    pub file_result: Option<String>,
-}
-
-impl FileActivity {
-    pub const UID: u16 = 1;
-}
-
-// This file was automatically generated by ocsf-codegen at 2024-05-08T22:25:02+00:00 branch: "main" link: <https://github.com/yaleman/ocsf-rs/commit/e1a82e9b5299743a0c62bf0756f2eee94b7238a8> OCSF Schema version: 1.2.0
+// This file was automatically generated by ocsf-codegen at 2025-02-08T00:22:36+00:00 branch: "more-fixes" link: <https://github.com/yaleman/ocsf-rs/commit/e3c933d060233d645bbfb4b9ab8f230ab9ba725e> OCSF Schema version: 1.2.0
