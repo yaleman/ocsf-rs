@@ -534,7 +534,7 @@ pub fn generate_events(paths: &DirPaths, root_module: &mut Module) -> Result<(),
                 module_struct.push_field(attr_field);
             });
 
-        let mut module_impl = Impl::new(&collapsed_title_case(&event.name));
+        let mut module_impl = Impl::new(collapsed_title_case(&event.name));
 
         let mut uid = event.uid.unwrap_or(0);
         if let Some(category) = event.category.clone() {

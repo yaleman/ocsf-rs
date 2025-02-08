@@ -59,12 +59,12 @@ impl ModuleEnumWithU8 {
             let variant_name = collapsed_title_case(&value.caption);
             let mut variant = Variant::new(&variant_name);
             if let Some(description) = &value.description {
-                variant.annotation(&format!("/// {}", description));
+                variant.annotation(format!("/// {}", description));
             }
             new_enum.push_variant(variant);
 
-            enum_to_u8.line(&format!("    {}::{} => {},", self.name, variant_name, &key));
-            try_u8_to_enum.line(&format!("    {} => {}::{},", &key, self.name, variant_name));
+            enum_to_u8.line(format!("    {}::{} => {},", self.name, variant_name, &key));
+            try_u8_to_enum.line(format!("    {} => {}::{},", &key, self.name, variant_name));
         });
 
         debug!("Adding enum called {} to scope...", &self.name);
@@ -76,7 +76,7 @@ impl ModuleEnumWithU8 {
         scope.push_enum(new_enum);
 
         let enum_to_u8_impl = scope.new_impl("u8");
-        enum_to_u8_impl.impl_trait(&format!("From<{}>", &self.name));
+        enum_to_u8_impl.impl_trait(format!("From<{}>", &self.name));
         enum_to_u8_impl.push_fn(enum_to_u8);
 
         let try_u8_to_enum_impl = scope.new_impl(&self.name);
@@ -197,7 +197,7 @@ impl Module {
         }
 
         for import in self.imports.iter() {
-            self.scope.raw(&format!("{};", import));
+            self.scope.raw(format!("{};", import));
         }
 
         let child_keys: Vec<String> = self.children.keys().cloned().collect();
@@ -208,7 +208,7 @@ impl Module {
             if key.is_empty() {
                 panic!("Empty module name?");
             }
-            self.scope.raw(&format!("pub mod {};", key));
+            self.scope.raw(format!("pub mod {};", key));
         });
 
         child_keys.iter().for_each(|key| {
