@@ -1,3 +1,47 @@
+/// API events describe general CRUD (Create, Read, Update, Delete) API activities, e.g. (AWS Cloudtrail)
+///
+/// Sourced from: `events/events/application/api.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct ApiActivity {
+    pub activity_id: Option<String>,
+    pub actor: String,
+    pub api: String,
+    pub dst_endpoint: Option<String>,
+    /// Details about the underlying http request.
+    pub http_request: Option<String>,
+    /// Details about resources that were affected by the activity/event.
+    pub resources: Option<String>,
+    /// Details about the source of the activity.
+    pub src_endpoint: String,
+}
+
+impl ApiActivity {
+    pub const UID: u16 = 3;
+}
+
+/// File Hosting Activity events report the actions taken by file management applications, including file sharing servers like Sharepoint and services such as Box, MS OneDrive, or Google Drive.
+///
+/// Sourced from: `events/events/application/file_hosting.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct FileHosting {
+    pub activity_id: Option<String>,
+    /// The actor that performed the activity on the target file.
+    pub actor: String,
+    pub connection_info: Option<String>,
+    /// The endpoint that received the activity on the target file.
+    pub dst_endpoint: Option<String>,
+    /// The share expiration time.
+    pub expiration_time: Option<String>,
+    /// The file that is the target of the activity.
+    pub file: String,
+    /// The endpoint that performed the activity on the target file.
+    pub src_endpoint: String,
+}
+
+impl FileHosting {
+    pub const UID: u16 = 6006;
+}
+
 /// Web Resource Access Activity events describe successful/failed attempts to access a web resource over HTTP.
 ///
 /// Sourced from: `events/events/application/web_resource_access_activity.json`
@@ -22,12 +66,31 @@ impl WebResourceAccessActivity {
     pub const UID: u16 = 6004;
 }
 
-/// Sourced from: `events/events/application/application.json`
+/// Datastore events describe general activities (Read, Update, Query, Delete, etc.) which affect datastores or data within those datastores, e.g. (AWS RDS, AWS S3).
+///
+/// Sourced from: `events/events/application/datastore_activity.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct Application;
+pub struct DatastoreActivity {
+    pub activity_id: Option<String>,
+    pub actor: String,
+    pub database: Option<String>,
+    pub databucket: Option<String>,
+    /// Details about the endpoint hosting the datastore application or service.
+    pub dst_endpoint: Option<String>,
+    /// Details about the underlying http request.
+    pub http_request: Option<String>,
+    pub query_info: Option<String>,
+    /// Details about the source of the activity.
+    pub src_endpoint: String,
+    pub table: Option<String>,
+    /// The datastore resource type (e.g. database, datastore, or table).
+    pub type_name: Option<String>,
+    /// The normalized datastore resource type identifier.
+    pub type_id: Option<String>,
+}
 
-impl Application {
-    pub const UID: u16 = 6000;
+impl DatastoreActivity {
+    pub const UID: u16 = 5;
 }
 
 /// Application Lifecycle events report installation, removal, start, stop of an application or service.
@@ -44,27 +107,28 @@ impl ApplicationLifecycle {
     pub const UID: u16 = 2;
 }
 
-/// File Hosting Activity events report the actions taken by file management applications, including file sharing servers like Sharepoint and services such as Box, MS OneDrive, or Google Drive.
+/// Web Resources Activity events describe actions executed on a set of Web Resources.
 ///
-/// Sourced from: `events/events/application/file_hosting.json`
+/// Sourced from: `events/events/application/web_resources_activity.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct FileHosting {
+pub struct WebResourcesActivity {
     pub activity_id: Option<String>,
-    /// The actor that performed the activity on the target file.
-    pub actor: String,
-    pub connection_info: Option<String>,
-    /// The endpoint that received the activity on the target file.
+    /// Details about server providing the web resources.
     pub dst_endpoint: Option<String>,
-    /// The share expiration time.
-    pub expiration_time: Option<String>,
-    /// The file that is the target of the activity.
-    pub file: String,
-    /// The endpoint that performed the activity on the target file.
-    pub src_endpoint: String,
+    /// Details about the underlying HTTP request.
+    pub http_request: Option<String>,
+    /// Details about the HTTP response, if available.
+    pub http_response: Option<String>,
+    /// Details about the endpoint from which the request originated.
+    pub src_endpoint: Option<String>,
+    /// The Transport Layer Security (TLS) attributes, if available.
+    pub tls: Option<String>,
+    pub web_resources: String,
+    pub web_resources_result: Option<String>,
 }
 
-impl FileHosting {
-    pub const UID: u16 = 6006;
+impl WebResourcesActivity {
+    pub const UID: u16 = 6001;
 }
 
 /// Scan events report the start, completion, and results of a scan job. The scan event includes the number of items that were scanned and the number of detections that were resolved.
@@ -103,76 +167,12 @@ impl ScanActivity {
     pub const UID: u16 = 6007;
 }
 
-/// Web Resources Activity events describe actions executed on a set of Web Resources.
-///
-/// Sourced from: `events/events/application/web_resources_activity.json`
+/// Sourced from: `events/events/application/application.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct WebResourcesActivity {
-    pub activity_id: Option<String>,
-    /// Details about server providing the web resources.
-    pub dst_endpoint: Option<String>,
-    /// Details about the underlying HTTP request.
-    pub http_request: Option<String>,
-    /// Details about the HTTP response, if available.
-    pub http_response: Option<String>,
-    /// Details about the endpoint from which the request originated.
-    pub src_endpoint: Option<String>,
-    /// The Transport Layer Security (TLS) attributes, if available.
-    pub tls: Option<String>,
-    pub web_resources: String,
-    pub web_resources_result: Option<String>,
+pub struct Application;
+
+impl Application {
+    pub const UID: u16 = 6000;
 }
 
-impl WebResourcesActivity {
-    pub const UID: u16 = 6001;
-}
-
-/// API events describe general CRUD (Create, Read, Update, Delete) API activities, e.g. (AWS Cloudtrail)
-///
-/// Sourced from: `events/events/application/api.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct ApiActivity {
-    pub activity_id: Option<String>,
-    pub actor: String,
-    pub api: String,
-    pub dst_endpoint: Option<String>,
-    /// Details about the underlying http request.
-    pub http_request: Option<String>,
-    /// Details about resources that were affected by the activity/event.
-    pub resources: Option<String>,
-    /// Details about the source of the activity.
-    pub src_endpoint: String,
-}
-
-impl ApiActivity {
-    pub const UID: u16 = 3;
-}
-
-/// Datastore events describe general activities (Read, Update, Query, Delete, etc.) which affect datastores or data within those datastores, e.g. (AWS RDS, AWS S3).
-///
-/// Sourced from: `events/events/application/datastore_activity.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct DatastoreActivity {
-    pub activity_id: Option<String>,
-    pub actor: String,
-    pub database: Option<String>,
-    pub databucket: Option<String>,
-    /// Details about the endpoint hosting the datastore application or service.
-    pub dst_endpoint: Option<String>,
-    /// Details about the underlying http request.
-    pub http_request: Option<String>,
-    pub query_info: Option<String>,
-    /// Details about the source of the activity.
-    pub src_endpoint: String,
-    pub table: Option<String>,
-    /// The datastore resource type (e.g. database, datastore, or table).
-    pub type_name: Option<String>,
-    /// The normalized datastore resource type identifier.
-    pub type_id: Option<String>,
-}
-
-impl DatastoreActivity {
-    pub const UID: u16 = 5;
-}
-
-// This file was automatically generated by ocsf-codegen at 2025-06-14T00:18:01+00:00 branch: "maintainer" link: <https://github.com/yaleman/ocsf-rs/commit/ad7e3fd9a25fbceee7f76850998ff9ed47df5372> OCSF Schema version: 1.2.0
+// This file was automatically generated by ocsf-codegen at 2025-06-14T00:43:22+00:00 branch: "maintainer" link: <https://github.com/yaleman/ocsf-rs/commit/bf284b1bcb0ecdd744bfaeb425cd12ea5098ab7b> OCSF Schema version: 1.2.0

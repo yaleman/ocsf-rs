@@ -1,3 +1,47 @@
+/// Kernel Extension events report when a driver/extension is loaded or unloaded into the kernel
+///
+/// Sourced from: `events/events/system/kernel_extension.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct KernelExtension {
+    pub activity_id: Option<String>,
+    /// The actor process that loaded or unloaded the driver/extension.
+    pub actor: String,
+    pub driver: String,
+}
+
+impl KernelExtension {
+    pub const UID: u16 = 2;
+}
+
+/// Module  Activity events report when a process loads or unloads the <code>module</code>.
+///
+/// Sourced from: `events/events/system/module.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct ModuleActivity {
+    pub activity_id: Option<String>,
+    /// The actor that loaded or unloaded the `module`.
+    pub actor: String,
+    /// The module that was loaded or unloaded.
+    pub module: String,
+}
+
+impl ModuleActivity {
+    pub const UID: u16 = 5;
+}
+
+/// The System Activity event is a generic event that defines a set of attributes available in the system activity events. As a generic event, it could be used to log events that are not otherwise defined by the System Activity category.
+///
+/// Sourced from: `events/events/system/system.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct System {
+    pub actor: String,
+    pub device: String,
+}
+
+impl System {
+    pub const UID: u16 = 1000;
+}
+
 /// File System Activity events report when a process performs an action on a file or folder.
 ///
 /// Sourced from: `events/events/system/filesystem.json`
@@ -21,20 +65,38 @@ impl FileActivity {
     pub const UID: u16 = 1;
 }
 
-/// Module  Activity events report when a process loads or unloads the <code>module</code>.
+/// Kernel Activity events report when an process creates, reads, or deletes a kernel resource.
 ///
-/// Sourced from: `events/events/system/module.json`
+/// Sourced from: `events/events/system/kernel.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct ModuleActivity {
+pub struct KernelActivity {
     pub activity_id: Option<String>,
-    /// The actor that loaded or unloaded the `module`.
-    pub actor: String,
-    /// The module that was loaded or unloaded.
-    pub module: String,
+    /// The target kernel resource.
+    pub kernel: String,
 }
 
-impl ModuleActivity {
-    pub const UID: u16 = 5;
+impl KernelActivity {
+    pub const UID: u16 = 3;
+}
+
+/// Memory Activity events report when a process has memory allocated, read/modified, or other manipulation activities - such as a buffer overflow or turning off data execution protection (DEP).
+///
+/// Sourced from: `events/events/system/memory.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct MemoryActivity {
+    pub activity_id: Option<String>,
+    pub actual_permissions: Option<String>,
+    /// The memory address that was access or requested.
+    pub base_address: Option<String>,
+    /// The process that had memory allocated, read/written, or had other manipulation activities performed on it.
+    pub process: String,
+    pub requested_permissions: Option<String>,
+    /// The memory size that was access or requested.
+    pub size: Option<String>,
+}
+
+impl MemoryActivity {
+    pub const UID: u16 = 4;
 }
 
 /// Scheduled Job Activity events report activities related to scheduled jobs or tasks.
@@ -75,66 +137,4 @@ impl ProcessActivity {
     pub const UID: u16 = 7;
 }
 
-/// Memory Activity events report when a process has memory allocated, read/modified, or other manipulation activities - such as a buffer overflow or turning off data execution protection (DEP).
-///
-/// Sourced from: `events/events/system/memory.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct MemoryActivity {
-    pub activity_id: Option<String>,
-    pub actual_permissions: Option<String>,
-    /// The memory address that was access or requested.
-    pub base_address: Option<String>,
-    /// The process that had memory allocated, read/written, or had other manipulation activities performed on it.
-    pub process: String,
-    pub requested_permissions: Option<String>,
-    /// The memory size that was access or requested.
-    pub size: Option<String>,
-}
-
-impl MemoryActivity {
-    pub const UID: u16 = 4;
-}
-
-/// Kernel Activity events report when an process creates, reads, or deletes a kernel resource.
-///
-/// Sourced from: `events/events/system/kernel.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct KernelActivity {
-    pub activity_id: Option<String>,
-    /// The target kernel resource.
-    pub kernel: String,
-}
-
-impl KernelActivity {
-    pub const UID: u16 = 3;
-}
-
-/// Kernel Extension events report when a driver/extension is loaded or unloaded into the kernel
-///
-/// Sourced from: `events/events/system/kernel_extension.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct KernelExtension {
-    pub activity_id: Option<String>,
-    /// The actor process that loaded or unloaded the driver/extension.
-    pub actor: String,
-    pub driver: String,
-}
-
-impl KernelExtension {
-    pub const UID: u16 = 2;
-}
-
-/// The System Activity event is a generic event that defines a set of attributes available in the system activity events. As a generic event, it could be used to log events that are not otherwise defined by the System Activity category.
-///
-/// Sourced from: `events/events/system/system.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct System {
-    pub actor: String,
-    pub device: String,
-}
-
-impl System {
-    pub const UID: u16 = 1000;
-}
-
-// This file was automatically generated by ocsf-codegen at 2025-06-14T00:18:01+00:00 branch: "maintainer" link: <https://github.com/yaleman/ocsf-rs/commit/ad7e3fd9a25fbceee7f76850998ff9ed47df5372> OCSF Schema version: 1.2.0
+// This file was automatically generated by ocsf-codegen at 2025-06-14T00:43:22+00:00 branch: "maintainer" link: <https://github.com/yaleman/ocsf-rs/commit/bf284b1bcb0ecdd744bfaeb425cd12ea5098ab7b> OCSF Schema version: 1.2.0
