@@ -13,62 +13,24 @@ impl Iam {
     pub const UID: u16 = 3000;
 }
 
-/// Account Change events report when specific user account management tasks are performed, such as a user/role being created, changed, deleted, renamed, disabled, enabled, locked out or unlocked.
+/// Group Management events report management updates to a group, including updates to membership and permissions.
 ///
-/// Sourced from: `events/events/iam/account_change.json`
+/// Sourced from: `events/events/iam/group_management.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct AccountChange {
+pub struct GroupManagement {
     pub activity_id: Option<String>,
-    pub actor: Option<String>,
-    /// Details about the IAM policy associated to the Attach/Detach Policy activities.
-    pub policy: Option<String>,
-    /// The user that was a target of an activity.
-    pub user: String,
-    pub user_result: Option<String>,
-}
-
-impl AccountChange {
-    pub const UID: u16 = 1;
-}
-
-/// Entity Management events report activity by a managed client, a micro service, or a user at a management console. The activity can be a create, read, update, and delete operation on a managed entity.
-///
-/// Sourced from: `events/events/iam/entity_management.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct EntityManagement {
-    pub activity_id: Option<String>,
-    /// Use for when the entity acting upon another entity is a process or user.
-    pub actor: Option<String>,
-    /// The user provided comment about why the entity was changed.
-    pub comment: Option<String>,
-    pub entity: String,
-    pub entity_result: Option<String>,
-}
-
-impl EntityManagement {
-    pub const UID: u16 = 4;
-}
-
-/// Authorize Session events report privileges or groups assigned to a new user session, usually at login time.
-///
-/// Sourced from: `events/events/iam/authorize_session.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct AuthorizeSession {
-    pub activity_id: Option<String>,
-    /// The Endpoint for which the user session was targeted.
-    pub dst_endpoint: Option<String>,
-    /// Group that was assigned to the new user session.
-    pub group: Option<String>,
-    /// The list of sensitive privileges, assigned to the new user session.
+    /// Group that was the target of the event.
+    pub group: String,
+    /// A list of privileges assigned to the group.
     pub privileges: Option<String>,
-    /// The user session with the assigned privileges.
-    pub session: Option<String>,
-    /// The user to which new privileges were assigned.
-    pub user: String,
+    /// Resource that the privileges give access to.
+    pub resource: Option<String>,
+    /// A user that was added to or removed from the group.
+    pub user: Option<String>,
 }
 
-impl AuthorizeSession {
-    pub const UID: u16 = 3;
+impl GroupManagement {
+    pub const UID: u16 = 6;
 }
 
 /// Authentication events report authentication session activities such as user attempts a logon or logoff, successfully or otherwise.
@@ -116,6 +78,64 @@ impl Authentication {
     pub const UID: u16 = 2;
 }
 
+/// Account Change events report when specific user account management tasks are performed, such as a user/role being created, changed, deleted, renamed, disabled, enabled, locked out or unlocked.
+///
+/// Sourced from: `events/events/iam/account_change.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct AccountChange {
+    pub activity_id: Option<String>,
+    pub actor: Option<String>,
+    /// Details about the IAM policy associated to the Attach/Detach Policy activities.
+    pub policy: Option<String>,
+    /// The user that was a target of an activity.
+    pub user: String,
+    pub user_result: Option<String>,
+}
+
+impl AccountChange {
+    pub const UID: u16 = 1;
+}
+
+/// Authorize Session events report privileges or groups assigned to a new user session, usually at login time.
+///
+/// Sourced from: `events/events/iam/authorize_session.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct AuthorizeSession {
+    pub activity_id: Option<String>,
+    /// The Endpoint for which the user session was targeted.
+    pub dst_endpoint: Option<String>,
+    /// Group that was assigned to the new user session.
+    pub group: Option<String>,
+    /// The list of sensitive privileges, assigned to the new user session.
+    pub privileges: Option<String>,
+    /// The user session with the assigned privileges.
+    pub session: Option<String>,
+    /// The user to which new privileges were assigned.
+    pub user: String,
+}
+
+impl AuthorizeSession {
+    pub const UID: u16 = 3;
+}
+
+/// Entity Management events report activity by a managed client, a micro service, or a user at a management console. The activity can be a create, read, update, and delete operation on a managed entity.
+///
+/// Sourced from: `events/events/iam/entity_management.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct EntityManagement {
+    pub activity_id: Option<String>,
+    /// Use for when the entity acting upon another entity is a process or user.
+    pub actor: Option<String>,
+    /// The user provided comment about why the entity was changed.
+    pub comment: Option<String>,
+    pub entity: String,
+    pub entity_result: Option<String>,
+}
+
+impl EntityManagement {
+    pub const UID: u16 = 4;
+}
+
 /// User Access Management events report management updates to a user's privileges.
 ///
 /// Sourced from: `events/events/iam/user_access.json`
@@ -134,24 +154,4 @@ impl UserAccess {
     pub const UID: u16 = 5;
 }
 
-/// Group Management events report management updates to a group, including updates to membership and permissions.
-///
-/// Sourced from: `events/events/iam/group_management.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct GroupManagement {
-    pub activity_id: Option<String>,
-    /// Group that was the target of the event.
-    pub group: String,
-    /// A list of privileges assigned to the group.
-    pub privileges: Option<String>,
-    /// Resource that the privileges give access to.
-    pub resource: Option<String>,
-    /// A user that was added to or removed from the group.
-    pub user: Option<String>,
-}
-
-impl GroupManagement {
-    pub const UID: u16 = 6;
-}
-
-// This file was automatically generated by ocsf-codegen at 2025-02-08T00:22:36+00:00 branch: "more-fixes" link: <https://github.com/yaleman/ocsf-rs/commit/e3c933d060233d645bbfb4b9ab8f230ab9ba725e> OCSF Schema version: 1.2.0
+// This file was automatically generated by ocsf-codegen at 2025-06-14T00:18:01+00:00 branch: "maintainer" link: <https://github.com/yaleman/ocsf-rs/commit/ad7e3fd9a25fbceee7f76850998ff9ed47df5372> OCSF Schema version: 1.2.0

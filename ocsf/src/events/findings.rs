@@ -1,136 +1,3 @@
-/// Compliance Finding events describe results of evaluations performed against resources, to check compliance with various Industry Frameworks or Security Standards such as <code>NIST SP 800-53, CIS AWS Foundations Benchmark v1.4.0, ISO/IEC 27001</code> etc.
-///
-/// Sourced from: `events/events/findings/compliance_finding.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct ComplianceFinding {
-    pub compliance: String,
-    pub remediation: Option<String>,
-    /// Describes details about the resource that is the subject of the compliance check.
-    pub resource: Option<String>,
-}
-
-impl ComplianceFinding {
-    pub const UID: u16 = 2003;
-}
-
-/// Security Finding events describe findings, detections, anomalies, alerts and/or actions performed by security products
-///
-/// Sourced from: `events/events/findings/security_finding.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct SecurityFinding {
-    pub activity_id: Option<String>,
-    pub analytic: Option<String>,
-    /// The attack object describes the technique and associated tactics as defined by <a target='_blank' href='https://attack.mitre.org/wiki/ATT&CK_Matrix'>ATT&CK Matrix<sup>TM</sup></a>.
-    pub attacks: Option<String>,
-    pub cis_csc: Option<String>,
-    pub compliance: Option<String>,
-    pub confidence: Option<String>,
-    pub confidence_id: Option<String>,
-    pub confidence_score: Option<String>,
-    pub data_sources: Option<String>,
-    pub evidence: Option<String>,
-    pub finding: String,
-    pub impact: Option<String>,
-    pub impact_id: Option<String>,
-    pub impact_score: Option<String>,
-    pub kill_chain: Option<String>,
-    pub malware: Option<String>,
-    pub nist: Option<String>,
-    pub process: Option<String>,
-    pub resources: Option<String>,
-    pub risk_level: Option<String>,
-    pub risk_level_id: Option<String>,
-    pub risk_score: Option<String>,
-    /// The normalized state of a security finding.
-    pub state: Option<String>,
-    /// The normalized state identifier of a security finding.
-    pub state_id: String,
-    pub vulnerabilities: Option<String>,
-}
-
-impl SecurityFinding {
-    pub const UID: u16 = 2001;
-}
-
-/// An Incident Finding reports the creation, update, or closure of security incidents as a result of detections and/or analytics.
-///
-/// Sourced from: `events/events/findings/incident_finding.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct IncidentFinding {
-    /// The normalized identifier of the Incident activity.
-    pub activity_id: String,
-    /// The Incident activity name, as defined by the `activity_id`.
-    pub activity_name: Option<String>,
-    pub assignee: Option<String>,
-    pub assignee_group: Option<String>,
-    /// An array of <a target='_blank' href='https://attack.mitre.org'>MITRE ATT&CK®</a> objects describing the tactics, techniques & sub-techniques associated to the Incident.
-    pub attacks: Option<String>,
-    /// Additional user supplied details for updating or closing the incident.
-    pub comment: Option<String>,
-    pub confidence: Option<String>,
-    pub confidence_id: Option<String>,
-    pub confidence_score: Option<String>,
-    /// The short description of the Incident.
-    pub desc: Option<String>,
-    /// The time of the most recent event included in the incident.
-    pub end_time: Option<String>,
-    pub finding_info_list: String,
-    pub impact: Option<String>,
-    pub impact_id: Option<String>,
-    pub impact_score: Option<String>,
-    pub is_suspected_breach: Option<String>,
-    pub priority: Option<String>,
-    pub priority_id: Option<String>,
-    /// A Url link used to access the original incident.
-    pub src_url: Option<String>,
-    /// The time of the least recent event included in the incident.
-    pub start_time: Option<String>,
-    /// The normalized status of the Incident normalized to the caption of the status_id value. In the case of 'Other', it is defined by the source.
-    pub status: Option<String>,
-    /// The normalized status identifier of the Incident.
-    pub status_id: String,
-    pub verdict: Option<String>,
-    pub verdict_id: Option<String>,
-}
-
-impl IncidentFinding {
-    pub const UID: u16 = 2005;
-}
-
-/// The Finding event is a generic event that defines a set of attributes available in the Findings category.
-///
-/// Sourced from: `events/events/findings/finding.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct Finding {
-    /// The normalized identifier of the finding activity.
-    pub activity_id: Option<String>,
-    /// The finding activity name, as defined by the `activity_id`.
-    pub activity_name: Option<String>,
-    /// A user provided comment about the finding.
-    pub comment: Option<String>,
-    pub confidence: Option<String>,
-    pub confidence_id: Option<String>,
-    pub confidence_score: Option<String>,
-    /// Describes the affected device/host. It can be used in conjunction with `Affected Resource(s)`.
-    /// ///  e.g. Specific details about an AWS EC2 instance, that is affected by the Finding.
-    /// ///
-    ///  ///
-    pub device: Option<String>,
-    /// The time of the most recent event included in the finding.
-    pub end_time: Option<String>,
-    pub finding_info: String,
-    /// The time of the least recent event included in the finding.
-    pub start_time: Option<String>,
-    /// The normalized status of the Finding set by the consumer normalized to the caption of the status_id value. In the case of 'Other', it is defined by the source.
-    pub status: Option<String>,
-    /// The normalized status identifier of the Finding, set by the consumer.
-    pub status_id: Option<String>,
-}
-
-impl Finding {
-    pub const UID: u16 = 2000;
-}
-
 /// The Vulnerability Finding event is a notification about weakness in an information system, system security procedures, internal controls, or implementation that could be exploited or triggered by a threat source.
 ///
 /// Sourced from: `events/events/findings/vulnerability_finding.json`
@@ -209,4 +76,137 @@ impl DataSecurityFinding {
     pub const UID: u16 = 2006;
 }
 
-// This file was automatically generated by ocsf-codegen at 2025-02-08T00:22:36+00:00 branch: "more-fixes" link: <https://github.com/yaleman/ocsf-rs/commit/e3c933d060233d645bbfb4b9ab8f230ab9ba725e> OCSF Schema version: 1.2.0
+/// The Finding event is a generic event that defines a set of attributes available in the Findings category.
+///
+/// Sourced from: `events/events/findings/finding.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct Finding {
+    /// The normalized identifier of the finding activity.
+    pub activity_id: Option<String>,
+    /// The finding activity name, as defined by the `activity_id`.
+    pub activity_name: Option<String>,
+    /// A user provided comment about the finding.
+    pub comment: Option<String>,
+    pub confidence: Option<String>,
+    pub confidence_id: Option<String>,
+    pub confidence_score: Option<String>,
+    /// Describes the affected device/host. It can be used in conjunction with `Affected Resource(s)`.
+    /// ///  e.g. Specific details about an AWS EC2 instance, that is affected by the Finding.
+    /// ///
+    ///  ///
+    pub device: Option<String>,
+    /// The time of the most recent event included in the finding.
+    pub end_time: Option<String>,
+    pub finding_info: String,
+    /// The time of the least recent event included in the finding.
+    pub start_time: Option<String>,
+    /// The normalized status of the Finding set by the consumer normalized to the caption of the status_id value. In the case of 'Other', it is defined by the source.
+    pub status: Option<String>,
+    /// The normalized status identifier of the Finding, set by the consumer.
+    pub status_id: Option<String>,
+}
+
+impl Finding {
+    pub const UID: u16 = 2000;
+}
+
+/// Compliance Finding events describe results of evaluations performed against resources, to check compliance with various Industry Frameworks or Security Standards such as <code>NIST SP 800-53, CIS AWS Foundations Benchmark v1.4.0, ISO/IEC 27001</code> etc.
+///
+/// Sourced from: `events/events/findings/compliance_finding.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct ComplianceFinding {
+    pub compliance: String,
+    pub remediation: Option<String>,
+    /// Describes details about the resource that is the subject of the compliance check.
+    pub resource: Option<String>,
+}
+
+impl ComplianceFinding {
+    pub const UID: u16 = 2003;
+}
+
+/// An Incident Finding reports the creation, update, or closure of security incidents as a result of detections and/or analytics.
+///
+/// Sourced from: `events/events/findings/incident_finding.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct IncidentFinding {
+    /// The normalized identifier of the Incident activity.
+    pub activity_id: String,
+    /// The Incident activity name, as defined by the `activity_id`.
+    pub activity_name: Option<String>,
+    pub assignee: Option<String>,
+    pub assignee_group: Option<String>,
+    /// An array of <a target='_blank' href='https://attack.mitre.org'>MITRE ATT&CK®</a> objects describing the tactics, techniques & sub-techniques associated to the Incident.
+    pub attacks: Option<String>,
+    /// Additional user supplied details for updating or closing the incident.
+    pub comment: Option<String>,
+    pub confidence: Option<String>,
+    pub confidence_id: Option<String>,
+    pub confidence_score: Option<String>,
+    /// The short description of the Incident.
+    pub desc: Option<String>,
+    /// The time of the most recent event included in the incident.
+    pub end_time: Option<String>,
+    pub finding_info_list: String,
+    pub impact: Option<String>,
+    pub impact_id: Option<String>,
+    pub impact_score: Option<String>,
+    pub is_suspected_breach: Option<String>,
+    pub priority: Option<String>,
+    pub priority_id: Option<String>,
+    /// A Url link used to access the original incident.
+    pub src_url: Option<String>,
+    /// The time of the least recent event included in the incident.
+    pub start_time: Option<String>,
+    /// The normalized status of the Incident normalized to the caption of the status_id value. In the case of 'Other', it is defined by the source.
+    pub status: Option<String>,
+    /// The normalized status identifier of the Incident.
+    pub status_id: String,
+    pub verdict: Option<String>,
+    pub verdict_id: Option<String>,
+}
+
+impl IncidentFinding {
+    pub const UID: u16 = 2005;
+}
+
+/// Security Finding events describe findings, detections, anomalies, alerts and/or actions performed by security products
+///
+/// Sourced from: `events/events/findings/security_finding.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct SecurityFinding {
+    pub activity_id: Option<String>,
+    pub analytic: Option<String>,
+    /// The attack object describes the technique and associated tactics as defined by <a target='_blank' href='https://attack.mitre.org/wiki/ATT&CK_Matrix'>ATT&CK Matrix<sup>TM</sup></a>.
+    pub attacks: Option<String>,
+    pub cis_csc: Option<String>,
+    pub compliance: Option<String>,
+    pub confidence: Option<String>,
+    pub confidence_id: Option<String>,
+    pub confidence_score: Option<String>,
+    pub data_sources: Option<String>,
+    pub evidence: Option<String>,
+    pub finding: String,
+    pub impact: Option<String>,
+    pub impact_id: Option<String>,
+    pub impact_score: Option<String>,
+    pub kill_chain: Option<String>,
+    pub malware: Option<String>,
+    pub nist: Option<String>,
+    pub process: Option<String>,
+    pub resources: Option<String>,
+    pub risk_level: Option<String>,
+    pub risk_level_id: Option<String>,
+    pub risk_score: Option<String>,
+    /// The normalized state of a security finding.
+    pub state: Option<String>,
+    /// The normalized state identifier of a security finding.
+    pub state_id: String,
+    pub vulnerabilities: Option<String>,
+}
+
+impl SecurityFinding {
+    pub const UID: u16 = 2001;
+}
+
+// This file was automatically generated by ocsf-codegen at 2025-06-14T00:18:01+00:00 branch: "maintainer" link: <https://github.com/yaleman/ocsf-rs/commit/ad7e3fd9a25fbceee7f76850998ff9ed47df5372> OCSF Schema version: 1.2.0
