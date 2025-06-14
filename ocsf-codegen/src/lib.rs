@@ -37,6 +37,7 @@ use profiles::*;
 #[allow(dead_code)]
 type ClassesHashMap = HashMap<&'static str, HashMap<String, ClassType>>;
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub enum ClassType {
     Event { value: EventDef },
@@ -376,7 +377,9 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
     root_module
         .scope
         .add_generation_timestamp_comment(get_schema_version(&paths).unwrap());
-
+    root_module
+        .scope
+        .raw("#![allow(rustdoc::invalid_html_tags)]");
     let modules = [
         "categories",
         "dictionary",

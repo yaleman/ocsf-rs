@@ -222,7 +222,7 @@ impl<'de> Deserialize<'de> for EventAttribute {
             info!("Found includes: {:?}", includes);
             enum_name = format!(
                 "crate::{}",
-                collapsed_title_case(includes.first().unwrap().split('/').last().unwrap())
+                collapsed_title_case(includes.first().unwrap().split('/').next_back().unwrap())
             );
         }
 

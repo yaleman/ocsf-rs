@@ -135,7 +135,7 @@ pub fn generate_enums(paths: &DirPaths, root_module: &mut Module) -> Result<(), 
             paths,
             root_module,
             enum_file,
-            collapsed_title_case(filename.split('/').last().unwrap()),
+            collapsed_title_case(filename.split('/').next_back().unwrap()),
         )?;
 
         root_module.enums.push(enum_data);

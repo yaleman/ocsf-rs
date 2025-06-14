@@ -19,7 +19,7 @@ codegen: ## generate the ocsf crate, run cargo fmt on it and test it actually bu
 .PHONY: build
 build: ## codegen + doc generation + clippy + test
 build: codegen doc
-	cargo clippy
+	cargo clippy --all-targets --all-features -- -D warnings
 	cargo test -p ocsf
 
 .PHONY: schema_pull

@@ -1,16 +1,37 @@
-/// The Identity & Access Management event is a generic event that defines a set of attributes available in the access control events. As a generic event, it could be used to log events that are not otherwise defined by the IAM category.
+/// Entity Management events report activity by a managed client, a micro service, or a user at a management console. The activity can be a create, read, update, and delete operation on a managed entity.
 ///
-/// Sourced from: `events/events/iam/iam.json`
+/// Sourced from: `events/events/iam/entity_management.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct Iam {
-    /// Details about the underlying HTTP request.
-    pub http_request: Option<String>,
-    /// Details about the source of the IAM activity.
-    pub src_endpoint: Option<String>,
+pub struct EntityManagement {
+    pub activity_id: Option<String>,
+    /// Use for when the entity acting upon another entity is a process or user.
+    pub actor: Option<String>,
+    /// The user provided comment about why the entity was changed.
+    pub comment: Option<String>,
+    pub entity: String,
+    pub entity_result: Option<String>,
 }
 
-impl Iam {
-    pub const UID: u16 = 3000;
+impl EntityManagement {
+    pub const UID: u16 = 4;
+}
+
+/// User Access Management events report management updates to a user's privileges.
+///
+/// Sourced from: `events/events/iam/user_access.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct UserAccess {
+    pub activity_id: Option<String>,
+    /// List of privileges assigned to a user.
+    pub privileges: String,
+    /// Resource that the privileges give access to.
+    pub resource: Option<String>,
+    /// User to which privileges were assigned.
+    pub user: String,
+}
+
+impl UserAccess {
+    pub const UID: u16 = 5;
 }
 
 /// Account Change events report when specific user account management tasks are performed, such as a user/role being created, changed, deleted, renamed, disabled, enabled, locked out or unlocked.
@@ -31,22 +52,24 @@ impl AccountChange {
     pub const UID: u16 = 1;
 }
 
-/// Entity Management events report activity by a managed client, a micro service, or a user at a management console. The activity can be a create, read, update, and delete operation on a managed entity.
+/// Group Management events report management updates to a group, including updates to membership and permissions.
 ///
-/// Sourced from: `events/events/iam/entity_management.json`
+/// Sourced from: `events/events/iam/group_management.json`
 #[derive(serde::Deserialize, serde::Serialize)]
-pub struct EntityManagement {
+pub struct GroupManagement {
     pub activity_id: Option<String>,
-    /// Use for when the entity acting upon another entity is a process or user.
-    pub actor: Option<String>,
-    /// The user provided comment about why the entity was changed.
-    pub comment: Option<String>,
-    pub entity: String,
-    pub entity_result: Option<String>,
+    /// Group that was the target of the event.
+    pub group: String,
+    /// A list of privileges assigned to the group.
+    pub privileges: Option<String>,
+    /// Resource that the privileges give access to.
+    pub resource: Option<String>,
+    /// A user that was added to or removed from the group.
+    pub user: Option<String>,
 }
 
-impl EntityManagement {
-    pub const UID: u16 = 4;
+impl GroupManagement {
+    pub const UID: u16 = 6;
 }
 
 /// Authorize Session events report privileges or groups assigned to a new user session, usually at login time.
@@ -69,6 +92,21 @@ pub struct AuthorizeSession {
 
 impl AuthorizeSession {
     pub const UID: u16 = 3;
+}
+
+/// The Identity & Access Management event is a generic event that defines a set of attributes available in the access control events. As a generic event, it could be used to log events that are not otherwise defined by the IAM category.
+///
+/// Sourced from: `events/events/iam/iam.json`
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct Iam {
+    /// Details about the underlying HTTP request.
+    pub http_request: Option<String>,
+    /// Details about the source of the IAM activity.
+    pub src_endpoint: Option<String>,
+}
+
+impl Iam {
+    pub const UID: u16 = 3000;
 }
 
 /// Authentication events report authentication session activities such as user attempts a logon or logoff, successfully or otherwise.
@@ -116,42 +154,4 @@ impl Authentication {
     pub const UID: u16 = 2;
 }
 
-/// User Access Management events report management updates to a user's privileges.
-///
-/// Sourced from: `events/events/iam/user_access.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct UserAccess {
-    pub activity_id: Option<String>,
-    /// List of privileges assigned to a user.
-    pub privileges: String,
-    /// Resource that the privileges give access to.
-    pub resource: Option<String>,
-    /// User to which privileges were assigned.
-    pub user: String,
-}
-
-impl UserAccess {
-    pub const UID: u16 = 5;
-}
-
-/// Group Management events report management updates to a group, including updates to membership and permissions.
-///
-/// Sourced from: `events/events/iam/group_management.json`
-#[derive(serde::Deserialize, serde::Serialize)]
-pub struct GroupManagement {
-    pub activity_id: Option<String>,
-    /// Group that was the target of the event.
-    pub group: String,
-    /// A list of privileges assigned to the group.
-    pub privileges: Option<String>,
-    /// Resource that the privileges give access to.
-    pub resource: Option<String>,
-    /// A user that was added to or removed from the group.
-    pub user: Option<String>,
-}
-
-impl GroupManagement {
-    pub const UID: u16 = 6;
-}
-
-// This file was automatically generated by ocsf-codegen at 2025-02-08T00:22:36+00:00 branch: "more-fixes" link: <https://github.com/yaleman/ocsf-rs/commit/e3c933d060233d645bbfb4b9ab8f230ab9ba725e> OCSF Schema version: 1.2.0
+// This file was automatically generated by ocsf-codegen at 2025-06-14T00:43:22+00:00 branch: "maintainer" link: <https://github.com/yaleman/ocsf-rs/commit/bf284b1bcb0ecdd744bfaeb425cd12ea5098ab7b> OCSF Schema version: 1.2.0
