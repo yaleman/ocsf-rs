@@ -28,7 +28,7 @@ jobs:
       - name: Make all the books
         run: make doc
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: 'target/doc/'
           name: docs
@@ -49,7 +49,7 @@ jobs:
           name: docs
           path: ./docs/
       - name: Upload pages artifacts
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           # Upload entire repository
           path: 'docs/'
