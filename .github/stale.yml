@@ -1,8 +1,6 @@
 ---
-# copied from
-# https://github.com/curl/curl/blob/master/.github/stale.yml
-#
-# thanks @bagder!
+# copied from https://github.com/curl/curl/blob/master/.github/stale.yml
+# thanks @bagder
 
 # Number of days of inactivity before an issue becomes stale
 daysUntilStale: 180
