@@ -14,7 +14,7 @@ documentation = "https://github.com/yaleman/ocsf-rs/"
 
 
 [workspace.dependencies]
-clap = { version = "4.5.58" }
+clap = { version = "4.5.60" }
 serde = { version = "1.0.228", features = ["derive"] }
 chrono = "0.4.43"
 codegen = "0.2.0"
