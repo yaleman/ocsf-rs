@@ -23,7 +23,7 @@ pub fn add_version_element(
     debug!("OCSF Schema Version: {}", schema_version);
     output_scope.raw(format!(
         "// The schema version that the code was generated from ({}).",
-        &schema_version
+        schema_version
     ));
     output_scope.raw(format!(
         "pub static OCSF_SCHEMA_VERSION: &str = {:?};\n\n",
