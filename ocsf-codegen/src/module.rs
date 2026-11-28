@@ -63,11 +63,11 @@ impl ModuleEnumWithU8 {
             }
             new_enum.push_variant(variant);
 
-            enum_to_u8.line(format!("    {}::{} => {},", self.name, variant_name, &key));
-            try_u8_to_enum.line(format!("    {} => {}::{},", &key, self.name, variant_name));
+            enum_to_u8.line(format!("    {}::{} => {},", self.name, variant_name, key));
+            try_u8_to_enum.line(format!("    {} => {}::{},", key, self.name, variant_name));
         });
 
-        debug!("Adding enum called {} to scope...", &self.name);
+        debug!("Adding enum called {} to scope...", self.name);
         enum_to_u8.line("}");
         try_u8_to_enum.line("_ => return Err(\"invalid value\".to_string()),");
         try_u8_to_enum.line("}; Ok(res)");
@@ -76,7 +76,7 @@ impl ModuleEnumWithU8 {
         scope.push_enum(new_enum);
 
         let enum_to_u8_impl = scope.new_impl("u8");
-        enum_to_u8_impl.impl_trait(format!("From<{}>", &self.name));
+        enum_to_u8_impl.impl_trait(format!("From<{}>", self.name));
         enum_to_u8_impl.push_fn(enum_to_u8);
 
         let try_u8_to_enum_impl = scope.new_impl(&self.name);

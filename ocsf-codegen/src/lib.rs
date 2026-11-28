@@ -206,7 +206,7 @@ impl DirPaths {
     }
     /// destination path + `src/`
     fn source_path(&self) -> PathBuf {
-        PathBuf::from(&format!("{}src/", &self.destination_path))
+        PathBuf::from(&format!("{}src/", self.destination_path))
     }
 }
 
@@ -355,7 +355,7 @@ pub fn generate_source_code(base_path: &str) -> Result<(), Box<dyn Error>> {
 
     generate_template_files(&paths.destination_path)?;
 
-    let src_dir = PathBuf::from(&format!("{}/src/", &paths.destination_path));
+    let src_dir = PathBuf::from(&format!("{}/src/", paths.destination_path));
     if !src_dir.exists() {
         std::fs::create_dir(src_dir)?;
     }

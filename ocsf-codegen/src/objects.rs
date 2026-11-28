@@ -26,7 +26,7 @@ pub fn generate_objects(paths: &DirPaths, root_module: &mut Module) -> Result<()
 
     object_module.scope.writeln("//* hello world");
 
-    for filename in find_files(&format!("{}objects/", &paths.schema_path)) {
+    for filename in find_files(&format!("{}objects/", paths.schema_path)) {
         debug!("Object file: {filename:?}");
 
         let file_value = read_file_to_value(&filename)?;

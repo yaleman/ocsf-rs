@@ -1,8 +1,10 @@
 [package]
 name = "ocsf"
 description = "OCSF read/write methods"
+authors = { workspace = true }
 documentation = { workspace = true }
 edition = { workspace = true }
+homepage = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 rust-version = { workspace = true }
